@@ -261,9 +261,10 @@
         ctx.lineWidth = size * 0.14; ctx.strokeStyle = 'rgba(12,10,9,0.9)'; ctx.lineJoin = 'round'; ctx.strokeText(RSI.L(s), 0, 0);
         ctx.fillStyle = C.paper; ctx.fillText(RSI.L(s), 0, 0); ctx.restore();
       };
-      txt({ zh: '欲知后事如何——', en: 'What happens next?' }, H / 2 - 70, 1.05, EN() ? 96 : 110);
-      txt({ zh: '且听下回分解！', en: 'Find out next time!' }, H / 2 + 80, 2.55, EN() ? 86 : 100);
-      if (t > 2.55) Sx.seal(ctx, (o.tx || W / 2) + (EN() ? 480 : 430) * (o.tx ? 0.86 : 1), H / 2 + 150, 92, EN() ? '…' : '续', M.seg(t, 2.75, 3.05), 0.1);
+      const ty = o.ty || 0;
+      txt({ zh: '欲知后事如何——', en: 'What happens next?' }, H / 2 - 70 + ty, 1.05, EN() ? 96 : 110);
+      txt({ zh: '且听下回分解！', en: 'Find out next time!' }, H / 2 + 80 + ty, 2.55, EN() ? 86 : 100);
+      if (t > 2.55) Sx.seal(ctx, (o.tx || W / 2) + (EN() ? 480 : 430) * (o.tx ? 0.86 : 1), H / 2 + 150 + ty, 92, EN() ? '…' : '续', M.seg(t, 2.75, 3.05), 0.1);
     },
   });
 

@@ -3,7 +3,6 @@
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W, H = RSI.H;
-  RSI.chapterCard({ id: 'ch5', music: 'reflect', num: { zh: '第五章', en: 'Chapter 5' }, title: { zh: '2026，我们走到哪了？', en: '2026: where are we?' }, sub: { zh: '从一句猜想，到一份 KPI', en: 'From a conjecture to a KPI' }, label: { zh: '第五章 · 2026，我们走到哪了？', en: 'Ch.5 · 2026: where are we?' } });
 
   const EV = [
     [1965.8, { zh: 'I. J. Good：“智能爆炸”', en: 'I. J. Good: “intelligence explosion”' }],
@@ -76,44 +75,53 @@
     },
   });
 
-  // ---------------- today: who does what in the loop; the AL scale ----------------
+  // ---------------- today (EP2): who does what in the EP1 research loop → this episode's answer ----------------
   RSI.defScene({
     id: 'today', music: 'reflect', lead: 0.6,
     lines: [
-      { id: 's1', who: 'narr', zh: '把今天的研究循环拆开看：写代码、跑实验，AI 已经包办了大部分；', en: 'Break today\'s research loop apart: writing code and running experiments — AI already does most of it;' },
-      { id: 's2', who: 'narr', zh: '而提出好问题、判断什么重要、决定要不要放行，仍主要靠人。', en: 'while asking good questions, judging what matters and deciding what ships still mostly rests with humans.', hold: 0.6 },
-      { id: 's3', who: 'narr', zh: 'Epoch AI 把自动化程度分成六级：从 AL0（完全不用 AI）到 AL5（完全自主）。', en: 'Epoch AI splits automation into six levels: from AL0 (no AI) to AL5 (fully autonomous).' },
-      { id: 's4', who: 'narr', zh: '以 Anthropic 公布的数据为例：九成以上的研发工作至少达到 AL3“协作”，约四分之一到了 AL4“主导”，AL5 仍然是零。', en: 'Take Anthropic\'s published numbers: over 90% of R&D work is at least AL3 “collaborates”, about a quarter reaches AL4 “leads”, and AL5 is still zero.', hold: 1.6 },
+      { id: 's1', who: 'narr', zh: '把第 1 集那个研究循环拆开看：想法、实验、评估、决定。今天，“实验”这一步，AI 已经包办了大部分，“评估”也做了不少；', en: 'Take apart the research loop from Episode 1: idea, experiment, evaluation, decision. Today AI already does most of the experimenting, and a fair share of the evaluating;' },
+      { id: 's2', who: 'narr', zh: '而“想法”和“决定”——想出好问题、拍板放行——仍然主要靠人。', en: 'while “idea” and “decision” — asking good questions, giving the final go-ahead — still mostly rest with humans.', hold: 0.6 },
+      { id: 's3', who: 'narr', zh: '所以，本集问题的答案是：是的，AI 已经在改进自己——但拍板的，还是人。', en: 'So the answer to this episode’s question: yes, AI is already improving itself — but humans still make the call.', hold: 1.4 },
     ],
+    cues: [['s1+1.2', 'flipNode'], ['s1+2.6', 'flipNode'], ['s2+0.4', 'pop'], ['s2+0.9', 'pop'], ['s3+0.3', 'statement'], ['s3+2.6', 'stamp']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
-      const share = [0.25, 0.85, 0.6, 0.12];
-      const p = [M.seg(t, S.T('s1') + 0.5, S.T('s1') + 2.5, M.ease.outCubic), M.seg(t, S.T('s2') + 0.3, S.T('s2') + 2.0, M.ease.outCubic)];
+      const share = [0.25, 0.85, 0.5, 0.1];
+      const p = [M.seg(t, S.T('s1') + 0.8, S.T('s1') + 3.2, M.ease.outCubic), M.seg(t, S.T('s2') + 0.2, S.T('s2') + 1.6, M.ease.outCubic)];
       const ai = [share[0] * p[1], share[1] * p[0], share[2] * p[0], share[3] * p[1]];
-      const mv = M.seg(t, S.T('s3') - 0.4, S.T('s3') + 0.6, M.ease.inOutCubic);
-      const lx = M.lerp(W / 2, 470, mv), ls = M.lerp(1, 0.78, mv);
-      ctx.save(); ctx.translate(lx, 480); ctx.scale(ls, ls);
+      const mv = M.seg(t, S.T('s3') - 0.3, S.T('s3') + 0.7, M.ease.inOutCubic);
+      const lx = M.lerp(W / 2, 560, mv), ls = M.lerp(1, 0.84, mv);
+      ctx.save(); ctx.translate(lx, 470); ctx.scale(ls, ls);
       D.loop(ctx, 0, 0, 250, { ai, phase: t * 0.25, tokenColor: C.yellow });
       const labs = [[0, -250], [250, 0], [0, 250], [-250, 0]];
       labs.forEach((l, i) => { const v = Math.round(ai[i] * 100); if (v > 0) T.line(ctx, `AI ≈ ${v}%`, l[0] * 1.62, l[1] * 1.0 + (i === 0 ? -105 : i === 2 ? 105 : 0), 26, C.orangeL, 700, 'center'); });
+      // the human-held nodes: idea (top) and decision (left)
+      const hk = M.seg(t, S.T('s2') + 0.3, S.T('s2') + 0.9);
+      if (hk > 0) {
+        [[0, -250, S.T('s2') + 0.4], [-250, 0, S.T('s2') + 0.9]].forEach((n) => { const k = M.ease.outBack(M.seg(t, n[2], n[2] + 0.35)); if (k <= 0) return;
+          ctx.save(); ctx.translate(n[0] + 66, n[1] - 62); ctx.scale(k, k); ctx.fillStyle = C.blue; ctx.beginPath(); ctx.arc(0, 0, 30, 0, 7); ctx.fill(); D.icon(ctx, 'people', 0, 0, 34, '#0f1a26', 5); ctx.restore(); });
+      }
       T.line(ctx, { zh: '示意，非精确统计', en: 'illustrative, not measured' }, 0, 0, 24, C.ink3, 500, 'center');
       ctx.restore();
+      // legend
+      ctx.save(); ctx.globalAlpha *= M.seg(t, S.T('s1') + 0.8, S.T('s1') + 1.4) * (1 - mv);
+      ctx.fillStyle = C.orange; ctx.fillRect(1430, 860, 30, 10); T.line(ctx, { zh: 'AI 做的部分', en: 'done by AI' }, 1474, 866, 24, C.ink2, 500, 'left');
+      ctx.fillStyle = C.blue; ctx.fillRect(1430, 900, 30, 10); T.line(ctx, { zh: '人做的部分', en: 'done by humans' }, 1474, 906, 24, C.ink2, 500, 'left');
+      ctx.restore();
+      // this episode's answer
       if (mv > 0) {
-        ctx.save(); ctx.globalAlpha *= mv;
-        const x0 = 900, x1 = 1800, y = 420; const lv = ['AL0', 'AL1', 'AL2', 'AL3', 'AL4', 'AL5'];
-        const names = [{ zh: '不用 AI', en: 'no AI' }, { zh: '辅助', en: 'assists' }, { zh: '分担', en: 'shares' }, { zh: '协作', en: 'collaborates' }, { zh: '主导', en: 'leads' }, { zh: '完全自主', en: 'autonomous' }];
-        const cw = (x1 - x0) / 6;
-        lv.forEach((l, i) => { const x = x0 + i * cw; ctx.fillStyle = i === 3 ? RSI.rgba(C.yellow, 0.25) : i === 4 ? RSI.rgba(C.orange, 0.3) : C.surface; D.rr(ctx, x + 4, y - 50, cw - 8, 100, 12); ctx.fill();
-          T.line(ctx, l, x + cw / 2, y - 14, 30, i === 5 ? C.ink3 : C.ink, 900, 'center', 'mono'); T.line(ctx, names[i], x + cw / 2, y + 24, 22, C.ink2, 500, 'center'); });
-        // Anthropic distribution bar
-        const q = M.seg(t, S.T('s4') + 0.6, S.T('s4') + 3.0, M.ease.outCubic);
-        const by = 600; const segs = [[{ zh: '≤AL2', en: '≤AL2' }, 0.08, C.grey], [{ zh: 'AL3 协作', en: 'AL3' }, 0.66, C.yellow], [{ zh: 'AL4 主导 26%', en: 'AL4 26%' }, 0.26, C.orange], [{ zh: 'AL5 0%', en: 'AL5 0%' }, 0.0, C.ink3]];
-        if (q > 0) {
-          T.line(ctx, { zh: 'Anthropic 的 AI 研发工作（2026.8）', en: 'Anthropic AI R&D work (Aug 2026)' }, x0, by - 40, 26, C.ink2, 700, 'left');
-          let x = x0; segs.forEach((s2, i) => { const w = (x1 - x0) * s2[1] * q; if (w > 0) { ctx.fillStyle = s2[2]; ctx.fillRect(x, by, Math.max(0, w - 3), 64); if (w > 120) T.line(ctx, s2[0], x + w / 2, by + 32, 22, '#1b1a18', 900, 'center'); } x += w; });
-          ctx.globalAlpha *= M.seg(q, 0.9, 1); D.pill(ctx, { zh: 'AL5：0%', en: 'AL5: 0%' }, x1, by + 110, { size: 24, fill: C.raised, color: C.ink, align: 'right' });
-          X.src(ctx, { zh: 'Epoch AI 自动化等级；Anthropic Institute，2026.9.17', en: 'Epoch AI automation levels; Anthropic Institute, 2026-09-17' });
-        }
+        ctx.save(); ctx.globalAlpha *= mv; const x0 = 1010;
+        D.pill(ctx, { zh: '本集答案', en: 'This episode’s answer' }, x0, 300, { size: 30, fill: C.orange });
+        T.line(ctx, { zh: 'AI 已经在改进自己', en: 'AI is already improving itself' }, x0, 400, RSI.lang === 'en' ? 50 : 62, C.ink, 900, 'left');
+        const k1 = M.ease.outBack(M.seg(t, S.T('s3') + 1.0, S.T('s3') + 1.3));
+        if (k1 > 0) { ctx.save(); ctx.translate(x0 + (RSI.lang === 'en' ? 790 : 590), 400); ctx.scale(k1, k1); D.icon(ctx, 'check', 0, 0, 58, C.green, 10); ctx.restore(); }
+        const k2 = M.seg(t, S.T('s3') + 1.8, S.T('s3') + 2.3, M.ease.outCubic);
+        ctx.save(); ctx.globalAlpha *= k2; ctx.translate((1 - k2) * 30, 0);
+        T.line(ctx, { zh: '但拍板的，还是人', en: 'but humans still make the call' }, x0, 510, RSI.lang === 'en' ? 50 : 62, C.yellow, 900, 'left');
+        ctx.restore();
+        const k3 = M.ease.outBack(M.seg(t, S.T('s3') + 2.6, S.T('s3') + 2.9));
+        if (k3 > 0) { ctx.save(); ctx.translate(x0 + 160, 660); ctx.rotate(-0.08); ctx.scale(k3, k3); D.icon(ctx, 'gavel', 0, 0, 120, C.blue, 9); ctx.restore();
+          T.line(ctx, { zh: '截至 2026 年秋', en: 'as of autumn 2026' }, x0 + 300, 680, 26, C.ink3, 600, 'left'); }
         ctx.restore();
       }
     },

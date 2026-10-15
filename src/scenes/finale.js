@@ -4,7 +4,6 @@
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W, H = RSI.H;
   const EN = () => RSI.lang === 'en';
-  RSI.chapterCard({ id: 'ch6', music: 'epilogue', num: { zh: '尾声', en: 'Epilogue' }, title: { zh: '最后一个选项', en: 'The last option' }, sub: { zh: '下一代，要不要放行？', en: 'Ship the next generation?' }, label: { zh: '尾声 · 最后一个选项', en: 'Epilogue · The last option' } });
 
   const OPTS = [
     { zh: '1. 是', en: '1. Yes' },

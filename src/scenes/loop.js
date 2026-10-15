@@ -4,7 +4,6 @@
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W, H = RSI.H;
 
-  RSI.chapterCard({ id: 'ch1', music: 'lofi', num: { zh: '第一章', en: 'Chapter 1' }, title: { zh: '变得「更会变强」', en: 'Getting better at getting better' }, sub: { zh: 'RSI 到底是什么？', en: 'What is RSI, exactly?' }, label: { zh: '第一章 · 变得「更会变强」', en: 'Ch.1 · Getting better at getting better' } });
 
   // ---------------- the human research loop ----------------
   RSI.defScene({

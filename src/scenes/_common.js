@@ -97,6 +97,37 @@
     ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + M.TAU * (1 - M.clamp(p))); ctx.stroke();
     T.line(ctx, label, x, y + 4, r * 0.9, color, 900, 'center'); ctx.restore();
   };
+  /**
+   * "你猜？" quiz panel (curiosity gap): options pop in at t0, a 3-2-1 ring runs until tA, then the answer lights up.
+   * o: {opts:[{zh,en}], ans (index), t0, tA, tEnd, w, title, color}
+   */
+  X.quiz = (ctx, t, x, y, o) => {
+    const t0 = o.t0, tA = o.tA, tEnd = o.tEnd == null ? Infinity : o.tEnd; if (t < t0 || t > tEnd + 0.4) return;
+    const w = o.w || 500, n = o.opts.length, oh = 70, gap = 16, h = 112 + n * (oh + gap);
+    const a = M.seg(t, t0, t0 + 0.3) * (1 - M.seg(t, tEnd, tEnd + 0.4)); const k = M.ease.outBack(M.seg(t, t0, t0 + 0.35));
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(x + w / 2, y + h / 2); ctx.scale(0.9 + 0.1 * k, 0.9 + 0.1 * k); ctx.translate(-w / 2, -h / 2);
+    D.panel(ctx, 0, 0, w, h, { fill: 'rgba(28,27,24,0.92)', r: 22, blur: 24 });
+    ctx.strokeStyle = RSI.rgba(o.color || C.yellow, 0.7); ctx.lineWidth = 3; D.rr(ctx, 0, 0, w, h, 22); ctx.stroke();
+    T.line(ctx, o.title || { zh: '你猜？', en: 'Your guess?' }, 32, 58, 44, o.color || C.yellow, 900, 'left');
+    const done = t >= tA;
+    if (!done) { // 3-2-1 ring
+      const p = M.seg(t, t0 + 0.4, tA); const left = Math.max(1, Math.ceil(3 * (1 - p) - 1e-6));
+      X.countdown(ctx, w - 62, 56, 30, p, String(left), o.color || C.yellow);
+    }
+    o.opts.forEach((op, i) => {
+      const ti = t0 + 0.25 + i * 0.16; if (t < ti) return; const ki = M.ease.outBack(M.seg(t, ti, ti + 0.3));
+      const yy = 112 + i * (oh + gap); const right = i === o.ans;
+      const lit = done ? M.seg(t, tA, tA + 0.25) : 0;
+      ctx.save(); ctx.globalAlpha *= M.clamp(ki) * (done && !right ? 1 - 0.65 * lit : 1);
+      ctx.translate(w / 2, yy + oh / 2); ctx.scale(right && done ? 1 + 0.06 * Math.sin(Math.min(1, (t - tA) / 0.35) * Math.PI) : 1, 1); ctx.translate(-w / 2, -(yy + oh / 2));
+      ctx.fillStyle = right && done ? RSI.mix(C.surface, C.green, lit) : C.surface; D.rr(ctx, 28, yy, w - 56, oh, oh / 2); ctx.fill();
+      T.line(ctx, 'ABCD'[i], 70, yy + oh / 2 + 1, 28, right && done ? '#10240f' : C.ink3, 900, 'center', 'mono');
+      T.line(ctx, op, 112, yy + oh / 2 + 1, 32, right && done ? '#10240f' : C.ink, 800, 'left');
+      if (right && done) D.icon(ctx, 'check', w - 74, yy + oh / 2, 34, '#10240f', 7);
+      ctx.restore();
+    });
+    ctx.restore();
+  };
   /** count-up number formatting */
   X.num = (v, d = 0) => v.toFixed(d);
 })();

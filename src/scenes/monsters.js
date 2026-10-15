@@ -3,7 +3,6 @@
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X, MON = RSI.Monster;
   const W = RSI.W, H = RSI.H;
-  RSI.chapterCard({ id: 'ch4', music: 'quirky', num: { zh: '第四章', en: 'Chapter 4' }, title: { zh: '三只小怪兽', en: 'Three little monsters' }, sub: { zh: '就算循环转起来，也可能转歪', en: 'Even if the loop spins, it can spin crooked' }, label: { zh: '第四章 · 三只小怪兽', en: 'Ch.4 · Three little monsters' } });
   const NAMES = { cheater: { zh: '作弊怪', en: 'The Cheater' }, collapse: { zh: '近亲繁殖怪', en: 'The Inbreeder' }, whisper: { zh: '传话怪', en: 'The Whisperer' } };
 
   RSI.defScene({

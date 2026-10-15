@@ -530,7 +530,7 @@
   // ================================================================== 5 · cliffhanger + next time
   Sx.cliff(1, { from: 'e1_dream', at: 'd4$-1.42', fx: 640, fy: 640, tx: 1330 });
   Sx.next(1, [
-    { from: 'e2_cold', at: 'k3', zh: '无人值守 8 天 vs 人类打磨 2 年', en: '8 days unattended vs 2 years of human polish', fb: { from: 'r1', at: 'r1d' } },
+    { from: 'e2_cold', at: 'k5+0.5', zh: 'AI 改进自己 8 天 vs 人类打磨 2 年', en: 'AI improving itself for 8 days vs 2 years of human polish', fb: { from: 'r1', at: 'r1d' } },
     { from: 'r2', at: 'r2b+2.0', zh: '自己跟自己下棋，3 天之后……', en: 'It played only itself. Three days later…' },
     { from: 'r3', at: 'r3d', zh: '“我给自己打——满分！”', en: '“I give myself… full marks!”' },
     { from: 'top', at: 't2', zh: '梯子顶上，到底有什么？', en: 'What’s at the top of the ladder?' },

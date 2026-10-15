@@ -3,7 +3,6 @@
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W, H = RSI.H;
-  RSI.chapterCard({ id: 'ch3', music: 'tension', num: { zh: '第三章', en: 'Chapter 3' }, title: { zh: '爆炸，还是撞墙？', en: 'Explosion, or a wall?' }, sub: { zh: '这个循环会越转越快吗？', en: 'Will the loop keep speeding up?' }, label: { zh: '第三章 · 爆炸，还是撞墙？', en: 'Ch.3 · Explosion, or a wall?' } });
 
   // ---------------- low-hanging fruit + tug of war ----------------
   const FRUITS = (() => { const r = M.rng(42); const a = []; for (let i = 0; i < 16; i++) a.push({ x: 300 + r() * 520, y: 640 - Math.pow(r(), 0.8) * 420, s: 18 + r() * 8 }); a.sort((p, q) => q.y - p.y); return a; })();
