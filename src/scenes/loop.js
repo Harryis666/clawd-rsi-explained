@@ -62,24 +62,37 @@
       const L2 = T.layout(ctx, RSI.L(RSI.QUOTE2), { size: RSI.lang === 'en' ? 38 : 42, weight: 700, fam: 'serif', maxW: pw - 140, lh: 1.62, balance: true });
       T.drawLayout(ctx, L2, px + 70, sy, { color: '#A23B1E', reveal: o.reveal2 });
     }
-    if (o.sticky) D.sticky(ctx, px + 70, sy - 14, Math.min(pw - 140, 820), 130, { zh: '后半句 · 留到最后再看', en: 'Second half · save it for the end' }, { peel: o.peel || 0, size: 38, rot: -0.02, ty: 66 });
+    if (o.sticky) D.sticky(ctx, px + 70, sy - 14, Math.min(pw - 140, 820), 130, { zh: '后半句 · 第 4 集揭晓', en: 'Second half · revealed in Episode 4' }, { peel: o.peel || 0, size: 38, rot: -0.02, ty: 66 });
     ctx.restore();
     return { sy };
   };
   RSI.defScene({
     id: 'good', music: 'lofi', lead: 0.6,
     lines: [
-      { id: 'g1', who: 'narr', zh: '这个想法并不新。1965 年，曾与图灵共事的英国数学家 I. J. Good 写道：', en: 'The idea isn\'t new. In 1965, I. J. Good — a British mathematician who had worked with Alan Turing — wrote:' },
+      { id: 'g1', who: 'narr', zh: '那一年，曾与图灵共事的英国数学家 I. J. Good 写道：', en: 'That year, I. J. Good — a British mathematician who had worked with Alan Turing — wrote:' },
       { id: 'q', who: 'sys', zh: QUOTE.zh, en: QUOTE.en, at: 'g1+1.2', dur: 9.5, par: 1 },
-      { id: 'g2', who: 'narr', zh: '这句话还有后半句。我们先把它贴起来，留到最后再看。', en: 'The sentence has a second half. Let\'s cover it up for now — we\'ll read it at the very end.', at: 'q$+0.2' },
-      { id: 'g3', who: 'narr', zh: '此后六十年，它主要是科幻和哲学的话题。直到最近，它开始出现在实验室的论文、博客和时间表里。', en: 'For sixty years it was mostly a topic for sci-fi and philosophy. Only recently did it start showing up in lab papers, blogs and timelines.' },
+      { id: 'g2', who: 'narr', zh: '这句话还没完，后面还有半句。', en: 'And the sentence isn’t over — there’s a second half.', at: 'q$+0.2', min: 2.2 },
+      { id: 'g2b', who: 'clawd', zh: '后半句……先贴起来！', en: 'The second half… let’s cover it up!', gap: 0.15, min: 1.9 },
+      { id: 'g2c', who: 'clawd', zh: '你猜它写了什么？答案，留到第 4 集揭晓。', en: 'Guess what it says? We’ll reveal it in Episode 4.', gap: 0.35 },
     ],
-    cues: [['g2+0.4', 'stick']],
+    cues: [['g2b+0.1', 'hop'], ['g2b+0.85', 'stick'], ['g2c+0.2', 'pop']],
     draw(ctx, t, S) {
-      const ty = S.typed('q');
-      RSI.drawPaper(ctx, t, S, { reveal: t < S.T('q') ? 0 : ty.n, sticky: t > S.T('g2') + 0.3 ? 1 : 0, peel: 0 });
-      // sticky slap animation
-      if (t > S.T('g2') + 0.3 && t < S.T('g2') + 0.6) { ctx.fillStyle = `rgba(255,240,200,${0.25 * (1 - M.seg(t, S.T('g2') + 0.3, S.T('g2') + 0.6))})`; ctx.fillRect(0, 0, W, H); }
+      const ty = S.typed('q'); const tIn = S.T('g2') + 0.4, tThrow = S.R('g2b+0.4'), tSlap = S.R('g2b+0.85');
+      RSI.drawPaper(ctx, t, S, { reveal: t < S.T('q') ? 0 : ty.n, sticky: t > tSlap ? 1 : 0, peel: 0 });
+      if (t > tSlap && t < tSlap + 0.3) { ctx.fillStyle = `rgba(255,240,200,${0.25 * (1 - M.seg(t, tSlap, tSlap + 0.3))})`; ctx.fillRect(0, 0, W, H); }
+      // Clawd pops up at the bottom-right corner with a sticky note, throws it onto the paper
+      if (t > tIn) {
+        const k = M.ease.outBack(M.seg(t, tIn, tIn + 0.45)); const hp = X.hop(t, S.R('g2b+0.1'), 0.4, 46);
+        const cx = 1790, cy = 1010 + (1 - k) * 160 + hp.dy;
+        const throwing = t > tThrow - 0.25 && t < tThrow + 0.3; const point = t > S.T('g2c') && t < S.E('g2c');
+        const hd = K.draw(ctx, cx, cy, 8, { gen: 1, expr: point ? 'happy' : t > tSlap ? 'determined' : X.blink(t, 4) ? 'blink' : 'normal', look: [-0.9, -0.5], armL: throwing ? 1.1 : point ? 0.9 : 0.2, sx: hp.sx, sy: hp.sy });
+        S.anchors.clawd = [cx - 30, hd[1]]; S.sides.clawd = 'up';
+        if (t < tThrow) { ctx.save(); ctx.translate(cx - 86, cy - 64); ctx.rotate(-0.2); ctx.fillStyle = '#F3D46B'; ctx.fillRect(-22, -22, 44, 44); ctx.restore(); }
+        else if (t < tSlap) { // flying note
+          const u = M.seg(t, tThrow, tSlap, M.ease.inOutQuad); const x = M.lerp(cx - 86, 810, u), y = M.lerp(cy - 64, 620, u) - Math.sin(u * Math.PI) * 220;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(u * 6.3 - 0.2); const sw = M.lerp(44, 420, u), sh2 = M.lerp(44, 110, u); ctx.fillStyle = '#F3D46B'; ctx.fillRect(-sw / 2, -sh2 / 2, sw, sh2); ctx.restore();
+        }
+      }
     },
   });
 
@@ -101,7 +114,7 @@
   RSI.defScene({
     id: 'flip', music: 'lofi', lead: 0.6,
     lines: [
-      { id: 'f1', who: 'narr', zh: '现在，把循环里的人，换成 AI 自己。', en: 'Now, replace the human in the loop with the AI itself.' },
+      { id: 'f1', who: 'narr', zh: 'Clawd 的第四招，就是：把循环里的人，换成 AI 自己。', en: 'Clawd’s fourth trick: replace the human in the loop with the AI itself.' },
       { id: 'f2', who: 'clawd', zh: '想点子、跑实验、打分、做决定——都交给我。', en: 'Ideas, experiments, grading, decisions — leave it all to me.', hold: 0.6 },
       { id: 'f3', who: 'narr', zh: '如果 Clawd 造出的第 2 代更聪明，那第 2 代改进第 3 代时，也会做得更好、更快。', en: 'If the Gen-2 Clawd it builds is smarter, then Gen 2 will do a better, faster job building Gen 3.', hold: 0.8 },
       { id: 'f4', who: 'clawd2', zh: '嗨，前辈。下一代交给我吧！', en: 'Hey, senior. I\'ll take the next one!' },
@@ -113,6 +126,14 @@
       D.dots(ctx, 0.03); X.floor(ctx, 800);
       const f2 = S.T('f2'); const ai = [0, 1, 2, 3].map((i) => M.seg(t, f2 + 0.2 + i * 0.7, f2 + 0.6 + i * 0.7, M.ease.outCubic));
       D.loop(ctx, 560, 430, 230, { ai, phase: flipPhase(t, S), tokenColor: C.orange, trail: 0.02 });
+      // side-by-side: the human loop keeps crawling while the AI loop speeds up (both lap counters visible)
+      const ia = M.seg(t, 0.4, 1.0);
+      ctx.save(); ctx.globalAlpha *= ia;
+      D.loop(ctx, 985, 290, 92, { ai: [0, 0, 0, 0], phase: t / 14, tokenColor: C.blue, nodeR: 28 });
+      T.line(ctx, { zh: '人来转', en: 'humans' }, 985, 290, 24, C.blue, 700, 'center');
+      T.line(ctx, RSI.lang === 'en' ? `laps: ${Math.floor(t / 14)}` : `已转 ${Math.floor(t / 14)} 圈`, 985, 436, 24, C.ink2, 600, 'center');
+      T.line(ctx, RSI.lang === 'en' ? `laps: ${Math.floor(flipPhase(t, S))}` : `已转 ${Math.floor(flipPhase(t, S))} 圈`, 560, 482, 28, C.orangeL, 700, 'center');
+      ctx.restore();
       const g = S.gen().g;
       T.line(ctx, g >= 3 ? { zh: '越转越快', en: 'faster and faster' } : g >= 2 ? { zh: '转得更快了', en: 'spinning faster' } : { zh: 'AI 在循环里', en: 'AI in the loop' }, 560, 430, 32, C.orangeL, 700, 'center');
       // generations lineup
@@ -149,7 +170,7 @@
       { id: 'k2', who: 'narr', zh: 'RSI 的关键在于：被改进的，正是“改进”这件事本身。于是台阶越来越高，步子也越来越快。', en: 'The key to RSI: the thing being improved is improvement itself. So the steps get taller — and come faster.', hold: 0.6 },
       { id: 'k3', who: 'narr', manual: true, zh: '不只是变强，而是变得{o|更会变强}。', en: 'Not just getting better — getting {o|better at getting better}.', dur: 4.2 },
       { id: 'k4', who: 'clawd', zh: '听起来……会一发不可收拾？', en: 'Sounds like… it could spiral out of control?' },
-      { id: 'k5', who: 'narr', zh: '会不会，取决于几个具体问题。先看看：今天的 AI，已经爬到了第几级。', en: 'Whether it does depends on some concrete questions. First: how high has today\'s AI already climbed?' },
+      { id: 'k5', who: 'narr', zh: '这个“一发不可收拾”的念头，其实早在 1965 年，就有人写下来了。', en: 'This “spiral out of control” idea was actually written down back in 1965.' },
     ],
     cues: [['k3+0.1', 'statement']],
     draw(ctx, t, S) {

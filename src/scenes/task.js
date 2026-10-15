@@ -44,7 +44,7 @@
           const glow = M.seg(t, 3.3, 4.1);
           LOGO.forEach((ln, i) => mono(ln, px + 34, py + 104 + i * 46, 44, RSI.mix(C.orange, C.orangeHi, glow), 400));
           mono('Claude Code', px + 330, py + 100, 34, C.ink, 700);
-          mono(RSI.lang === 'en' ? 'RSI lab · a pure-code animation' : 'RSI 实验室 · 纯代码动画', px + 330, py + 148, 26, C.ink2, 400);
+          mono(RSI.lang === 'en' ? 'Clawd’s lab' : 'Clawd 的实验室', px + 330, py + 148, 26, C.ink2, 400);
           mono('~/lab', px + 330, py + 192, 26, C.ink3, 400);
           if (t > 3.0) { mono('>', px, py + 310, 34, C.ink2, 700); cur(px + 36, py + 310, 36); }
           if (glow > 0) D.glow(ctx, px + 140, py + 150, 260, C.orange, glow * 0.8);

@@ -11,7 +11,7 @@
     [2003.7, { zh: '哥德尔机：可证明地改写自己', en: 'Gödel Machine: provable self-rewrites' }],
     [2017.8, { zh: 'AlphaGo Zero：只和自己下棋', en: 'AlphaGo Zero: self-play only' }],
     [2022.9, { zh: 'Constitutional AI：\nAI 当裁判', en: 'Constitutional AI: AI as judge' }],
-    [2024.5, { zh: '《自然》：模型崩溃', en: 'Nature: model collapse' }],
+    [2024.5, { zh: '《自然》：AI 学 AI 的数据，\n会越学越“糊”', en: 'Nature: models trained on AI data degrade' }],
     [2025.3, { zh: 'AI 2027 情景', en: 'AI 2027 scenario' }],
     [2025.4, { zh: 'AlphaEvolve ·\n达尔文-哥德尔机', en: 'AlphaEvolve · Darwin Gödel Machine' }],
     [2026.2, { zh: 'Karpathy\nautoresearch', en: 'Karpathy’s autoresearch' }],
@@ -21,8 +21,8 @@
     [2026.68, { zh: 'OpenAI：\n自动化研究实习生', en: 'OpenAI: automated research intern' }],
     [2026.7, { zh: 'Dario：\n给前沿“定速”', en: 'Dario: “We Must Pace the Frontier”' }],
     [2026.71, { zh: 'Claude 主导 26%\n智谱 Infra Agent', en: 'Claude leads 26% · Zhipu Infra Agent' }],
-    [2026.74, { zh: 'Chan · Hinton · Bengio 等\nr ≈ 1.4', en: 'Chan, Hinton, Bengio et al.: r ≈ 1.4' }],
-    [2026.79, { zh: 'Gladstone：\n内部人士称 3–12 个月', en: 'Gladstone: insiders say 3–12 months' }],
+    [2026.74, { zh: 'Hinton、Bengio 等：\n几年内或自动化\n大部分 AI 研发', en: 'Hinton, Bengio et al.: most AI R&D could be automated within years' }],
+    [2026.79, { zh: 'Gladstone 报告：\n内部人士估计\n3–12 个月内开始', en: 'Gladstone: insiders expect RSI to start within 3–12 months' }],
   ];
   const DATES = ['1965', '1987', '2003', '2017', '2022.12', '2024.7', '2025.4', '2025.5', '2026.3', '2026.4', '2026.6', '2026.7', '2026.9.6', '2026.9.12', '2026.9.17', '2026.9.28', '2026.10.14'];
   RSI.defScene({
@@ -68,10 +68,10 @@
         }
         ctx.restore();
       });
-      if (z > 0) { ctx.save(); ctx.globalAlpha *= M.seg(z, 0.5, 1); T.line(ctx, { zh: '2022 → 2026：越来越挤', en: '2022 → 2026: more and more crowded' }, W / 2, 180, 40, C.orange, 900, 'center'); ctx.restore(); }
-      if (t > S.T('y4') + 0.4) {
-        const a = M.seg(t, S.T('y4') + 0.4, S.T('y4') + 0.9, M.ease.outBack);
-        ctx.save(); ctx.translate(W / 2, 880); ctx.scale(a, a); D.pill(ctx, { zh: '哲学问题  →  实验室 KPI', en: 'philosophy question  →  lab KPI' }, 0, 0, { size: 34, fill: C.orange, align: 'center' }); ctx.restore();
+      const pa = t > S.T('y4') + 0.4 ? M.seg(t, S.T('y4') + 0.4, S.T('y4') + 0.9, M.ease.outBack) : 0;
+      if (z > 0) { ctx.save(); ctx.globalAlpha *= M.seg(z, 0.5, 1) * (1 - M.clamp(pa * 2)); T.line(ctx, { zh: '2022 → 2026：越来越挤', en: '2022 → 2026: more and more crowded' }, W / 2, 180, 40, C.orange, 900, 'center'); ctx.restore(); }
+      if (pa > 0) {
+        ctx.save(); ctx.translate(W / 2, 190); ctx.scale(pa, pa); D.pill(ctx, { zh: '哲学问题  →  写进计划、定了时间表的目标', en: 'philosophy question  →  a goal with a timeline' }, 0, 0, { size: 34, fill: C.orange, align: 'center' }); ctx.restore();
       }
     },
   });

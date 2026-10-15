@@ -192,8 +192,6 @@
           if (xf < 1 && bi > 0) draw1(bi - 1, 1, 'a');
           draw1(bi, xf, 'b');
           ctx.strokeStyle = 'rgba(60,40,24,0.55)'; ctx.lineWidth = 6; ctx.strokeRect(fx, fy, fw, fh);
-          // beat counter (回目)
-          T.line(ctx, `${bi + 1} / ${beats.length}`, fx + fw - 10, fy + fh + 2 + 22, 22, '#6F5A44', 700, 'right', 'mono');
         }
         ctx.restore();
         ctx.restore();
@@ -258,14 +256,14 @@
       const txt = (s, y, t0, size) => {
         const a = M.seg(t, t0, t0 + 0.12); if (a <= 0) return;
         const pop = 1 + 0.25 * (1 - M.ease.outBack(M.seg(t, t0, t0 + 0.35)));
-        ctx.save(); ctx.globalAlpha *= a; ctx.translate(W / 2, y); ctx.scale(pop, pop);
+        ctx.save(); ctx.globalAlpha *= a; ctx.translate(o.tx || W / 2, y); ctx.scale(pop, pop);
         ctx.font = T.font(size, 900, 'serif'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.lineWidth = size * 0.14; ctx.strokeStyle = 'rgba(12,10,9,0.9)'; ctx.lineJoin = 'round'; ctx.strokeText(RSI.L(s), 0, 0);
         ctx.fillStyle = C.paper; ctx.fillText(RSI.L(s), 0, 0); ctx.restore();
       };
       txt({ zh: '欲知后事如何——', en: 'What happens next?' }, H / 2 - 70, 1.05, EN() ? 96 : 110);
       txt({ zh: '且听下回分解！', en: 'Find out next time!' }, H / 2 + 80, 2.55, EN() ? 86 : 100);
-      if (t > 2.55) Sx.seal(ctx, W / 2 + (EN() ? 480 : 430), H / 2 + 150, 92, '扣', M.seg(t, 2.75, 3.05), 0.1);
+      if (t > 2.55) Sx.seal(ctx, (o.tx || W / 2) + (EN() ? 480 : 430) * (o.tx ? 0.86 : 1), H / 2 + 150, 92, EN() ? '…' : '续', M.seg(t, 2.75, 3.05), 0.1);
     },
   });
 
@@ -273,14 +271,17 @@
   /** beats: [{from, at, zh, en, speed, gen}] taken from the next episode */
   Sx.next = (n, beats, o = {}) => {
     const fl = o.fl || 1.5, t0 = 1.1, tEnd = t0 + beats.length * fl, nx = n + 1, E2 = RSI.EPS[nx - 1];
+    const bye = o.bye || { zh: '下集见！', en: 'See you next time!' }, bd = Math.max(3.0, 1.0 + T.count(bye.zh) / 7.6);
+    // a beat may name a fallback ({fb:{from,at}}) for scenes that are not written yet
+    const pick = (b) => (RSI.allScenes[b.from] || !b.fb ? b : Object.assign({}, b, b.fb));
     return RSI.defScene({
-      id: `e${n}_next`, music: 'tease', hud: false, label: false, isCard: true, dur: tEnd + 7.6, fade: [0.15, 0.9], lead: 0,
-      lines: [{ id: 'bye', who: 'clawd', zh: o.bye ? o.bye.zh : '下集见！', en: o.bye ? o.bye.en : 'See you next time!', at: tEnd + 3.0, dur: 3.0 }],
+      id: `e${n}_next`, music: 'tease', hud: false, label: false, isCard: true, dur: tEnd + 3.0 + bd + 1.5, fade: [0.15, 0.9], lead: 0,
+      lines: [{ id: 'bye', who: 'clawd', zh: bye.zh, en: bye.en, at: tEnd + 3.0, dur: bd }],
       cues: [[0.15, 'stamp'], [0.2, 'riser', { dur: tEnd - 0.2 }], ...beats.map((b, i) => [t0 + i * fl, 'swish']), [tEnd, 'logoEnd'], [tEnd + 0.9, 'pop']],
       draw(ctx, t, S) {
         if (t < tEnd) {
           if (t >= t0) {
-            const i = Math.min(beats.length - 1, Math.floor((t - t0) / fl)), b = beats[i], u = t - (t0 + i * fl);
+            const i = Math.min(beats.length - 1, Math.floor((t - t0) / fl)), b = pick(beats[i]), u = t - (t0 + i * fl);
             const c = Sx.snap(b.from, resolveAt(b.from, b.at) + u * (b.speed == null ? 0.8 : b.speed), { k: 0.75, slot: 'next', lines: b.lines == null ? false : b.lines, gen: b.gen });
             const z = 1.04 + 0.05 * u / fl;
             ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.drawImage(c, -W / 2, -H / 2, W, H); ctx.restore();
@@ -309,7 +310,7 @@
         T.line(ctx, E2.hook, W / 2, 590, 38, C.orangeL, 600, 'center');
         ctx.restore();
         ctx.save(); ctx.globalAlpha *= M.seg(u, 1.0, 1.5); Sx.dots(ctx, W / 2, 730, nx, { labels: true, gap: 230 });
-        T.line(ctx, RSI.SERIES.repo, W / 2, 1000, 22, C.ink3, 500, 'center', 'mono'); ctx.restore();
+        T.line(ctx, EN() ? `${RSI.L(RSI.SERIES.title)} · a 4-episode series` : `《${RSI.L(RSI.SERIES.title)}》系列 · 共 4 集`, W / 2, 1000, 24, C.ink3, 500, 'center'); ctx.restore();
         const g = o.gen || 1; const wave = u > 2.8 && u < 6;
         const hd = K.draw(ctx, 1640, 950 + X().bob(t, 3), 7.5, { gen: g, expr: wave ? 'happy' : X().blink(t, 5) ? 'blink' : 'normal', armR: wave ? 0.9 + Math.sin(t * 12) * 0.25 : 0, look: [-0.6, -0.3], alpha: M.seg(u, 1.4, 1.8) });
         S.anchors.clawd = [1640, hd[1]];
