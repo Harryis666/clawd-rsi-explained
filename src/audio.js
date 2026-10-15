@@ -477,7 +477,7 @@
     }
   });
   STY.epilogue = (sec, P, r) => {
-    const perm = scene('permission'); const hb0 = perm ? perm.start + perm.R('e2') : 1e9, hb1 = perm ? perm.start + perm.dur : 0;
+    const perm = scene('permission'); const hb0 = perm ? perm.start + perm.R('e3a') : 1e9, hb1 = perm ? perm.start + perm.dur : 0;
     grid(sec, 70, (i, tb, bd, bar) => {
       const ch = chord(['Bm9', 'Gmaj9', 'Dmaj9', 'A13sus'][i % 4]); const id = sec.idAt(tb + 0.01);
       P(tb, 'pad', { notes: ch.v, dur: bar, vel: id === 'reveal' ? 0.46 : 0.36, cut: id === 'reveal' ? 1400 : 850, at: 1.2, rel: 2.0 });
