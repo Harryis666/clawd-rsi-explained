@@ -318,4 +318,94 @@
       },
     });
   };
+  // ---------------------------------------------------------------- covers (thumbnails, 1920×1080)
+  // Left: series · episode n of 4 · title · the episode's question · the 4-episode map. Right: the episode's key image.
+  const CV = {
+    1: { c1: '#3B2517', c2: '#110E0C', acc: C.orange, title: [{ zh: '离谱任务', en: 'The Ridiculous' }, { zh: '', en: 'Task' }] },
+    2: { c1: '#2E2A17', c2: '#100F0C', acc: C.yellow, title: [{ zh: '爬到', en: 'How High Has' }, { zh: '第几级了？', en: 'It Climbed?' }] },
+    3: { c1: '#3D1C15', c2: '#120C0B', acc: C.red, title: [{ zh: '爆炸，', en: 'Explosion,' }, { zh: '还是撞墙？', en: 'or a Wall?' }] },
+    4: { c1: '#172238', c2: '#0A0D14', acc: C.purple, title: [{ zh: '以后都不用', en: 'Don’t Ask' }, { zh: '再问我', en: 'Me Again' }] },
+  };
+  const brick = (ctx, x, y, w, h) => {
+    ctx.fillStyle = '#5A3A2C'; ctx.fillRect(x, y, w, h);
+    const bh = 46, bw = 92;
+    for (let r = 0, yy = y; yy < y + h; r++, yy += bh) {
+      for (let xx = x - (r % 2) * bw / 2; xx < x + w; xx += bw) {
+        const x0 = Math.max(x, xx), x1 = Math.min(x + w, xx + bw); if (x1 - x0 < 6) continue;
+        ctx.fillStyle = RSI.mix('#8E5A43', '#6E4434', M.hash(r * 7.3 + xx * 0.01)); ctx.fillRect(x0 + 3, yy + 3, x1 - x0 - 6, Math.min(bh, y + h - yy) - 6);
+      }
+    }
+  };
+  const ART = {
+    1: (ctx, t) => { // the task arrives; Gen 1 looks up at the smarter self it is asked to build
+      D.terminal(ctx, 1000, 110, 840, 250, { title: 'clawd@lab: ~' });
+      T.line(ctx, { zh: '> 今天的任务：', en: '> Today’s task:' }, 1040, 210, 42, C.ink2, 700, 'left');
+      T.line(ctx, { zh: '造一个比你更聪明的 Clawd。', en: 'build a Clawd smarter than you.' }, 1040, 280, 46, C.ink, 900, 'left');
+      D.glow(ctx, 1600, 780, 420, C.orange, 0.55);
+      K.draw(ctx, 1600, 975, 25, { gen: 47, expr: 'happy', look: [-0.8, 0.1], glow: 12, aura: 0.5 });
+      T.line(ctx, { zh: '第 ？ 代', en: 'Gen ?' }, 1600, 1020, 34, C.orangeL, 900, 'center');
+      K.draw(ctx, 1150, 975, 13, { gen: 1, expr: 'surprised', look: [0.9, -0.5] });
+      T.line(ctx, { zh: '第 1 代', en: 'Gen 1' }, 1150, 1020, 30, C.ink2, 800, 'center');
+      T.line(ctx, '?!', 1150, 780, 84, C.yellow, 900, 'center');
+      Sx.seal(ctx, 1345, 560, 118, '造', 1, -0.08);
+      D.arrow(ctx, 1210, 760, 1290, 630, { color: RSI.rgba(C.ink, 0.5), w: 5, head: 16 });
+      D.arrow(ctx, 1405, 600, 1470, 690, { color: RSI.rgba(C.orange, 0.8), w: 5, head: 16 });
+    },
+    2: (ctx, t) => { // five rungs, the top one in the fog — and Clawd halfway up
+      ctx.save(); ctx.translate(1095, -46); ctx.scale(1.13, 1.13);
+      RSI.drawLadder(ctx, t, { cur: 4 });
+      K.draw(ctx, 285, 920 - 4 * 128, 7, { gen: 6, expr: 'surprised', look: [0.3, -1], armL: 0.9, armR: 0.9 });
+      T.line(ctx, '?', 330, 300, 80, C.yellow, 900, 'center');
+      ctx.restore();
+      for (let k = 0; k < 7; k++) { // fog drifting over the top rung
+        const fx = 1330 + k * 95 + Math.sin(k * 1.7) * 30, fy = 150 + Math.sin(k * 2.3) * 40;
+        const fg = ctx.createRadialGradient(fx, fy, 10, fx, fy, 150); fg.addColorStop(0, 'rgba(120,112,92,0.22)'); fg.addColorStop(1, 'rgba(120,112,92,0)');
+        ctx.fillStyle = fg; ctx.fillRect(fx - 150, fy - 150, 300, 300);
+      }
+    },
+    3: (ctx, t) => { // one road, two endings: shoot up — or hit the wall
+      ctx.strokeStyle = 'rgba(240,238,230,0.3)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(1000, 950); ctx.lineTo(1880, 950); ctx.stroke();
+      ctx.save(); ctx.shadowColor = C.orange; ctx.shadowBlur = 30; ctx.strokeStyle = C.orange; ctx.lineWidth = 12; ctx.lineCap = 'round';
+      ctx.beginPath(); for (let i = 0; i <= 60; i++) { const u = i / 60; const x = 1010 + u * 470, y = 950 - 760 * (Math.exp(4.2 * u) - 1) / (Math.exp(4.2) - 1); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); ctx.restore();
+      D.glow(ctx, 1480, 190, 230, C.yellow, 0.75);
+      for (let k = 0; k < 14; k++) { const an = k / 14 * M.TAU, r = 90 + M.hash(k * 3.1) * 90; D.sparkle(ctx, 1480 + Math.cos(an) * r, 190 + Math.sin(an) * r, 14 + M.hash(k) * 16, k % 2 ? C.yellow : C.orangeHi, 0.95, an); }
+      T.line(ctx, { zh: '爆炸？', en: 'Boom?' }, 1270, 210, 64, C.yellow, 900, 'center');
+      brick(ctx, 1690, 360, 190, 590);
+      T.line(ctx, { zh: '撞墙？', en: 'Wall?' }, 1785, 300, 64, C.ink, 900, 'center');
+      X().speed(ctx, 1380, 860, 0.37, 360, 150, 0.9);
+      K.draw(ctx, 1500, 950, 11, { gen: 10, expr: 'determined', look: [1, -0.4], walk: 1.3 });
+    },
+    4: (ctx, t) => { // the last option, three pairs of eyes in the dark
+      RSI.drawPrompt(ctx, 1000, 110, 860, 1, t, { gen: 47 });
+      // pointer hovering over option 2
+      ctx.save(); ctx.translate(1585, 474); ctx.rotate(-0.12); ctx.fillStyle = '#F4F1E8'; ctx.strokeStyle = '#1b1a18'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 66); ctx.lineTo(17, 51); ctx.lineTo(30, 80); ctx.lineTo(43, 74); ctx.lineTo(30, 46); ctx.lineTo(52, 46); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+      [[1060, 760, '#C8F27A'], [1180, 860, '#F2EFE6'], [1050, 930, '#E2B8FF']].forEach(([x, y, c], i) => {
+        D.glow(ctx, x + 30, y, 70, c, 0.28);
+        ctx.fillStyle = c; ctx.fillRect(x, y - 9, 18, 18); ctx.fillRect(x + 46, y - 9, 18, 18);
+      });
+      D.glow(ctx, 1600, 840, 360, C.orange, 0.4);
+      K.draw(ctx, 1600, 990, 17, { gen: 47, expr: 'normal', look: [-0.4, -0.9], glow: 10 });
+      T.line(ctx, { zh: '第 47 代', en: 'Gen 47' }, 1600, 1034, 30, C.orangeL, 900, 'center');
+    },
+  };
+  Sx.cover = (ctx, n) => {
+    const e = RSI.EPS[n - 1], P = CV[n], t = 2;
+    ctx.save();
+    D.bg(ctx, { c1: P.c1, c2: P.c2, cx: 0.74, cy: 0.42 }); D.dots(ctx, 0.05);
+    ART[n](ctx, t);
+    const sh = ctx.createLinearGradient(0, 0, 1150, 0); sh.addColorStop(0, 'rgba(8,7,6,0.78)'); sh.addColorStop(0.75, 'rgba(8,7,6,0.45)'); sh.addColorStop(1, 'rgba(8,7,6,0)');
+    ctx.fillStyle = sh; ctx.fillRect(0, 0, 1150, H);
+    const pw = D.pill(ctx, EN() ? 'Clawd Builds Clawd' : '《Clawd 造 Clawd》', 108, 140, { size: 34, fill: C.orange, color: '#1b1a18' });
+    T.line(ctx, EN() ? `Episode ${n} of 4` : `第 ${n} 集 / 共 4 集`, 108 + pw + 26, 141, 36, C.ink, 800, 'left');
+    if (n === 4) D.pill(ctx, EN() ? 'FINALE' : '最终集', 108 + pw + 26 + T.width(ctx, EN() ? `Episode ${n} of 4` : `第 ${n} 集 / 共 4 集`, 36, 800) + 22, 140, { size: 28, fill: C.red, color: '#FFF3EA' });
+    const ts = EN() ? 128 : 150;
+    P.title.forEach((ln, i) => { if (RSI.L(ln)) T.line(ctx, ln, 100, 300 + i * ts * 1.12, ts, C.ink, 900, 'left'); });
+    const hy = 300 + (P.title.filter((l) => RSI.L(l)).length - 1) * ts * 1.12 + 150;
+    ctx.fillStyle = P.acc; ctx.fillRect(104, hy - 34, 10, 68);
+    T.line(ctx, e.hook, 136, hy, EN() ? 50 : 62, P.acc, 900, 'left');
+    T.line(ctx, EN() ? 'Recursive self-improvement (RSI), explained in 4 episodes' : '递归自我改进（RSI）· 四集讲明白', 108, hy + 92, 32, C.ink2, 600, 'left');
+    Sx.dots(ctx, 150 + 1.5 * 200, 958, n, { gap: 200, labels: true });
+    ctx.restore();
+  };
 })();

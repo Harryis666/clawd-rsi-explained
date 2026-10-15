@@ -1,6 +1,7 @@
-// Render the animation to MP4: headless Chromium draws each frame → JPEG → ffmpeg (libx264), in resumable segments.
-// usage: node tools/render.mjs            env: LANG_RSI=zh|en  FPS=30  SEG=900 (frames/segment)  CRF=20  PRESET=medium
-//        FROM_FRAME / TO_FRAME (optional, for tests)  NOMUX=1 (skip muxing audio)
+// Render one episode to MP4: headless Chromium draws each frame → JPEG → ffmpeg (libx264), in resumable segments.
+// usage: EP=1 node tools/render.mjs     env: EP=1..4  LANG_RSI=zh|en  FPS=30  SEG=900 (frames/segment)  CRF=20  PRESET=medium
+//        FROM_FRAME / TO_FRAME (optional, for tests)
+// output: out/video_ep<N>_<lang>.mp4 (silent) — then tools/render-audio.mjs + tools/master.sh <N> <lang> for the final file
 import { chromium } from 'playwright';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import fs from 'node:fs';
@@ -8,18 +9,19 @@ import path from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lang = process.env.LANG_RSI || 'zh';
+const EP = +(process.env.EP || 1); const tag = `ep${EP}_${lang}`;
 const FPS = +(process.env.FPS || 30), SEG = +(process.env.SEG || 900), CRF = process.env.CRF || '20', PRESET = process.env.PRESET || 'medium';
-const dir = path.join(root, `out/video_${lang}`); fs.mkdirSync(dir, { recursive: true });
-const log = (s) => { const line = `[${new Date().toISOString().slice(11, 19)}] ${s}`; console.log(line); fs.appendFileSync(path.join(root, `out/render_${lang}.log`), line + '\n'); };
+const dir = path.join(root, `out/frames_${tag}`); fs.mkdirSync(dir, { recursive: true });
+const log = (s) => { const line = `[${new Date().toISOString().slice(11, 19)}] ${s}`; console.log(line); fs.appendFileSync(path.join(root, `out/render_${tag}.log`), line + '\n'); };
 const browser = await chromium.launch({ executablePath: (process.env.CHROME_PATH || (fs.existsSync('/usr/local/bin/chromium') ? '/usr/local/bin/chromium' : undefined)), args: ['--disable-gpu-vsync', '--disable-background-timer-throttling'] });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 page.on('pageerror', (e) => log('[pageerror] ' + e.message));
-await page.goto(pathToFileURL(path.join(root, 'index.html')).href + `?mode=render&lang=${lang}`);
+await page.goto(pathToFileURL(path.join(root, 'index.html')).href + `?mode=render&lang=${lang}&ep=${EP}`);
 await page.waitForFunction(() => window.RSI && RSI.ready, null, { timeout: 60000 });
 const total = await page.evaluate(() => RSI.total);
 const nFrames = Math.floor(total * FPS);
 const f0 = +(process.env.FROM_FRAME || 0), f1 = Math.min(nFrames, +(process.env.TO_FRAME || nFrames));
-log(`total ${total.toFixed(2)}s → ${nFrames} frames; rendering ${f0}..${f1} (seg ${SEG}, crf ${CRF}, ${PRESET})`);
+log(`EP${EP} total ${total.toFixed(2)}s → ${nFrames} frames; rendering ${f0}..${f1} (seg ${SEG}, crf ${CRF}, ${PRESET})`);
 const t0 = Date.now(); let done = 0;
 const segs = [];
 for (let s = Math.floor(f0 / SEG) * SEG; s < f1; s += SEG) {
@@ -45,14 +47,8 @@ for (let s = Math.floor(f0 / SEG) * SEG; s < f1; s += SEG) {
 await browser.close();
 if (f0 === 0 && f1 === nFrames) {
   const list = path.join(dir, 'list.txt'); fs.writeFileSync(list, segs.map((s) => `file '${s}'`).join('\n') + '\n');
-  const video = path.join(root, `out/video_${lang}.mp4`);
+  const video = path.join(root, `out/video_${tag}.mp4`);
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', '-movflags', '+faststart', video]);
   log(`concat → ${video}`);
-  const wav = path.join(root, `out/audio_${lang}.wav`);
-  if (!process.env.NOMUX && fs.existsSync(wav)) {
-    const outp = path.join(root, `out/rsi-clawd_${lang}.mp4`);
-    execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', video, '-i', wav, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', outp]);
-    log(`muxed → ${outp}`);
-  }
 }
 log(`done in ${((Date.now() - t0) / 60000).toFixed(1)} min`);

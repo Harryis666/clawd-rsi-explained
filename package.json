@@ -1,21 +1,23 @@
 {
   "name": "clawd-rsi-explained",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "我让 Clawd 造了一个更聪明的自己 — a pure-code animation (Canvas 2D + Web Audio) explaining recursive self-improvement (RSI).",
+  "description": "《Clawd 造 Clawd》— a 4-episode pure-code animation series (Canvas 2D + Web Audio) explaining recursive self-improvement (RSI).",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "audio": "node tools/render-audio.mjs out/audio_raw_zh.wav",
-    "video": "NOMUX=1 node tools/render.mjs",
-    "master": "bash tools/master.sh zh",
-    "render": "npm run audio && npm run video && npm run master",
-    "audio:en": "LANG_RSI=en node tools/render-audio.mjs out/audio_raw_en.wav",
-    "video:en": "LANG_RSI=en NOMUX=1 node tools/render.mjs",
-    "master:en": "bash tools/master.sh en",
-    "render:en": "npm run audio:en && npm run video:en && npm run master:en",
+    "ep1": "EP=1 node tools/render-audio.mjs && EP=1 node tools/render.mjs && bash tools/master.sh 1 zh",
+    "ep2": "EP=2 node tools/render-audio.mjs && EP=2 node tools/render.mjs && bash tools/master.sh 2 zh",
+    "ep3": "EP=3 node tools/render-audio.mjs && EP=3 node tools/render.mjs && bash tools/master.sh 3 zh",
+    "ep4": "EP=4 node tools/render-audio.mjs && EP=4 node tools/render.mjs && bash tools/master.sh 4 zh",
+    "render": "npm run ep1 && npm run ep2 && npm run ep3 && npm run ep4",
+    "ep1:en": "LANG_RSI=en EP=1 node tools/render-audio.mjs && LANG_RSI=en EP=1 node tools/render.mjs && bash tools/master.sh 1 en",
+    "ep2:en": "LANG_RSI=en EP=2 node tools/render-audio.mjs && LANG_RSI=en EP=2 node tools/render.mjs && bash tools/master.sh 2 en",
+    "ep3:en": "LANG_RSI=en EP=3 node tools/render-audio.mjs && LANG_RSI=en EP=3 node tools/render.mjs && bash tools/master.sh 3 en",
+    "ep4:en": "LANG_RSI=en EP=4 node tools/render-audio.mjs && LANG_RSI=en EP=4 node tools/render.mjs && bash tools/master.sh 4 en",
+    "covers": "node tools/covers.mjs",
     "stills": "node tools/stills.mjs",
-    "storyboard": "node tools/export-script.mjs out/script.json && node tools/make-storyboard.mjs out/script.json"
+    "storyboard": "for n in 1 2 3 4; do EP=$n node tools/export-script.mjs out/script_ep$n.json && EP=$n node tools/make-storyboard.mjs out/script_ep$n.json; done"
   },
   "devDependencies": {
     "playwright": "^1.50.0"

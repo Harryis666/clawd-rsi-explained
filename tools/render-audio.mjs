@@ -1,12 +1,14 @@
 // Render the full soundtrack offline (chunked OfflineAudioContext + overlap-add) → WAV (PCM16, 48 kHz stereo).
-// usage: node tools/render-audio.mjs [out.wav]   env: LANG_RSI=zh|en, FROM, TO (seconds), STEM=music|sfx|voice, CHUNK=30, TAIL=14
+// usage: EP=1 node tools/render-audio.mjs [out.wav]   env: EP=1..4, LANG_RSI=zh|en, FROM, TO (seconds), STEM=music|sfx, CHUNK=30, TAIL=14
+// default output: out/audio_raw_ep<N>_<lang>.wav
 import { chromium } from 'playwright';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lang = process.env.LANG_RSI || 'zh';
-const outFile = process.argv[2] || path.join(root, `out/audio_${lang}.wav`);
+const EP = +(process.env.EP || 1);
+const outFile = process.argv[2] || path.join(root, `out/audio_raw_ep${EP}_${lang}.wav`);
 const SR = 48000, CHUNK = +(process.env.CHUNK || 30), TAIL = +(process.env.TAIL || 14);
 const stem = process.env.STEM || undefined;
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
@@ -14,7 +16,7 @@ const browser = await chromium.launch({ executablePath: (process.env.CHROME_PATH
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));
 page.on('console', (m) => { if (m.type() === 'error' && !/ERR_FILE_NOT_FOUND/.test(m.text())) console.log('[page]', m.text()); });
-await page.goto(pathToFileURL(path.join(root, 'index.html')).href + `?mode=render&lang=${lang}`);
+await page.goto(pathToFileURL(path.join(root, 'index.html')).href + `?mode=render&lang=${lang}&ep=${EP}`);
 await page.waitForFunction(() => window.RSI && RSI.ready && RSI.Audio);
 const info = await page.evaluate(() => { const n = RSI.Audio.build(); return { total: RSI.total, n, stats: RSI.Audio.stats() }; });
 console.log('events', info.n, JSON.stringify(info.stats.c));

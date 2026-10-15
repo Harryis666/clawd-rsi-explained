@@ -52,7 +52,7 @@
   }
   AU.mix = { music: 0.5, sfx: 0.7, voice: 0.6, verb: 0.55 };
   /** per-style loudness trims (calibrated from tools/render-audio.mjs loudness reports) */
-  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.45, quirky: 2.2, reflect: 1.06, epilogue: 1.25, outro: 1.06, story: 1.25, tease: 0.95, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
+  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.45, quirky: 2.2, reflect: 1.06, epilogue: 1.25, outro: 1.06, story: 1.1, tease: 0.95, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
   function out(G, node, a, send, pan) {
     let x = node; const ac = G.ac;
     if (pan) { const p = ac.createStereoPanner(); p.pan.value = M.clamp(pan, -1, 1); x.connect(p); x = p; }
