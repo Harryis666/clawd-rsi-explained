@@ -1,0 +1,23 @@
+{
+  "name": "clawd-rsi-explained",
+  "version": "1.0.0",
+  "private": true,
+  "description": "我让 Clawd 造了一个更聪明的自己 — a pure-code animation (Canvas 2D + Web Audio) explaining recursive self-improvement (RSI).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "audio": "node tools/render-audio.mjs out/audio_raw_zh.wav",
+    "video": "NOMUX=1 node tools/render.mjs",
+    "master": "bash tools/master.sh zh",
+    "render": "npm run audio && npm run video && npm run master",
+    "audio:en": "LANG_RSI=en node tools/render-audio.mjs out/audio_raw_en.wav",
+    "video:en": "LANG_RSI=en NOMUX=1 node tools/render.mjs",
+    "master:en": "bash tools/master.sh en",
+    "render:en": "npm run audio:en && npm run video:en && npm run master:en",
+    "stills": "node tools/stills.mjs",
+    "storyboard": "node tools/export-script.mjs out/script.json && node tools/make-storyboard.mjs out/script.json"
+  },
+  "devDependencies": {
+    "playwright": "^1.50.0"
+  }
+}
