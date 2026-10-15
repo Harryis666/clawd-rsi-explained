@@ -4,29 +4,30 @@
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W;
   const LOGO = [' ▐▛███▜▌', '▝▜█████▛▘', '  ▘▘ ▝▝'];
+  const b = (x) => x * 0.55; // v3: the boot animation runs ~1.8× faster (v2 lead 6.2 s → 3.4 s)
 
   RSI.defScene({
-    id: 'open', music: 'ambient', hud: false, label: false, fade: [0.6, 0.4], lead: 6.2,
+    id: 'open', music: 'ambient', hud: false, label: false, fade: [0.4, 0.3], lead: 3.4,
     lines: [
-      { id: 'n1', who: 'narr', zh: '这是 {o|Clawd}。', en: 'This is {o|Clawd}.', min: 2.2 },
-      { id: 'n2', who: 'narr', zh: '一个住在终端里的 AI 小助手，平时帮人写代码、修 bug。', en: 'A tiny AI helper that lives in the terminal — it writes code and fixes bugs.' },
+      { id: 'n1', who: 'narr', zh: '这是 {o|Clawd}。', en: 'This is {o|Clawd}.', min: 1.8 },
+      { id: 'n2', who: 'narr', zh: '住在终端里的 AI 助手，平时帮人写代码、修 bug。', en: 'An AI helper that lives in the terminal — it writes code and fixes bugs.' },
       { id: 'c1', who: 'clawd', zh: '你好！今天做点什么？', en: 'Hi! What are we doing today?' },
-      { id: 'u1', who: 'sys', zh: '> 今天的任务：造一个比你更聪明的 Clawd。', en: '> Today\'s task: build a Clawd that is smarter than you.', gap: 0.5, hold: 0.6 },
-      { id: 'c2', who: 'clawd', zh: '……啊？', en: '…Huh?', min: 1.4, gap: 0.25 },
+      { id: 'u1', who: 'sys', zh: '> 今天的任务：造一个比你更聪明的 Clawd。', en: '> Today\'s task: build a Clawd that is smarter than you.', gap: 0.3, hold: 0.4 },
+      { id: 'c2', who: 'clawd', zh: '……啊？', en: '…Huh?', min: 1.1, gap: 0.15 },
       { id: 'c3', who: 'clawd', zh: '造一个……比我更聪明的我？', en: 'Build… a smarter me?' },
-      { id: 'n3', who: 'narr', zh: '听起来像个玩笑。但在 2026 年，这正是顶尖 AI 实验室公开讨论、甚至写进时间表的目标。', en: 'Sounds like a joke. But in 2026, this is a goal top AI labs openly discuss — some have even put it on a timeline.' },
+      { id: 'n3', who: 'narr', zh: '这不是玩笑：2026 年，顶尖 AI 实验室公开讨论它，有的还定了时间表。', en: 'This is no joke: in 2026, top AI labs discuss it openly — some have even put it on a timeline.' },
       { id: 'n4', who: 'narr', zh: '它有个名字：{o|递归自我改进}（Recursive Self-Improvement），简称 {O|RSI}。', en: 'It has a name: {o|Recursive Self-Improvement} — {O|RSI} for short.' },
     ],
     cues: [
-      ...[0, 1, 2, 3, 4, 5].map((i) => [1.3 + i * 0.16, 'key']), [2.45, 'enter'], [2.6, 'boot'],
-      [4.15, 'pop'], [4.35, 'whoosh'], [5.0, 'land'], ['c2+0.05', 'surprise'],
+      ...[0, 1, 2, 3, 4, 5].map((i) => [b(1.3 + i * 0.16), 'key']), [b(2.45), 'enter'], [b(2.6), 'boot'],
+      [b(4.15), 'pop'], [b(4.35), 'whoosh'], [b(5.0), 'land'], ['c2+0.05', 'surprise'],
     ],
     draw(ctx, t, S) {
       D.dots(ctx, 0.035);
       // --- terminal morph: big → prompt bar at top
-      const m = M.seg(t, 4.1, 5.0, M.ease.inOutCubic);
+      const m = M.seg(t, b(4.1), b(5.0), M.ease.inOutCubic);
       const tx = M.lerp(330, 300, m), ty = M.lerp(170, 92, m), tw = M.lerp(1260, 1320, m), th = M.lerp(700, 150, m);
-      const wa = M.seg(t, 0, 0.6);
+      const wa = M.seg(t, 0, b(0.6));
       D.terminal(ctx, tx, ty, tw, th, { title: 'clawd@lab: ~', alpha: wa });
       ctx.save(); ctx.globalAlpha *= wa;
       const mono = (s, x, y, size, col, w = 500) => { ctx.font = T.font(size, w, 'mono'); ctx.fillStyle = col; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.textBaseline = 'alphabetic'; };
@@ -34,19 +35,19 @@
       if (m < 1) {
         ctx.save(); ctx.globalAlpha *= 1 - m;
         const px = tx + 40, py = ty + 100;
-        const typed = 'claude'.slice(0, Math.max(0, Math.min(6, Math.floor((t - 1.2) / 0.16) + 1)) * (t > 1.2 ? 1 : 0));
+        const typed = 'claude'.slice(0, Math.max(0, Math.min(6, Math.floor((t - b(1.2)) / b(0.16)) + 1)) * (t > b(1.2) ? 1 : 0));
         mono('~ $ ', px, py, 34, C.green, 700);
         mono(typed, px + 82, py, 34, C.ink);
-        if (t < 2.45) cur(px + 82 + T.width(ctx, typed, 34, 500, 'mono') + 4, py, 36);
-        if (t > 2.6) {
-          const a = M.seg(t, 2.6, 2.9); ctx.globalAlpha *= a;
+        if (t < b(2.45)) cur(px + 82 + T.width(ctx, typed, 34, 500, 'mono') + 4, py, 36);
+        if (t > b(2.6)) {
+          const a = M.seg(t, b(2.6), b(2.9)); ctx.globalAlpha *= a;
           ctx.strokeStyle = RSI.rgba(C.orange, 0.7); ctx.lineWidth = 2; D.rr(ctx, px, py + 50, 900, 200, 12); ctx.stroke();
-          const glow = M.seg(t, 3.3, 4.1);
+          const glow = M.seg(t, b(3.3), b(4.1));
           LOGO.forEach((ln, i) => mono(ln, px + 34, py + 104 + i * 46, 44, RSI.mix(C.orange, C.orangeHi, glow), 400));
           mono('Claude Code', px + 330, py + 100, 34, C.ink, 700);
           mono(RSI.lang === 'en' ? 'Clawd’s lab' : 'Clawd 的实验室', px + 330, py + 148, 26, C.ink2, 400);
           mono('~/lab', px + 330, py + 192, 26, C.ink3, 400);
-          if (t > 3.0) { mono('>', px, py + 310, 34, C.ink2, 700); cur(px + 36, py + 310, 36); }
+          if (t > b(3.0)) { mono('>', px, py + 310, 34, C.ink2, 700); cur(px + 36, py + 310, 36); }
           if (glow > 0) D.glow(ctx, px + 140, py + 150, 260, C.orange, glow * 0.8);
         }
         ctx.restore();
@@ -63,13 +64,13 @@
       }
       ctx.restore();
       // --- Clawd: emerges from the logo, hops to the stage
-      if (t > 4.1) {
-        const p = M.seg(t, 4.1, 5.0);
+      if (t > b(4.1)) {
+        const p = M.seg(t, b(4.1), b(5.0));
         const sx0 = 330 + 40 + 34 + 110, sy0 = 170 + 100 + 104 + 92; // logo area
         const x = M.lerp(sx0, W / 2, M.ease.inOutQuad(p)), yL = M.lerp(sy0, 790, p) - Math.sin(p * Math.PI) * 260;
         const s = M.lerp(5, 17, M.ease.outCubic(p));
         let sxq = 1, syq = 1, dy = 0;
-        if (t > 5.0) { const k = M.clamp(1 - (t - 5.0) / 0.3); sxq = 1 + 0.18 * k; syq = 1 - 0.18 * k; }
+        if (t > b(5.0)) { const k = M.clamp(1 - (t - b(5.0)) / 0.3); sxq = 1 + 0.18 * k; syq = 1 - 0.18 * k; }
         let expr = X.blink(t, 2) ? 'blink' : 'normal'; let look = null; let armL = 0, armR = 0;
         if (t > S.T('c1') && t < S.E('c1')) { armR = 0.9 + Math.sin(t * 14) * 0.15; expr = 'happy'; }
         if (t > S.T('u1') && t < S.T('c2')) look = [0, -1];
@@ -79,15 +80,15 @@
         }
         if (t > S.T('c3')) { expr = t < S.T('n3') ? 'worried' : X.blink(t, 5) ? 'blink' : 'worried'; look = [Math.sin(t * 0.8) * 0.3, 0]; }
         if (t > S.T('n4')) { expr = X.blink(t, 9) ? 'blink' : 'normal'; look = [0, -0.4]; }
-        const bob = t > 5.3 ? X.bob(t, 4) : 0;
+        const bob = t > b(5.3) ? X.bob(t, 4) : 0;
         const head = K.draw(ctx, x, yL + dy, s, { gen: 1, expr, look, armL, armR, sx: sxq, sy: syq, shadow: p > 0.95 });
-        if (t > 5.0) S.anchors.clawd = [x + 40, head[1] - 10 + bob];
-        if (t < 4.5) D.glow(ctx, x, yL - 5 * s, 200, C.orange, 1 - M.seg(t, 4.1, 4.5));
+        if (t > b(5.0)) S.anchors.clawd = [x + 40, head[1] - 10 + bob];
+        if (t < b(4.5)) D.glow(ctx, x, yL - 5 * s, 200, C.orange, 1 - M.seg(t, b(4.1), b(4.5)));
         X.mark(ctx, '!', x + 150, head[1] - 20, t - S.T('c2'), C.yellow, 90);
         X.sweat(ctx, x + 120, head[1] + 60, t - S.T('c3') - 0.4, 1.4);
         // RSI name card
-        if (t > S.T('n4') + 0.8) {
-          const a = M.seg(t, S.T('n4') + 0.8, S.T('n4') + 1.3, M.ease.outCubic);
+        if (t > S.T('n4') + 0.6) {
+          const a = M.seg(t, S.T('n4') + 0.6, S.T('n4') + 1.1, M.ease.outCubic);
           ctx.save(); ctx.globalAlpha *= a;
           T.line(ctx, 'R', W / 2 - 330, 440, 84, C.orange, 900, 'center'); T.line(ctx, 'S', W / 2 - 330 + 330, 440, 84, C.orange, 900, 'center'); T.line(ctx, 'I', W / 2 + 330, 440, 84, C.orange, 900, 'center');
           T.line(ctx, 'Recursive', W / 2 - 330, 510, 34, C.ink2, 500, 'center'); T.line(ctx, 'Self-', W / 2, 510, 34, C.ink2, 500, 'center'); T.line(ctx, 'Improvement', W / 2 + 330, 510, 34, C.ink2, 500, 'center');

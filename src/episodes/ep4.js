@@ -1,5 +1,6 @@
 /* 《Clawd 造 Clawd》第 4 集《以后都不用再问我》— manifest + the episode's own scenes:
    cold open (第 47 次请求 · 疲惫的工程师 · 且慢！) · sting · recap · 本集问题 · post-credits card.
+   v3: tighter cold open, 2-beat recap, no episode-number line, shorter egg.
    The body lives in src/scenes/monsters.js (monsters · cheater · collapse · telephone) and src/scenes/finale.js (permission · reveal · end · credits). */
 (function () {
   'use strict';
@@ -84,19 +85,19 @@
   };
   const tag = (ctx, t, a = 1) => { ctx.save(); ctx.globalAlpha *= M.seg(t, 0.2, 0.6) * a; D.pill(ctx, { zh: '很多代以后 · 第 47 代', en: 'Many generations later · Gen 47' }, 60, 52, { size: 26, fill: C.orange }); ctx.restore(); };
   RSI.defScene({
-    id: 'e4_cold', music: 'hook', label: false, fade: [0.1, 0.25], lead: 0.4, pad: 1.2,
+    id: 'e4_cold', music: 'hook', label: false, fade: [0.1, 0.25], lead: 0.3, pad: 0.6,
     lines: [
-      { id: 'k0', who: 'narr', zh: '很多代以后……', en: 'Many generations later…', at: 0.4, min: 2.4 },
-      { id: 'k1', who: 'clawd', zh: '第 48 代，我已经设计好了。按规矩，动手训练之前，得先问你。', en: 'I’ve finished designing Generation 48. Rules are rules: before I train it, I have to ask you.', at: 'k0+1.6', maxW: 560 },
-      { id: 'k2', who: 'human', label: { zh: '工程师', en: 'Engineer' }, labelColor: C.blue, zh: '又来了……这都第 47 次了。每次都是“是”。', en: 'Again… that’s the 47th time. It’s always “yes”.', gap: 0.9, maxW: 520 },
-      { id: 'k3', who: 'human', label: { zh: '工程师 · 心想', en: 'Engineer · thinking' }, labelColor: C.blue, zh: '要不……选 2 吧。以后就不用再问了。', en: 'Maybe… just pick 2. Then it won’t ask again.', gap: 0.3, maxW: 520 },
-      { id: 'k4', who: 'clawd2', manual: true, zh: '且慢！', en: 'Hold it!', at: 'k3$+1.35', dur: 1.7 },
-      { id: 'k5', who: 'clawd2', zh: '在按下它之前——你得先见见三只小怪兽。', en: 'Before you press that — you need to meet three little monsters.', gap: 0.1, min: 3.3, maxW: 620 },
+      { id: 'k0', who: 'narr', zh: '很多代以后……', en: 'Many generations later…', at: 0.3, min: 1.5 },
+      { id: 'k1', who: 'clawd', zh: '第 48 代设计好了。按规矩，训练之前得先问你。', en: 'Generation 48 is designed. Rules are rules: before I train it, I have to ask you.', at: 'k0+1.1', maxW: 560 },
+      { id: 'k2', who: 'human', label: { zh: '工程师', en: 'Engineer' }, labelColor: C.blue, zh: '又来了……这都第 47 次了。每次都是“是”。', en: 'Again… that’s the 47th time. It’s always “yes”.', gap: 0.4, maxW: 520 },
+      { id: 'k3', who: 'human', label: { zh: '工程师 · 心想', en: 'Engineer · thinking' }, labelColor: C.blue, zh: '要不……选 2 吧。以后就不用再问了。', en: 'Maybe… just pick 2. Then it won’t ask again.', gap: 0.15, maxW: 520 },
+      { id: 'k4', who: 'clawd2', manual: true, zh: '且慢！', en: 'Hold it!', at: 'k3$+1.35', dur: 1.3 },
+      { id: 'k5', who: 'clawd2', zh: '按下它之前——你得先见见三只小怪兽。', en: 'Before you press that — you need to meet three little monsters.', gap: 0.1, min: 2.6, maxW: 620 },
     ],
     cues: [
       [0.1, 'heart'], ...Array.from({ length: 10 }, (_, i) => [L0 + i * 0.17, 'tick']), [L1 + 0.3, 'ding'],
       ['k1$-0.3', 'whoosh'], ['k1$-0.05', 'pop'], ['k2+0.2', 'heart'], ['k3+1.35', 'tick'], ['k3$+0.12', 'key'],
-      ['k3$+0.35', 'scratch'], ['k3$+0.37', 'freeze'], ['k3$+0.6', 'whoosh'], ['k3$+1.3', 'gavel', { big: 1 }], ['k5+1.3', 'buzz'], ['k5+1.5', 'whisper'],
+      ['k3$+0.35', 'scratch'], ['k3$+0.37', 'freeze'], ['k3$+0.6', 'whoosh'], ['k3$+1.3', 'gavel', { big: 1 }], ['k5+1.0', 'buzz'], ['k5+1.2', 'whisper'],
     ],
     draw(ctx, t, S) {
       S.hud = { text: '047', color: C.orange };
@@ -134,9 +135,9 @@
         T.bubble(ctx, RSI.L(ln), sx + 20, hd[1] - 6, { reveal: 99, alpha: a, pop: M.ease.outBack(M.clamp(age / 0.2)), size: EN() ? 60 : 72, weight: 900, side: 'up' });
       }
       // three pairs of eyes in the dark
-      const ea = M.seg(t, S.T('k5') + 1.3, S.T('k5') + 1.9);
+      const ea = M.seg(t, S.T('k5') + 1.0, S.T('k5') + 1.6);
       if (ea > 0) EYES.forEach(([col, x, y], i) => {
-        const bl = ((t * 0.8 + i * 0.41) % 2.6) < 0.12, ap = M.seg(t, S.T('k5') + 1.3 + i * 0.18, S.T('k5') + 1.6 + i * 0.18); if (ap <= 0) return;
+        const bl = ((t * 0.8 + i * 0.41) % 2.6) < 0.12, ap = M.seg(t, S.T('k5') + 1.0 + i * 0.18, S.T('k5') + 1.3 + i * 0.18); if (ap <= 0) return;
         [-22, 22].forEach((dx) => { D.glow(ctx, x + dx, y, 34, col, 0.8 * ap); ctx.save(); ctx.globalAlpha *= ap; ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x + dx, y, 8, bl ? 1 : 8, 0, 0, 7); ctx.fill(); ctx.restore(); });
       });
     },
@@ -145,28 +146,25 @@
   // ================================================================== 2 · sting · recap · this episode's question
   Sx.sting(4);
   Sx.recap(4, [
-    { from: 'e3_cold', at: 'k4', zh: '同一个循环，可能越转越快，也可能越转越慢。', en: 'The same loop might spin faster and faster — or slower and slower.' },
-    { from: 'ratio', at: 'v3+2', zh: '关键是一个数 r：大于 1 就加速，小于 1 就减速。', en: 'The key is one number, r: above 1 it speeds up, below 1 it slows down.' },
-    { from: 'e3_end', at: 'x1+5.4', zh: '而路上还有好几堵墙：算力、品味、并行、现实。', en: 'And there are walls on the road: compute, taste, parallelism, reality.' },
-    { from: 'e3_end', at: 'x3', zh: '夜路上，有什么东西在盯着 Clawd……', en: 'And on the night road, something was watching Clawd…' },
+    { from: 'ratio', at: 'v3+2', zh: '一个数 r 决定快慢：大于 1 加速，小于 1 减速。', en: 'One number, r, sets the pace: above 1 it speeds up, below 1 it slows down.' },
+    { from: 'e3_end', at: 'x3', zh: '路上还有好几堵墙……而夜路上，有东西在盯着 Clawd。', en: 'There are walls on the road… and on the night road, something was watching Clawd.' },
   ], { gen: 12 });
   RSI.allScenes.e4_recap.hud = false;
   Sx.question(4, { zh: '“以后都不用再问我”——\n这个选项，该按吗？', en: '“Don’t ask me again” —\nshould anyone press it?' }, {
-    lines: [{ id: 'q2', who: 'narr', zh: '这是《Clawd 造 Clawd》第 4 集，也是最后一集。前三集我们看到：AI 已经开始改进自己，这个循环可能越转越快；这一集，看看路上的风险，和那个关键的选项。', en: 'This is Episode 4 of 4 — the last one. So far we’ve seen AI already starting to improve itself, a loop that may keep speeding up; this time: the dangers on the road, and that crucial option.', at: 'q+1.7', hold: 0.3 }],
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q2') - 0.2, S.T('q2') + 0.4); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 4, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 4, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e4_q.hud = false;
 
   // ================================================================== 3 · post-credits: your turn
   RSI.defScene({
-    id: 'e4_egg', music: 'outro', hud: false, label: false, lead: 0.4, pad: 2.6, fade: [0.5, 1.4],
-    lines: [{ id: 'g1', who: 'clawd', zh: '如果是你，你会选几？在评论区告诉我。', en: 'If it were you — which would you pick? Tell me in the comments.', at: 0.9, min: 4.2, maxW: 620 }],
-    cues: [[0.5, 'pop'], ['g1+1.6', 'tick'], ['g1+2.3', 'tick'], ['g1+3.0', 'tick'], ['g1$+0.4', 'chime']],
+    id: 'e4_egg', music: 'outro', hud: false, label: false, lead: 0.4, pad: 1.5, fade: [0.4, 1.0],
+    lines: [{ id: 'g1', who: 'clawd', zh: '如果是你，你会选几？在评论区告诉我。', en: 'If it were you — which would you pick? Tell me in the comments.', at: 0.4, min: 2.6, maxW: 620 }],
+    cues: [[0.3, 'pop'], ['g1+0.8', 'tick'], ['g1+1.3', 'tick'], ['g1+1.8', 'tick'], ['g1$+0.3', 'chime']],
     draw(ctx, t, S) {
       D.bg(ctx, { c1: '#241A15', c2: '#0F0E0D' });
       Sx.tunnel(ctx, t, 0.5, 0.3);
       const a = M.seg(t, 0.3, 0.8, M.ease.outCubic);
-      const sel = Math.max(0, Math.floor((t - S.T('g1') - 1.6) / 0.7)) % 3;
+      const sel = Math.max(0, Math.floor((t - S.T('g1') - 0.8) / 0.5)) % 3;
       ctx.save(); ctx.translate(820, 160 + (1 - a) * 20); ctx.scale(0.92, 0.92);
       RSI.drawPrompt(ctx, 0, 0, 1000, sel, t, { alpha: a, gen: 47, pulse: true });
       ctx.restore();

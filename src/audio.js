@@ -284,6 +284,13 @@
       P(c.t + 0.55, 'bell', { m: n('D6'), vel: 0.4, dur: 2.4 });
     },
     pop: (P, c) => { P(c.t, 'tone', { f0: 380, f1: 950, dur: 0.09, vel: 0.6 }); P(c.t + 0.02, 'tone', { f0: 1400, dur: 0.05, vel: 0.15, wave: 'triangle' }); },
+    huazi: (P, c) => { // v3 花字 pop-word hit: snap + upward chirp + a short bright bell (pitch steps with the pop index)
+      const st = [0, 3, 5, 7, 10][(c.v || 0) % 5];
+      P(c.t - 0.05, 'noise', { f0: 2500, f1: 8000, dur: 0.07, q: 1.3, vel: 0.22, at: 0.05 });
+      P(c.t, 'tone', { f0: 520, f1: 1500, dur: 0.075, vel: 0.4, wave: 'triangle' });
+      P(c.t + 0.02, 'bell', { m: n('A5') + st, vel: 0.17, dur: 0.55, ratio: 2.0, idx: 0.8 });
+      P(c.t, 'kick', { vel: 0.32 });
+    },
     whoosh: (P, c) => P(c.t, 'noise', { f0: 300, f1: 2600, f2: 600, dur: 0.6, q: 0.9, vel: 0.55, at: 0.22 }),
     land: (P, c) => { P(c.t, 'tone', { f0: 110, f1: 42, dur: 0.28, vel: 0.95, send: 0.05 }); P(c.t, 'noise', { type: 'lowpass', f0: 700, dur: 0.12, vel: 0.45 }); },
     surprise: (P, c) => { P(c.t, 'tone', { f0: 520, f1: 1250, dur: 0.12, vel: 0.32, wave: 'square', cut: 3000 }); P(c.t + 0.12, 'tone', { f0: 700, f1: 1700, dur: 0.15, vel: 0.28, wave: 'square', cut: 3000 }); },

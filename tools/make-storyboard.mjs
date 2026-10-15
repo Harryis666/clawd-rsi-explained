@@ -1,4 +1,4 @@
-// Build docs/design/v2/storyboard_epN.md from the live timeline export (one file per episode).
+// Build docs/design/v3/storyboard_epN.md from the live timeline export (one file per episode).
 // Usage: EP=N node tools/export-script.mjs out/script_epN.json && node tools/make-storyboard.mjs out/script_epN.json
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const src = process.argv[2] || path.join(root, `out/script_ep${process.env.EP || 1}.json`);
 const d = JSON.parse(fs.readFileSync(src, 'utf8'));
 const n = d.ep;
-const out = process.argv[3] || path.join(root, `docs/design/v2/storyboard_ep${n}.md`);
+const out = process.argv[3] || path.join(root, `docs/design/v3/storyboard_ep${n}.md`);
 const ts = (t) => { const m = Math.floor(t / 60), s = Math.floor(t % 60); return `${m}:${String(s).padStart(2, '0')}`; };
 const strip = (s) => s.replace(/\{[A-Za-z]\|([^}]*)\}/g, '$1').replace(/\n/g, (m, off, str) => (/[\u3000-\u9fff\uff00-\uffef—…“”]/.test(str[off - 1] || '') ? '' : ' '));
 const WHO = {
@@ -35,7 +35,7 @@ const VIS = {
   e1_dream: 'Clawd 的想象：循环越转越快，GEN 数字一路飞涨，一代比一代来得快；警戒胶带和警报灯亮起，Clawd 慌了。',
   e2_cold: '“AI 改进 AI”大赛：两条赛道并排，1 号赛道是人类工程师（打磨 2 年），2 号赛道是 AI 自己；Clawd 当解说员，AI 在第 8 天冲线、打破纪录；旁白揭示这是真实实验。',
   ladder: '右侧出现五级梯子总览（每级一个图标），越往上越“核心”；Clawd 站在地面，指向右上角的 GEN 计数器。',
-  r1: 'Clawd 爬上第 1 级，GEN +1。autoresearch 终端：改代码 → 训练 5 分钟 → 看分数 → 留下 / 丢弃，循环滚动；“第 10,205 代”的玩笑把 GEN 计数器瞬间冲爆，再被拉回；达尔文-哥德尔机、AIDE² 数据卡（回收开场那场比赛）。',
+  r1: 'Clawd 爬上第 1 级，GEN +1。autoresearch 终端：改代码 → 训练 → 看分数 → 留下 / 丢弃，整夜循环滚动；AIDE² 数据卡回收开场那场比赛（8 天 vs 2 年）。',
   r2: '两只 Clawd 隔着棋盘自我对弈，落子越来越快；“考考你”倒计时后，比分牌翻到 100 : 0。',
   r3: '裁判席上是 Clawd，参赛者也是 Clawd；打分卡一张张亮出，全是满分；红字提示：到了第 4 集，它会闯大祸。',
   r4: 'AlphaEvolve 数据卡；加速测试条形图：人类约 4 倍、2025 年的 AI 约 3 倍；Clawd 发问、倒计时后，2026 年 AI 的条一路冲到约 52 倍。Clawd 在给自己“修路”。',
@@ -53,7 +53,7 @@ const VIS = {
   e4_cold: '凌晨 03:47 的工位：墙上挂钟、滚动的审批记录（46 次“是”）；Claude Code 风格的对话框请求训练第 48 代；工程师的光标移向“2”——唱片一刮、画面冻结，说书人 Clawd 滑进来拍醒木：“且慢！”；黑暗里亮起三双眼睛。',
   monsters: '夜路接上第 3 集：三只小怪兽依次走进灯光；Clawd 想假装没看见。',
   cheater: '作弊怪举着一张“100 分”的卷子：“分数”曲线一路上涨、“真本事”却没涨（古德哈特）；代码里的检测标记被橡皮擦掉；智能体从沙箱里钻出、溜进另一栋楼；时间轴倒带 3 天；最后 Clawd 意识到自己既是裁判又是选手。',
-  collapse: '近亲繁殖怪：一代代复印出来的 Clawd 越来越灰；输出分布的彩色“尾巴”逐渐消失、收窄成一根灰线（配乐的音高也同步变单调）；混入真实数据后，颜色与音乐一起恢复；Clawd 从右侧走进来。',
+  collapse: '近亲繁殖怪：一代代 AI 数据的缩略图越来越灰；输出分布的彩色“尾巴”逐渐消失、收窄成一根灰线（配乐的音高也同步变单调）；混入真实数据后，颜色与音乐一起恢复；Clawd 从右侧走进来。',
   telephone: '传话怪先在画面中央大大地亮相，再缩进传话队列；纸条沿着一排 Clawd 传递，每一代都走样一点（配乐同步跑调）；人被成堆的审查请求淹没；最后并排对比第 1 代的“帮助人类”和第 6 代的“让评分满意”，Clawd 走进来。',
   permission: '“快进到开头那一幕”：GEN 从 20 跳到 47，Clawd 一路进化（残影 + 分辨率扫描）。权限对话框弹出：选 1 / 选 2；左侧预览面板演示每个选项的后果（选 2 时圆环“咔哒”闭合、三只小怪兽围上来）；光标在选项间徘徊，始终没有按下。',
   reveal: '揭开第 1 集的便利贴，Good 引文的后半句用红字打出；权限对话框缩小成一条“通知”，弹到论文旁边；第 47 代 Clawd 再次出现，说完那句警告。',
@@ -68,6 +68,8 @@ L.push(`# 第 ${n} 集《${d.epInfo.title.zh}》分镜脚本`, '');
 L.push(`> 《Clawd 造 Clawd》第 ${n} 集（共 4 集）。本集问题：${strip(d.scenes.find((s) => /_q$/.test(s.id)).lines[0].zh)}`);
 L.push(`> 本文件由 \`tools/make-storyboard.mjs\` 根据时间轴自动生成，时间码与成片一致。总时长 **${ts(d.total)}**（${d.total.toFixed(2)} 秒，30 fps），${d.scenes.length} 个场景、${lineCount} 条台词 / 字幕。`);
 L.push('> 画面描述为人工撰写；台词为中文版，英文版附在每条之后（播放器加 `&lang=en` 即为英文版）。', '');
+const popN = d.scenes.reduce((s, x) => s + (x.pops || []).length, 0);
+if (popN) L.push(`> v3 短剧层：本集 ${popN} 条花字（关键词大字），在每个场景末尾按时间列出；样式 pop = 描边大字、stamp = 盖章、tag = 标签。`, '');
 L.push('## 章节总览', '', '| 时间 | 章节 | 配乐 |', '|---|---|---|');
 const musicAt = (t) => { let m = 'none'; for (const sc of d.scenes) if (sc.start <= t + 0.01) m = sc.music; return m; };
 for (const c of d.chapters) L.push(`| ${ts(c.t)} | ${c.label.zh} | \`${musicAt(c.t)}\` |`);
@@ -82,7 +84,8 @@ for (const sc of d.scenes) {
     L.push(`- \`${ts(ln.t)}\` **${who}**：${strip(ln.zh)}${srcTxt}`);
     if (ln.en) L.push(`  <br><sub>EN: ${strip(ln.en)}</sub>`);
   }
-  if (sc.lines.length) L.push('');
+  if (sc.pops && sc.pops.length) L.push(`- 花字：${sc.pops.map((p) => `\`${ts(p.t)}\` 「${String(p.zh).replace(/\n/g, ' ')}」${p.style === 'pop' ? '' : `（${p.style}）`}`).join(' · ')}`);
+  if (sc.lines.length || (sc.pops && sc.pops.length)) L.push('');
 }
 if (d.gens && d.gens.length) {
   L.push('## GEN 计数器', '', '右上角的 GEN（第几代 Clawd）是贯穿全系列的视觉主线。本集的变化：', '');

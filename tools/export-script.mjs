@@ -22,6 +22,7 @@ const data = await page.evaluate((EP) => ({
   scenes: RSI.scenes.map((sc) => ({
     id: sc.id, start: sc.start, dur: sc.dur, music: sc.music || 'ambient', chapter: sc.chapter || null,
     lines: (sc.lines || []).map((ln) => ({ id: ln.id || null, who: ln.who, t: sc.start + ln.t, dur: ln.dur, zh: ln.zh || '', en: ln.en || '', label: ln.label || null, src: ln.src || null })),
+    pops: (sc._pops || []).map((p) => ({ t: sc.start + p.t, zh: p.zh || '', en: p.en || '', style: p.style || 'pop' })),
   })),
 }), EP);
 fs.writeFileSync(out, JSON.stringify(data, null, 1));

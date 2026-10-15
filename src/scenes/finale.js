@@ -54,16 +54,16 @@
     const cx = 420;
     ctx.save(); ctx.globalAlpha *= a;
     if (mode === 1) {
-      const t0 = S.T('e3a');
+      const t0 = S.T('e3a') - 0.1;
       T.line(ctx, { zh: '选 1：每一代，都有人点头', en: 'Option 1: a human nods at every step' }, cx, 270, 34, C.blue, 900, 'center');
       for (let k = 0; k < 3; k++) {
-        const ap = M.seg(t, t0 + 0.3 + k * 0.9, t0 + 0.6 + k * 0.9); if (ap <= 0) continue;
+        const ap = M.seg(t, t0 + 0.2 + k * 0.6, t0 + 0.45 + k * 0.6); if (ap <= 0) continue;
         const x = 200 + k * 220, y = 470;
         ctx.save(); ctx.globalAlpha *= ap;
         D.panel(ctx, x - 70, y - 80, 140, 150, { fill: C.surface, r: 14 });
         K.draw(ctx, x, y + 26, 3.4, { gen: 48 + k, expr: X.blink(t, k) ? 'blink' : 'normal', shadow: false });
         T.line(ctx, 'GEN ' + String(48 + k).padStart(3, '0'), x, y + 50, 18, C.ink2, 700, 'center', 'mono');
-        const ck = M.seg(t, t0 + 0.7 + k * 0.9, t0 + 0.95 + k * 0.9, M.ease.outBack);
+        const ck = M.seg(t, t0 + 0.5 + k * 0.6, t0 + 0.75 + k * 0.6, M.ease.outBack);
         if (ck > 0) {
           ctx.save(); ctx.translate(x, y - 125); ctx.scale(ck, ck);
           ctx.fillStyle = C.blue; ctx.beginPath(); ctx.arc(0, 0, 28, 0, 7); ctx.fill();
@@ -89,7 +89,7 @@
       // e3c: the three monsters move in around the unattended loop
       const POS = [[150, 482], [690, 482], [420, 714]];   // left, right, below the loop — clear of the title
       MONS.forEach(([nm, lab, col], i) => {
-        const ap = M.seg(t, S.T('e3c') + 1.6 + i * 1.0, S.T('e3c') + 2.0 + i * 1.0, M.ease.outBack); if (ap <= 0) return;
+        const ap = M.seg(t, S.T('e3c') + 2.0 + i * 0.8, S.T('e3c') + 2.4 + i * 0.8, M.ease.outBack); if (ap <= 0) return;
         const [x, y] = POS[i];
         ctx.save(); ctx.translate(x, y); ctx.scale(ap, ap);
         D.glow(ctx, 0, -30, 90, col, 0.35);
@@ -109,7 +109,7 @@
         ctx.save(); ctx.globalAlpha *= ap; ctx.fillStyle = i < 46 ? RSI.rgba(C.green, 0.75) : C.orange; D.rr(ctx, x, y, 54, 44, 8); ctx.fill();
         T.line(ctx, i < 46 ? '✓' : '?', x + 27, y + 23, 26, '#13230F', 900, 'center'); ctx.restore();
       }
-      const ra = M.seg(t, S.R('e4+3.4'), S.R('e4+3.9'));
+      const ra = M.seg(t, S.R('e4+2.6'), S.R('e4+3.1'));
       if (ra > 0) {
         ctx.save(); ctx.globalAlpha *= ra;
         D.icon(ctx, 'clock', 230, 690, 54, C.red, 6);
@@ -118,14 +118,14 @@
       }
     } else if (mode === 3) {
       T.line(ctx, { zh: '提议：给循环装上“限速器”', en: 'Proposal: a speed limit on the loop' }, cx, 270, 34, C.yellow, 900, 'center');
-      const sp = M.seg(t, S.R('e5+0.8'), S.R('e5+1.3'), M.ease.outBack);
+      const sp = M.seg(t, S.R('e5+0.6'), S.R('e5+1.1'), M.ease.outBack);
       ctx.save(); ctx.translate(290, 470); ctx.scale(sp, sp);
       ctx.fillStyle = '#F4F1EA'; ctx.beginPath(); ctx.arc(0, 0, 105, 0, 7); ctx.fill();
       ctx.strokeStyle = '#D9473A'; ctx.lineWidth = 22; ctx.beginPath(); ctx.arc(0, 0, 94, 0, 7); ctx.stroke();
       T.line(ctx, 'RSI', 0, -26, 30, '#2C2A26', 900, 'center', 'mono');
       T.line(ctx, { zh: '限速', en: 'LIMIT' }, 0, 24, EN() ? 38 : 50, '#2C2A26', 900, 'center');
       ctx.restore();
-      const ea = M.seg(t, S.R('e5+2.0'), S.R('e5+2.5'), M.ease.outBack);
+      const ea = M.seg(t, S.R('e5+1.6'), S.R('e5+2.1'), M.ease.outBack);
       ctx.save(); ctx.translate(560, 450); ctx.scale(ea, ea);
       ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(0, 0, 80, 0, 7); ctx.fill();
       D.icon(ctx, 'eye', 0, 0, 88, C.teal, 7); ctx.restore();
@@ -139,7 +139,7 @@
       ctx.save(); ctx.translate(cx, 420); ctx.scale(k, k);
       T.text(ctx, { zh: '至少现在：\n先别随手按 2', en: 'For now, at least:\ndon’t press 2 casually' }, 0, -70, { size: EN() ? 46 : 58, weight: 900, align: 'center', color: C.ink, lh: 1.3 });
       ctx.restore();
-      const q = M.seg(t, S.T('e5b') + 3.0, S.T('e5b') + 3.6);
+      const q = M.seg(t, S.T('e5b') + 2.0, S.T('e5b') + 2.5);
       ctx.save(); ctx.globalAlpha *= q;
       ctx.fillStyle = C.surface; D.rr(ctx, 110, 560, 620, 130, 14); ctx.fill(); ctx.fillStyle = C.teal; ctx.fillRect(110, 560, 8, 130);
       T.text(ctx, { zh: 'OpenAI（2026.9）：“我们还不知道，\n怎样安全地走到那一步。”', en: 'OpenAI (Sep 2026): “We do not yet know\nhow to safely get all the way there.”' }, 420, 584, { size: 26, weight: 700, align: 'center', color: C.ink2, lh: 1.4 });
@@ -147,7 +147,7 @@
     } else if (mode === 4) {
       const Q = [{ zh: '选哪一个？', en: 'Which one?' }, { zh: '什么时候选？', en: 'When?' }, { zh: '由谁来选？', en: 'Who chooses?' }];
       Q.forEach((q, i) => {
-        const qa = M.seg(t, S.R(`e6+${0.8 + i * 0.7}`), S.R(`e6+${1.1 + i * 0.7}`), M.ease.outBack); if (qa <= 0) return;
+        const qa = M.seg(t, S.R(`e6+${(0.4 + i * 0.5).toFixed(2)}`), S.R(`e6+${(0.7 + i * 0.5).toFixed(2)}`), M.ease.outBack); if (qa <= 0) return;
         ctx.save(); ctx.translate(cx + (i - 1) * 40, 330 + i * 120); ctx.scale(qa, qa);
         D.pill(ctx, q, 0, 0, { size: 40, fill: i === 2 ? C.orange : C.raised, color: i === 2 ? '#1b1a18' : C.ink, align: 'center' });
         ctx.restore();
@@ -157,24 +157,23 @@
   }
 
   RSI.defScene({
-    id: 'permission', music: 'epilogue', lead: 0.6, pad: 2.6,
+    id: 'permission', music: 'epilogue', lead: 0.4, pad: 1.0,
     lines: [
-      { id: 'e0', who: 'narr', zh: '现在，快进到开头那一幕——很多代以后。', en: 'Now, fast-forward to the opening scene — many generations later.', min: 3.2 },
-      { id: 'e1', who: 'clawd', zh: '第 48 代，我已经设计好了。按规矩，动手训练之前，得先问你。', en: 'I’ve finished designing Generation 48. Rules are rules: before I train it, I have to ask you.', gap: 0.4, maxW: 600 },
-      { id: 'e2', who: 'narr', zh: 'RSI 最关键的问题，也许就藏在这个小小的选项里。', en: 'Maybe the crux of RSI hides in this tiny prompt.', gap: 1.5, hold: 0.4 },
-      { id: 'e3a', who: 'narr', zh: '选 1：每一代，都要有人看过、点头，才能放行。', en: 'Pick 1: each generation ships only after a human has looked and nodded.', hold: 1.0 },
-      { id: 'e3b', who: 'narr', zh: '选 2：以后它再训练下一代，就不再问人了——循环里，从此没有人。', en: 'Pick 2: from then on it trains each next generation without asking — the loop has nobody in it any more.', hold: 1.0 },
-      { id: 'e3c', who: 'narr', zh: '而没人看着的循环，正是三只小怪兽最喜欢的地方：作弊没人发现，数据越来越单调，目标越传越歪。', en: 'And an unwatched loop is exactly where the three little monsters love to be: cheating goes unnoticed, data gets blander, goals drift further.', hold: 1.4 },
-      { id: 'e4', who: 'narr', zh: '说实话，选 2 很诱人：省事，更快。被问了 47 次，谁都会烦；在竞赛里，谁都怕慢一步。', en: 'Honestly, 2 is tempting: less hassle, more speed. Asked 47 times, anyone gets fed up; in a race, nobody wants to fall behind.', hold: 0.8 },
-      { id: 'e5', who: 'narr', zh: '于是有人提议：给递归自我改进设一个“限速”，并让独立的评估者常驻实验室。', en: 'So some propose a “speed limit” on recursive self-improvement, with independent evaluators embedded inside the labs.', hold: 1.2 },
-      { id: 'e5b', who: 'narr', zh: '所以，本集问题的答案是：至少现在，还不能随手按 2——连 OpenAI 自己都说，还不知道怎样安全地走到那一步。', en: 'So the answer to this episode’s question: for now at least, nobody should press 2 casually — even OpenAI says it doesn’t yet know how to get there safely.', hold: 1.0 },
-      { id: 'e6', who: 'narr', zh: '可是，选哪一个？什么时候选？由谁来选？', en: 'But which one? When? And who gets to choose?', hold: 2.0 },
-      { id: 'e7', who: 'clawd', zh: '这一次，看清楚再按。不急——我等你。', en: 'This time, look carefully before you press. No rush — I’ll wait.', hold: 1.2, gap: 0.5 },
+      { id: 'e0', who: 'narr', zh: '快进回开头那一幕——很多代以后。', en: 'Fast-forward back to the opening scene — many generations later.', min: 2.2 },
+      { id: 'e1', who: 'clawd', zh: '第 48 代设计好了。按规矩，训练之前得先问你。', en: 'Generation 48 is designed. Rules are rules: before I train it, I have to ask you.', gap: 0.2, maxW: 600 },
+      { id: 'e3a', who: 'narr', zh: '选 1：每一代，都要有人看过、点头，才能放行。', en: 'Pick 1: each generation ships only after a human has looked and nodded.', at: 'e1$+1.2', hold: 0.4 },
+      { id: 'e3b', who: 'narr', zh: '选 2：以后它再训练下一代，就不再问人了——循环里，从此没有人。', en: 'Pick 2: from then on it trains each next generation without asking — the loop has nobody in it any more.', hold: 0.4 },
+      { id: 'e3c', who: 'narr', zh: '而没人看着的循环，正是三只小怪兽最喜欢的地方：作弊没人发现，数据越来越单调，目标越传越歪。', en: 'And an unwatched loop is exactly where the three little monsters love to be: cheating goes unnoticed, data gets blander, goals drift further.', hold: 0.4 },
+      { id: 'e4', who: 'narr', zh: '说实话，选 2 很诱人：省事，更快。被问了 47 次，谁都会烦；在竞赛里，谁都怕慢一步。', en: 'Honestly, 2 is tempting: less hassle, more speed. Asked 47 times, anyone gets fed up; in a race, nobody wants to fall behind.', hold: 0.3 },
+      { id: 'e5', who: 'narr', zh: '于是有人提议：给递归自我改进设一个“限速”，并让独立的评估者常驻实验室。', en: 'So some propose a “speed limit” on recursive self-improvement, with independent evaluators embedded inside the labs.', hold: 0.4 },
+      { id: 'e5b', who: 'narr', zh: '答案：至少现在，还不能随手按 2——连 OpenAI 都说，还不知道怎样安全地走到那一步。', en: 'The answer: for now at least, nobody should press 2 casually — even OpenAI says it doesn’t yet know how to get there safely.', hold: 0.5, kick: true },
+      { id: 'e6', who: 'narr', zh: '可是，选哪一个？什么时候选？由谁来选？', en: 'But which one? When? And who gets to choose?', hold: 0.8 },
+      { id: 'e7', who: 'clawd', zh: '这一次，看清楚再按。不急——我等你。', en: 'This time, look carefully before you press. No rush — I’ll wait.', hold: 0.6, gap: 0.2 },
     ],
-    gen: [['e0+0.3', 20], ['e0+0.8', 31], ['e0+1.3', 40], ['e0+1.8', 47]],
-    cues: [['e0+0.3', 'rezUp'], ['e0+0.8', 'rezUp'], ['e0+1.3', 'rezUp'], ['e0+1.8', 'rezUp'], ['e1$+0.1', 'whoosh'], ['e1$+0.8', 'ding'],
-      ['e3a+0.4', 'tick'], ['e3b+0.1', 'tick'], ['e3b+1.0', 'loopClose'], ['e3c+1.6', 'spot'], ['e3c+2.6', 'spot'], ['e3c+3.6', 'spot'], ['e4+0.2', 'roll', { dur: 1.4 }],
-      ['e5+0.3', 'tick'], ['e5+0.9', 'spot'], ['e5+2.1', 'spot'], ['e5b+0.4', 'stamp'], ['e6+0.2', 'tick'], ['e6+0.8', 'pop'], ['e6+1.5', 'pop'], ['e6+2.2', 'pop']],
+    gen: [['e0+0.2', 20], ['e0+0.55', 31], ['e0+0.9', 40], ['e0+1.25', 47]],
+    cues: [['e0+0.2', 'rezUp'], ['e0+0.55', 'rezUp'], ['e0+0.9', 'rezUp'], ['e0+1.25', 'rezUp'], ['e1$+0.1', 'whoosh'], ['e1$+0.8', 'ding'],
+      ['e3a+0.4', 'tick'], ['e3b+0.1', 'tick'], ['e3b+1.0', 'loopClose'], ['e3c+2.0', 'spot'], ['e3c+2.8', 'spot'], ['e3c+3.6', 'spot'], ['e4+0.2', 'roll', { dur: 1.4 }],
+      ['e5+0.3', 'tick'], ['e5+0.6', 'spot'], ['e5+1.6', 'spot'], ['e5b+0.4', 'stamp'], ['e6+0.2', 'tick'], ['e6+0.4', 'pop'], ['e6+0.9', 'pop'], ['e6+1.4', 'pop']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
       // --- e0: time-lapse, Gen 12 → 47
@@ -182,27 +181,27 @@
       if (ta0 > 0) Sx.tunnel(ctx, t * 2.2, 0.8 * ta0, 0.9);
       const mv = M.seg(t, S.E('e1') - 0.1, S.E('e1') + 0.7, M.ease.inOutCubic);
       const cx = M.lerp(960, 420, mv), cy = M.lerp(790, 860, mv), cs = M.lerp(15, 8, mv);
-      [[12, 0.3], [20, 0.8], [31, 1.3], [40, 1.8]].forEach(([g, dt], k) => {
-        const t0 = S.R('e0+' + dt); const p = M.seg(t, t0, t0 + 1.4); if (p <= 0 || p >= 1) return;
+      [[12, 0.2], [20, 0.55], [31, 0.9], [40, 1.25]].forEach(([g, dt], k) => {
+        const t0 = S.R('e0+' + dt); const p = M.seg(t, t0, t0 + 1.0); if (p <= 0 || p >= 1) return;
         const gx = cx - p * (300 + k * 40);
         K.draw(ctx, gx, cy, cs * (1 - 0.25 * p), { gen: g, alpha: 0.4 * (1 - p), expr: 'normal', shadow: false });
         ctx.save(); ctx.globalAlpha *= 0.6 * (1 - p); T.line(ctx, EN() ? `Gen ${g}` : `第 ${g} 代`, gx, cy + 30, 24, C.ink3, 700, 'center'); ctx.restore();
       });
       let sel = t < S.R('e3b+0.1') ? 0 : t < S.R('e5+0.3') ? 1 : t < S.T('e5b') ? 0 : t < S.T('e6') ? 1 : 0;
-      if (t >= S.T('e6') && t < S.R('e6+2.3')) sel = Math.floor((t - S.T('e6')) / 0.75) % 3;
+      if (t >= S.T('e6') && t < S.R('e6+1.6')) sel = Math.floor((t - S.T('e6')) / 0.5) % 3;
       const veto = t >= S.T('e5b') && t < S.T('e6') ? M.seg(t, S.T('e5b') + 0.4, S.T('e5b') + 0.7) : 0;
       const g = S.gen().g;
       let expr = X.blink(t, 4) ? 'blink' : 'normal', look = mv > 0.5 ? [1, -0.15] : [0, -0.2], armR = 0, dy = 0, sx = 1, sy = 1;
-      if (t > S.R('e0+1.8') && t < S.R('e0+2.6')) expr = 'happy';
+      if (t > S.R('e0+1.25') && t < S.R('e0+2.0')) expr = 'happy';
       if (S.on('e1')) { expr = S.A('e1') < 2.2 ? 'happy' : 'normal'; dy = X.bob(t, 3, 9); }
-      if (t > S.E('e1') - 0.3 && t < S.R('e2+1.5')) armR = 0.7;
+      if (t > S.E('e1') - 0.3 && t < S.E('e1') + 1.2) armR = 0.7;
       if (t > S.R('e3b+1.0') && t < S.R('e3b+1.8')) expr = 'surprised';
       if (t > S.T('e3c') + 1.5 && t < S.T('e4')) expr = 'worried';
       if (t > S.T('e6')) look = [0, 0];
       if (S.on('e7')) { expr = 'happy'; const h = X.hop(t, S.T('e7') + 0.1, 0.32, 18); dy = h.dy; sx = h.sx; sy = h.sy; }
       const hd = K.draw(ctx, cx, cy + dy, cs, { gen: g, expr, look, armR, sx, sy, glow: M.clamp((g - 12) / 35) * 0.8 });
       S.anchors.clawd = [cx + (mv > 0.5 ? 30 : 50), hd[1] - 6];
-      if (t > S.R('e0+1.8') && t < S.R('e0+3.4')) X.sparkles(ctx, cx, cy - 90, t, 8, 170, C.orangeHi, 7, M.env(t, S.R('e0+1.8'), S.R('e0+3.4'), 0.2, 0.6));
+      if (t > S.R('e0+1.25') && t < S.R('e0+2.6')) X.sparkles(ctx, cx, cy - 90, t, 8, 170, C.orangeHi, 7, M.env(t, S.R('e0+1.25'), S.R('e0+2.6'), 0.2, 0.6));
       if (t > S.R('e0+0.2') && t < S.E('e1')) { ctx.save(); ctx.globalAlpha *= M.env(t, S.R('e0+0.2'), S.E('e1'), 0.3, 0.4); T.line(ctx, EN() ? `Gen ${g}` : `第 ${g} 代`, cx, cy + 44, 34, C.orangeL, 900, 'center'); ctx.restore(); }
       // --- terminal with the permission prompt (the same one as the cold open)
       const tA = S.R('e1$+0.1');
@@ -220,23 +219,23 @@
         T.line(ctx, { zh: '第 48 代：设计完成 → clawd_next/', en: 'Gen 48: design finished → clawd_next/' }, x0 + 30, 268, 26, C.ink2, 500, 'left'); ctx.restore();
         const da = M.seg(t, tA + 0.7, tA + 1.0, M.ease.outCubic);
         ctx.save(); ctx.translate(0, (1 - da) * 16);
-        RSI.drawPrompt(ctx, x0 - 14, 330, tw - 60, sel, t, { alpha: da, gen: 47, pulse: t > S.R('e6+2.3'), veto });
+        RSI.drawPrompt(ctx, x0 - 14, 330, tw - 60, sel, t, { alpha: da, gen: 47, pulse: t > S.R('e6+1.6'), veto });
         ctx.restore();
         if (veto > 0) { // "not casually": a red stamp over option 2
           ctx.save(); ctx.translate(x0 + 700, 330 + 376); ctx.rotate(-0.08); const k = M.ease.outBack(veto); ctx.scale(1.6 - 0.6 * k, 1.6 - 0.6 * k); ctx.globalAlpha *= M.clamp(veto * 2);
           ctx.strokeStyle = C.red; ctx.lineWidth = 5; D.rr(ctx, -120, -30, 240, 60, 10); ctx.stroke();
           T.line(ctx, { zh: '先别随手按', en: 'NOT CASUALLY' }, 0, 2, EN() ? 28 : 32, C.red, 900, 'center'); ctx.restore();
         }
-        if (t > S.R('e6+2.3')) {
+        if (t > S.R('e6+1.6')) {
           const dots = '.'.repeat(1 + (Math.floor(t * 2) % 3));
-          ctx.save(); ctx.globalAlpha *= M.seg(t, S.R('e6+2.3'), S.R('e6+2.9'));
+          ctx.save(); ctx.globalAlpha *= M.seg(t, S.R('e6+1.6'), S.R('e6+2.1'));
           T.line(ctx, (EN() ? '(waiting for your choice' : '（等待你的选择') + dots + (EN() ? ')' : '）'), x0 - 14, 832, 24, C.ink3, 500, 'left');
           ctx.restore();
         }
         ctx.restore();
       }
       // --- left preview panel
-      const segs = [[1, S.T('e3a'), S.R('e3b+0.1')], [2, S.R('e3b+0.1'), S.T('e4')], [5, S.T('e4'), S.R('e5+0.3')], [3, S.R('e5+0.3'), S.T('e5b')], [6, S.T('e5b'), S.R('e6+0.2')], [4, S.R('e6+0.2'), S.E('e7') + 1.6]];
+      const segs = [[1, S.T('e3a'), S.R('e3b+0.1')], [2, S.R('e3b+0.1'), S.T('e4')], [5, S.T('e4'), S.R('e5+0.3')], [3, S.R('e5+0.3'), S.T('e5b')], [6, S.T('e5b'), S.R('e6+0.2')], [4, S.R('e6+0.2'), S.E('e7') + 1.0]];
       for (const sg of segs) preview(ctx, t, S, sg[0], M.env(t, sg[1], sg[2], 0.3, 0.3));
     },
   });
@@ -244,15 +243,15 @@
   // ---------------- two unfinished sentences from Episode 1 ----------------
   const GX = 1360, GY = 880, GS = 24, SX0 = 560;
   RSI.defScene({
-    id: 'reveal', music: 'epilogue', lead: 0.6, pad: 1.4,
+    id: 'reveal', music: 'epilogue', lead: 0.4, pad: 0.6,
     lines: [
-      { id: 'r0', who: 'narr', zh: '第 1 集，留下了两句没说完的话。', en: 'Episode 1 left two sentences unfinished.', min: 2.6 },
-      { id: 'r1', who: 'narr', zh: '第一句，藏在那张便利贴底下。', en: 'The first was hidden under that sticky note.', min: 2.4, gap: 0.2 },
-      { id: 'q2', who: 'sys', zh: RSI.QUOTE2.zh, en: RSI.QUOTE2.en, gap: 0.9, dur: 5.6 },
-      { id: 'r2', who: 'narr', zh: '六十一年后，像 Clawd 这样的 AI，真的会在动手前停下来，弹出选项问我们——就像刚才那个对话框。', en: 'Sixty-one years later, AIs like Clawd really do stop before acting and pop up options to ask us — just like that dialog.', hold: 0.8 },
-      { id: 'r4', who: 'narr', zh: '第二句，是第 47 代在第 1 集开头没喊完的警告。', en: 'The second was the warning Gen 47 never finished at the start of Episode 1.', gap: 0.5, min: 3.4 },
-      { id: 'r5', who: 'big', zh: '听好。千万别——让循环里，没有人。', en: 'Listen. Whatever you do — don’t let the loop run with nobody in it.', label: { zh: '第 47 代', en: 'Gen 47' }, labelColor: C.red, size: 44, gap: 0.6, min: 3.8, maxW: 680 },
-      { id: 'r3', who: 'narr', zh: '接下来的问题是：它会一直问下去吗？我们，又会一直认真回答吗？', en: 'The next questions: will they keep asking? And will we keep answering carefully?', hold: 2.4 },
+      { id: 'r0', who: 'narr', zh: '第 1 集，留下了两句没说完的话。', en: 'Episode 1 left two sentences unfinished.', min: 1.8 },
+      { id: 'r1', who: 'narr', zh: '第一句，藏在那张便利贴底下。', en: 'The first was hidden under that sticky note.', min: 1.8, gap: 0.2 },
+      { id: 'q2', who: 'sys', zh: RSI.QUOTE2.zh, en: RSI.QUOTE2.en, gap: 0.4, dur: 4.4 },
+      { id: 'r2', who: 'narr', zh: '61 年后，像 Clawd 这样的 AI，真的会在动手前停下来问我们——就像刚才那个对话框。', en: 'Sixty-one years later, AIs like Clawd really do stop before acting to ask us — just like that dialog.', hold: 0.3 },
+      { id: 'r4', who: 'narr', zh: '第二句，是第 47 代在第 1 集开头没喊完的警告。', en: 'The second was the warning Gen 47 never finished at the start of Episode 1.', gap: 0.2, min: 2.4 },
+      { id: 'r5', who: 'big', zh: '听好。千万别——让循环里，没有人。', en: 'Listen. Whatever you do — don’t let the loop run with nobody in it.', label: { zh: '第 47 代', en: 'Gen 47' }, labelColor: C.red, size: 44, gap: 0.3, min: 3.0, maxW: 680 },
+      { id: 'r3', who: 'narr', zh: '它会一直问下去吗？我们，会一直认真回答吗？', en: 'Will it keep asking? And will we keep answering carefully?', hold: 1.0 },
     ],
     cues: [['r1$-0.3', 'peel'], ['r2+0.6', 'ding'], ['r4+0.2', 'rewind'], ['r4+0.6', 'page'], ['r5-0.35', 'whoosh'], ['r5+0.1', 'heart'], ['r3+0.4', 'chime']],
     draw(ctx, t, S) {
@@ -268,7 +267,7 @@
         ctx.save(); ctx.translate(W / 2 - 200 * k, 96); ctx.scale(sc, sc); ctx.translate(-W / 2, -96);
         const r = RSI.drawPaper(ctx, t, S, { reveal: 1e9, showSecond: t >= S.T('q2'), reveal2: t >= S.T('q2') ? ty.n : 0, sticky: 1, peel });
         ctx.restore();
-        if (ty.done && t < S.T('r2') + 1.5) D.glow(ctx, W / 2 - 200 * k, 96 + (r.sy + 40 - 96) * sc, 520, C.orange, 0.22 * M.env(t, S.T('q2') + 3.6, S.T('r2') + 1.5, 0.6, 0.8));
+        if (ty.done && t < S.T('r2') + 1.5) D.glow(ctx, W / 2 - 200 * k, 96 + (r.sy + 40 - 96) * sc, 520, C.orange, 0.22 * M.env(t, S.T('q2') + 2.8, S.T('r2') + 1.5, 0.5, 0.8));
         const pa = M.seg(t, S.R('r2+0.5'), S.R('r2+0.9'), M.ease.outBack);
         if (pa > 0) { ctx.save(); ctx.translate(1385, 330); ctx.scale(0.5 * pa, 0.5 * pa); RSI.drawPrompt(ctx, 0, 0, 940, 0, t, { pulse: true, gen: 47 }); ctx.restore(); }
         ctx.restore();
@@ -312,8 +311,8 @@
   ];
   const LINE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 47];
   RSI.defScene({
-    id: 'end', music: 'outro', hud: false, lead: 0.8, pad: 2.4, fade: [0.5, 0.8],
-    lines: STAT.map((s, i) => ({ id: 'z' + i, who: 'card', zh: s.zh, en: s.en, dur: [2.6, 3.4, 2.6, 4.6][i], gap: i === 2 ? 1.1 : 0.2 })),
+    id: 'end', music: 'outro', hud: false, lead: 0.5, pad: 1.2, fade: [0.4, 0.6],
+    lines: STAT.map((s, i) => ({ id: 'z' + i, who: 'card', zh: s.zh, en: s.en, dur: [1.8, 2.4, 1.8, 3.0][i], gap: i === 2 ? 0.5 : 0.15 })),
     cues: [['z0', 'statement'], ['z1+0.2', 'whoosh'], ['z2', 'statement'], ['z3+0.3', 'ding']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
@@ -341,7 +340,7 @@
         K.draw(ctx, x, 900 + h.dy, gg === 47 ? 5.6 : 4.6, { gen: gg, alpha: ap, sx: h.sx, sy: h.sy, glow: gg === 47 ? 0.8 : 0, expr: X.blink(t, i * 2) ? 'blink' : (wave ? 'happy' : 'normal'), look: lookCam ? [0, 0] : [0.7, -0.3], armR: wave ? 0.8 + Math.sin(t * 9 + i) * 0.25 : 0 });
         ctx.save(); ctx.globalAlpha *= ap * 0.8; T.line(ctx, String(gg), x, 946, 20, gg === 47 ? C.orangeL : C.ink3, 700, 'center', 'mono'); ctx.restore();
       });
-      ctx.save(); ctx.globalAlpha *= M.seg(t, 1.2, 2.0) * 0.8; T.line(ctx, { zh: '第 1 代 → 第 47 代', en: 'Gen 1 → Gen 47' }, W / 2, 990, 22, C.ink3, 500, 'center'); ctx.restore();
+      ctx.save(); ctx.globalAlpha *= M.seg(t, 0.8, 1.4) * 0.8; T.line(ctx, { zh: '第 1 代 → 第 47 代', en: 'Gen 1 → Gen 47' }, W / 2, 990, 22, C.ink3, 500, 'center'); ctx.restore();
     },
   });
 
@@ -361,28 +360,28 @@
   ];
   const FIRST = { zh: '今天的任务：造一个比你更聪明的 Clawd。', en: 'Today’s task: build a Clawd smarter than you.' };
   const NEXT = { zh: '下一条指令，由你来写。', en: 'The next instruction is yours to write.' };
-  const TK = 16.4;  // typing starts
+  const TK = 6.9;   // typing starts (v2: 16.4 in a 25 s card; v3 pre-drama 8.9 in 12.5 s)
   RSI.defScene({
-    id: 'credits', music: 'outro', hud: false, label: false, dur: 25, fade: [0.6, 1.6], lines: [],
-    cues: [[14.9, 'pop'], ...Array.from(RSI.L(NEXT)).map((c, i) => [TK + i * 0.11, 'key']).filter((c, i) => i % (RSI.lang === 'en' ? 2 : 1) === 0)],
+    id: 'credits', music: 'outro', hud: false, label: false, dur: 10.2, fade: [0.4, 1.0], lines: [],
+    cues: [[1.6, 'tick'], [5.95, 'pop'], ...Array.from(RSI.L(NEXT)).map((c, i) => [TK + i * 0.11, 'key']).filter((c, i) => i % (RSI.lang === 'en' ? 2 : 1) === 0)],
     draw(ctx, t) {
       D.dots(ctx, 0.025, 48, 0, -t * 6);
-      const out = 1 - M.seg(t, 13.6, 14.6);
+      const out = 1 - M.seg(t, 5.3, 5.85);
       if (out > 0) {
         ctx.save(); ctx.globalAlpha *= out;
-        const a0 = M.seg(t, 0.3, 1.2, M.ease.outCubic);
+        const a0 = M.seg(t, 0.2, 0.7, M.ease.outCubic);
         ctx.save(); ctx.globalAlpha *= a0;
         T.line(ctx, EN() ? RSI.L(RSI.SERIES.title) : `《${RSI.L(RSI.SERIES.title)}》`, W / 2, 130, 56, C.ink, 900, 'center');
         T.line(ctx, EN() ? `${RSI.L(RSI.SERIES.tag)} · Episode 4 (finale)` : `${RSI.L(RSI.SERIES.tag)} · 第 4 集（完）`, W / 2, 196, 28, C.orange, 700, 'center');
         ctx.restore();
         NOTES.forEach((n, i) => {
-          const a = M.seg(t, 1.2 + i * 0.6, 1.9 + i * 0.6); if (a <= 0) return;
+          const a = M.seg(t, 0.6 + i * 0.4, 1.1 + i * 0.4); if (a <= 0) return;
           ctx.save(); ctx.globalAlpha *= a;
           ctx.fillStyle = C.orange; ctx.fillRect(250, 268 + i * 62, 6, 34);
           T.text(ctx, n, 276, 268 + i * 62, { size: 25, weight: 500, color: C.ink2, maxW: 1420 });
           ctx.restore();
         });
-        const ra = M.seg(t, 3.6, 4.4);
+        const ra = M.seg(t, 1.6, 2.1);
         if (ra > 0) {
           ctx.save(); ctx.globalAlpha *= ra;
           T.line(ctx, { zh: '主要参考', en: 'Key sources' }, W / 2, 492, 28, C.orange, 900, 'center');
@@ -392,7 +391,7 @@
         ctx.restore();
       }
       // final: back to the very first prompt of Episode 1 — and an empty one
-      const fa = M.seg(t, 14.8, 15.6, M.ease.outCubic);
+      const fa = M.seg(t, 5.9, 6.4, M.ease.outCubic);
       if (fa > 0) {
         ctx.save(); ctx.globalAlpha *= fa;
         const bx = 400, bw = 1120, bh = 104;
@@ -401,7 +400,7 @@
         T.line(ctx, '>', bx + 36, 360 + bh / 2, 34, C.ink3, 700, 'left', 'mono');
         T.line(ctx, FIRST, bx + 80, 360 + bh / 2, 34, C.ink3, 500, 'left');
         ctx.fillStyle = C.green; ctx.beginPath(); ctx.arc(bx + bw - 44, 360 + bh / 2, 18, 0, 7); ctx.fill(); D.icon(ctx, 'check', bx + bw - 44, 360 + bh / 2, 22, '#10230F', 5);
-        const by = 540, na = M.seg(t, 15.6, 16.2);
+        const by = 540, na = M.seg(t, 6.4, 6.8);
         ctx.globalAlpha *= na;
         D.panel(ctx, bx, by, bw, bh + 6, { fill: '#191917', r: 16 });
         ctx.strokeStyle = RSI.rgba(C.orange, 0.6); ctx.lineWidth = 2; D.rr(ctx, bx, by, bw, bh + 6, 16); ctx.stroke();
@@ -411,8 +410,8 @@
         const s = ch.slice(0, Math.min(ch.length, n)).join('');
         T.line(ctx, s, bx + 80, by + (bh + 6) / 2, 36, C.ink, 500, 'left');
         if (Math.floor(t * 2.2) % 2 === 0) { const cw = T.width(ctx, s, 36, 500); ctx.fillStyle = C.ink; ctx.fillRect(bx + 84 + cw, by + (bh + 6) / 2 - 19, 18, 38); }
-        K.draw(ctx, bx + 120, by - 4, 5, { gen: 1, expr: X.blink(t, 1) ? 'blink' : 'happy', look: [0.5, 0.4], armR: t > 20.3 ? 0.8 + Math.sin(t * 9) * 0.2 : 0, shadow: false });
-        ctx.globalAlpha *= M.seg(t, 19.8, 20.8) * 0.7 / Math.max(0.01, na);
+        K.draw(ctx, bx + 120, by - 4, 5, { gen: 1, expr: X.blink(t, 1) ? 'blink' : 'happy', look: [0.5, 0.4], armR: t > 8.4 ? 0.8 + Math.sin(t * 9) * 0.2 : 0, shadow: false });
+        ctx.globalAlpha *= M.seg(t, 8.0, 8.6) * 0.7 / Math.max(0.01, na);
         T.line(ctx, { zh: '感谢观看', en: 'Thanks for watching' }, W / 2, 800, 30, C.ink2, 500, 'center');
         ctx.restore();
       }

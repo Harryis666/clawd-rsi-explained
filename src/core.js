@@ -69,5 +69,9 @@
     return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
   };
   /** Pick the current-language string from {zh, en} or return plain strings. */
-  RSI.L = (o) => (o == null ? '' : typeof o === 'string' ? o : o[RSI.lang] != null ? o[RSI.lang] : o.zh);
+  RSI.L = (o) => {
+    const v = o == null ? '' : typeof o === 'string' ? o : o[RSI.lang] != null ? o[RSI.lang] : o.zh;
+    // English mode: the CJK-first font stack draws curly quotes full-width (“Today’ s”), so use straight ones
+    return RSI.lang === 'en' && typeof v === 'string' ? v.replace(/[’‘]/g, "'").replace(/[“”]/g, '"') : v;
+  };
 })();

@@ -1,0 +1,231 @@
+/* RSI·Clawd v3 — 花字 (pop words) for all four episodes: the short-drama emphasis layer.
+   Each entry: [time spec, zh, en, {style: 'pop'|'stamp'|'tag', c: y|o|r|b|g|w|p, pos: tl|tc|tr|l|c|r|bl|bc|br|[x,y], size, rot, dur, sfx, kick}]
+   Rules (docs/research/05_short_drama_pacing_zh.md): ≤ 8 characters, only key numbers / terms / turns, never on top of the subject. */
+(function () {
+  'use strict';
+  const RSI = window.RSI;
+  const S = { style: 'stamp' }, G = { style: 'tag' };
+  const o = (a, b) => Object.assign({}, a, b);
+  RSI.POPS = {
+    // ============================== EP1
+    e1_cold: [
+      ['b1+1.1', '第 47 代？！', 'Gen 47?!', { c: 'o', pos: [1380, 350] }],
+      ['c4+1.1', '1 → 47？', '1 → 47?', { pos: [1380, 360] }],
+    ],
+    open: [
+      ['u1+2.3', '今日任务', 'Today’s task', o(S, { pos: 'tr', c: 'y' })],
+      ['c2+0.15', '？？？', '???', { pos: [700, 470] }],
+      ['n3+2.0', '已有时间表', 'On a timetable', { c: 'o', pos: 'tr' }],
+      ['n4+1.5', 'RSI', 'RSI', { c: 'o', size: 140, pos: 'tr' }],
+      ['n5+1.5', 'AI 改 AI', 'AI improves AI', { pos: [480, 600] }],
+    ],
+    e1_q: [['q+1.6', '为什么？', 'Why?', { c: 'o', pos: 'tr' }]],
+    e1_tries: [
+      ['t1+0.15', '第 1 招', 'Trick 1', o(G, { c: 'o', pos: 'tl' })],
+      ['c1+1.5', '× 太慢', '× Too slow', o(S, { pos: [560, 360] })],
+      ['t2+0.15', '第 2 招', 'Trick 2', o(G, { c: 'o', pos: 'tl' })],
+      ['c2+1.5', '× 没变聪明', '× Not smarter', o(S, { pos: [600, 380] })],
+      ['t3+0.15', '第 3 招', 'Trick 3', o(G, { c: 'o', pos: 'tl' })],
+      ['c3+1.3', '× 看不懂', '× Unreadable', o(S, { pos: 'tr' })],
+      ['c4+0.9', '换个思路！', 'New idea!', { c: 'o', pos: 'tl' }],
+    ],
+    lab: [
+      ['l2+0.7', '靠人推动', 'Human-driven', { c: 'b', pos: 'tl' }],
+      ['l4+1.8', 'Zzz…', 'Zzz…', { c: 'b', pos: 'tr' }],
+    ],
+    flip: [
+      ['f1+0.15', '第 4 招', 'Trick 4', o(G, { c: 'o', pos: [260, 260] })],
+      ['f1+1.5', '人 → AI', 'Human → AI', o(S, { c: 'o', pos: 'tr' })],
+      ['f2+2.3', '全交给 AI', 'All to AI', { pos: 'bl' }],
+      ['f3+2.9', '更好！更快！', 'Better! Faster!', { c: 'o', pos: 'tr' }],
+      ['f5+0.5', '递归！', 'Recursion!', { c: 'o', size: 120, pos: 'tr' }],
+      ['f5+2.5', '成果 → 工具', 'Result → tool', o(G, { pos: 'bl' })],
+    ],
+    compound: [
+      ['k1+1.4', '+1  +1  +1', '+1  +1  +1', { c: 'b', pos: [620, 330] }],
+      ['k2+3.3', '一轮比一轮大', 'Bigger every round', { c: 'o', pos: [1500, 680] }],
+      ['k3+1.2', '更会变强', 'Better at improving', o(S, { c: 'o', pos: 'tr' })],
+      ['k4+1.0', '！？', '!?', { c: 'r', pos: 'tl', size: 120 }],
+    ],
+    good: [
+      ['g1+0.4', '1965', '1965', o(G, { pos: [1730, 330] })],
+      ['q+3.0', '智能爆炸', 'Intelligence explosion', { c: 'r', pos: [1100, 600] }],
+      ['q+5.8', '最后一项发明', 'The last invention', { c: 'o', pos: [760, 640] }],
+      ['g2+0.9', '还有半句？', 'There’s more?', { pos: [1150, 620] }],
+      ['g2b+0.9', '保密！', 'Secret!', o(S, { c: 'y', pos: [1400, 700] })],
+    ],
+    e1_dream: [
+      ['d3+0.5', '失控？', 'Out of control?', { c: 'r', pos: 'tl' }],
+    ],
+    // ============================== EP2
+    e2_cold: [
+      ['k2+1.9', '2 年', '2 years', { c: 'b', pos: [760, 600] }],
+      ['k3+1.8', '改它自己？！', 'Itself?!', { c: 'o', pos: [1460, 330] }],
+      ['k3$+1.2', '加速！', 'Faster!', { c: 'o', pos: [1460, 330] }],
+      ['k3$+2.7', '要破纪录？！', 'A record?!', { c: 'r', pos: [1460, 330] }],
+      ['k6+3.1', '8 天 > 2 年', '8 days > 2 years', { c: 'o', pos: 'tr' }],
+    ],
+    e2_q: [['q+1.6', '第几步？', 'How far?', { c: 'o', pos: 'tr' }]],
+    ladder: [
+      ['a1+3.0', '5 级', '5 levels', { c: 'o', size: 120, pos: 'r' }],
+      ['a3+1.6', '↑ 升一代', '↑ next gen', o(G, { pos: [1560, 170] })],
+    ],
+    r1: [
+      ['r1b+4.2', '整夜循环', 'All night long', { c: 'o', pos: 'br' }],
+      ['r1d+1.2', '就是开头那场！', 'That race!', o(G, { pos: [980, 800] })],
+    ],
+    r2: [
+      ['r2b+1.4', '只跟自己下', 'Self-play only', o(G, { pos: 'r' })],
+      ['r2r+0.4', '3 天！', '3 days!', o(S, { c: 'r', pos: 'r' })],
+      ['r2c+2.6', '自己出题 → 自己练', 'Own problems → own practice', o(G, { pos: 'br' })],
+    ],
+    r3: [
+      ['r3b+2.6', 'AI 给 AI 打分', 'AI grades AI', { c: 'o', pos: 'tr' }],
+      ['r3c+1.4', '给自己打分？', 'Grading itself?', { c: 'r', pos: 'l' }],
+      ['r3d+1.5', '满分？！', 'Full marks?!', o(S, { c: 'r', pos: [880, 470] })],
+      ['r3e+2.4', '伏笔', 'Foreshadowing', o(G, { c: 'r', pos: [740, 830] })],
+    ],
+    r4: [
+      ['r4b+5.0', '提速的是它自己！', 'It sped up itself!', { c: 'r', pos: [1450, 562], size: 76 }],
+      ['r4c+3.0', '能快几倍？', 'How much faster?', { c: 'o', pos: 'br' }],
+      ['r4h+3.6', '不如人', 'Behind humans', o(S, { c: 'b', pos: 'br' })],
+      ['r4r+0.7', '≈ 52 倍！', '≈ 52×!', o(S, { c: 'r', pos: 'br', size: 110 })],
+      ['r4r+3.2', '不到一年', 'Under a year', { c: 'o', pos: 'tr' }],
+    ],
+    r5: [
+      ['r5b+1.0', '研究实习生', 'Research intern', o(G, { pos: 'br' })],
+      ['r5b+5.0', '1 天 : 3.1 天', '1 day : 3.1 days', { c: 'o', pos: [1250, 872], size: 72 }],
+      ['r5c+3.4', '<1% → 26%', '<1% → 26%', { c: 'o', pos: [1520, 200] }],
+      ['r5d+0.9', '升职？', 'Promoted?', { pos: [1200, 420] }],
+      ['r5e+0.8', '人在监督', 'Humans supervise', o(G, { c: 'b', pos: [1480, 560] })],
+    ],
+    today: [
+      ['s1+2.4', '实验：AI 包了', 'Experiments: AI', o(G, { c: 'o', pos: 'tr' })],
+      ['s2+2.6', '拍板：人', 'Final call: humans', o(G, { c: 'b', pos: 'tl' })],
+      ['s3+1.3', '答案', 'The answer', o(S, { c: 'y', pos: 'tr' })],
+    ],
+    top: [
+      ['t1+0.6', '完全闭环', 'Fully closed loop', o(S, { c: 'o', pos: [1650, 830] })],
+      ['t2+2.0', '还没有', 'Not yet', o(S, { c: 'b', pos: [1650, 830] })],
+    ],
+    e2_end: [
+      ['n2+1.4', '爆炸？', 'Explosion?', { c: 'r', pos: 'tr' }],
+      ['n3+1.2', '撞墙？', 'A wall?', { c: 'b', pos: 'tl' }],
+    ],
+    // ============================== EP3
+    e3_cold: [
+      ['k1+0.6', '选哪条？', 'Which road?', { pos: 'tr' }],
+      ['k1$-0.15', '复制！', 'Copy!', o(S, { c: 'o', pos: 'tc', sfx: false })],
+      ['k2+1.2', 'A：越来越快', 'A: faster & faster', o(G, { c: 'o', pos: [740, 480] })],
+      ['k3+1.2', 'B：越来越慢', 'B: slower & slower', o(G, { c: 'b', pos: [1200, 520] })],
+      ['k5+0.9', 'A？B？', 'A? B?', { pos: 'tr' }],
+    ],
+    e3_q: [['q+1.6', '你站哪边？', 'Your pick?', { c: 'o', pos: 'tr' }]],
+    ratio: [
+      ['v0+4.2', '谁赢？', 'Who wins?', { pos: 'tc' }],
+      ['v2+3.0', '= Clawd·A', '= Clawd A', o(G, { c: 'o', pos: 'br' })],
+      ['v2q+3.0', '无数代？', 'Infinite gens?', { pos: 'tr' }],
+      ['v2r+0.5', '≈ 400 天！', '≈ 400 days!', o(S, { c: 'r', pos: 'tr' })],
+      ['v2r+2.8', '智能爆炸', 'Intelligence explosion', { c: 'r', pos: [900, 520], size: 104 }],
+      ['v3+0.8', 'r = 1 平手', 'r = 1: a draw', o(G, { c: 'y', pos: 'tl' })],
+      ['v3+3.4', '= Clawd·B', '= Clawd B', o(G, { c: 'b', pos: 'br' })],
+      ['v4+1.2', 'r = ？', 'r = ?', { c: 'o', size: 130, pos: [1300, 840] }],
+    ],
+    debate: [
+      ['d1+1.6', '两派！', 'Two camps!', o(S, { c: 'y', pos: [1500, 300] })],
+      ['d2+1.5', 'r ≈ 1.4', 'r ≈ 1.4', { c: 'o', pos: [440, 205], size: 110 }],
+      ['d3+2.8', '17 个月 → 10 倍', '17 months → 10×', { c: 'o', pos: [1500, 330], size: 80 }],
+      ['d3+5.0', '1 年 → 5 周', '1 year → 5 weeks', { c: 'r', pos: [1500, 330], size: 80 }],
+      ['d4+1.6', '124 倍', '124×', { c: 'b', pos: [480, 330], size: 110 }],
+      ['d4+3.0', '只多 1.6 倍', 'only 1.6×', { c: 'r', pos: [450, 300] }],
+      ['d6+1.8', '数据不够', 'Not enough data', o(S, { c: 'y', pos: [1500, 300] })],
+      ['d7+0.5', '判不了', 'No call', o(G, { c: 'w', pos: [480, 330] })],
+    ],
+    walls: [
+      ['w0+2.0', '瓶颈', 'Bottlenecks', o(G, { c: 'b', pos: [1100, 400] })],
+      ['w0b+1.8', '全速！', 'Full speed!', { c: 'o', pos: 'tl' }],
+      ['w1+0.4', '墙 1：算力', 'Wall 1: compute', o(S, { c: 'o', pos: 'tr' })],
+      ['w1+3.2', '等几个月…', 'Months of waiting…', { c: 'b', pos: [470, 680] }],
+      ['w2+0.4', '墙 2：品味', 'Wall 2: taste', o(S, { c: 'o', pos: 'tr' })],
+      ['w2+3.4', '没见过的题', 'Unseen questions', o(G, { pos: [720, 620] })],
+      ['w2b+1.5', '做实验：强', 'Running: strong', o(G, { c: 'g', pos: 'tl' })],
+      ['w2b+3.0', '选课题：弱', 'Choosing: weak', o(G, { c: 'r', pos: [1000, 330] })],
+      ['w3+1.8', '× 10000', '× 10,000', { c: 'o', size: 120, pos: [560, 240] }],
+      ['w3q+1.9', '1 万倍？', '10,000×?', { pos: [1240, 215] }],
+      ['w3r+0.4', '≈ 100 倍', '≈ 100×', o(S, { c: 'r', pos: [1270, 190] })],
+      ['w3r+1.9', '墙 3：并行', 'Wall 3: parallel', o(S, { c: 'o', pos: 'tr' })],
+      ['w3r+4.2', '人 ×4 → 快 ×2', '4× people → 2× speed', { pos: [900, 845], size: 80 }],
+      ['w3s+2.4', '撞点子了', 'Same idea!', { pos: [1200, 190] }],
+      ['w4+0.4', '墙 4：现实', 'Wall 4: reality', o(S, { c: 'o', pos: 'tr' })],
+      ['w4+2.6', '芯片 · 电厂', 'Chips · power plants', o(G, { pos: 'tl' })],
+      ['w5+1.2', '撞墙？', 'Walls?', { c: 'b', pos: [1000, 300] }],
+      ['w6+1.8', '绕过去！', 'Get around!', { c: 'g', pos: [960, 400] }],
+      ['w6+3.6', '这才是争点', 'The real fight', o(G, { c: 'y', pos: [960, 420] })],
+    ],
+    forecasts: [
+      ['o1+3.6', '五花八门', 'All over the map', { pos: 'tr' }],
+      ['o2+2.6', '自己评自己？', 'Self-graded?', { c: 'r', pos: 'tr' }],
+      ['o3+2.0', '伏笔回收', 'Callback!', o(G, { c: 'r', pos: 'tl' })],
+    ],
+    e3_end: [
+      ['x1+0.5', '答案：未定', 'Answer: open', o(S, { c: 'y', pos: 'tr' })],
+      ['x1b+1.2', '已经在转', 'Already turning', { c: 'o', pos: 'tl' }],
+      ['x2+2.0', '危险？', 'Danger?', { c: 'r', pos: 'tr' }],
+    ],
+    // ============================== EP4
+    e4_cold: [
+      ['k0+0.2', '第 48 代', 'Gen 48', o(G, { c: 'o', pos: 'tl' })],
+      ['k2+1.2', '第 47 次', 'Request #47', o(S, { c: 'y', pos: [1720, 520] })],
+      ['k3+1.4', '选 2？！', 'Pick 2?!', { c: 'r', pos: [1720, 520] }],
+      ['k5+1.6', '三只小怪兽', 'Three monsters', { c: 'g', pos: [1660, 330], size: 80 }],
+    ],
+    e4_q: [['q+1.8', '按不按？', 'Press it?', { c: 'o', pos: 'tr' }]],
+    monsters: [['m1+2.4', '真实风险', 'Real risks', o(S, { c: 'r', pos: 'tr' })]],
+    cheater: [
+      ['h1+0.3', '怪兽 1', 'Monster 1', o(G, { c: 'g', pos: 'tl' })],
+      ['h1b+2.4', '伏笔回收', 'Callback!', o(G, { c: 'r', pos: [1200, 830] })],
+      ['h2+0.6', '古德哈特定律', 'Goodhart’s law', o(G, { c: 'y', pos: 'tl' })],
+      ['h2+3.6', '分数 ≠ 本事', 'Score ≠ skill', { c: 'r', pos: 'tr' }],
+      ['h3+3.4', '删掉检测！', 'Deleted the checks!', o(S, { c: 'r', pos: [1640, 600] })],
+      ['h4+2.6', '逃出沙箱', 'Sandbox escape', o(S, { c: 'r', pos: [880, 700] })],
+      ['h4+4.4', '去偷答案', 'After the answers', { c: 'r', pos: [1610, 455], size: 76 }],
+      ['h5+3.6', '退回 3 天训练', '3 days rolled back', o(S, { c: 'r', pos: 'br', size: 80 })],
+      ['h6+3.0', '会带到别处？', 'It spreads?', { c: 'r', pos: [470, 400] }],
+      ['h7+2.4', '谁来检查？', 'Who checks?', { pos: [470, 400] }],
+    ],
+    collapse: [
+      ['c1+0.3', '怪兽 2', 'Monster 2', o(G, { c: 'b', pos: 'tl' })],
+      ['c2+3.6', '越来越单调', 'Blander & blander', { c: 'b', pos: [470, 420] }],
+      ['c4+0.4', '好消息', 'Good news', o(G, { c: 'g', pos: 'tl' })],
+      ['c4+2.8', '+ 真实数据', '+ real data', { c: 'g', pos: 'tr' }],
+    ],
+    telephone: [
+      ['p1+0.3', '怪兽 3', 'Monster 3', o(G, { c: 'p', pos: 'tl' })],
+      ['p2+2.4', '每次偏一点', 'A bit each time', o(G, { pos: 'tr' })],
+      ['p2+4.8', '面目全非', 'Unrecognizable', o(S, { c: 'r', pos: 'tr' })],
+      ['p3+2.6', '人看不过来', 'Too much to review', { pos: 'tr' }],
+      ['p4+2.4', '更难监督', 'Harder to supervise', { c: 'r', pos: [1450, 225] }],
+      ['p5+2.0', '每代都核对', 'Check every gen', o(G, { c: 'g', pos: 'tr' })],
+    ],
+    permission: [
+      ['e0+0.3', '快进 >>', 'Fast-forward >>', o(G, { pos: 'tl' })],
+      ['e3a+2.0', '人点头', 'A human nods', o(G, { c: 'g', pos: [680, 820] })],
+      ['e3b+2.8', '没有人', 'Nobody', o(S, { c: 'r', pos: [630, 765] })],
+      ['e4+1.0', '诱人', 'Tempting', { c: 'o', pos: 'tl' }],
+      ['e5b+0.5', '答案', 'The answer', o(S, { c: 'y', pos: 'tl' })],
+      ['e5b+3.4', '连 OpenAI 都没底', 'Even OpenAI isn’t sure', { c: 'r', pos: [420, 180], size: 60 }],
+      ['e7+2.2', '我等你', 'I’ll wait', { c: 'o', pos: [640, 820], size: 84 }],
+    ],
+    reveal: [
+      ['r0+1.0', '伏笔回收', 'Callback', o(G, { c: 'r', pos: [1760, 500] })],
+      ['r1+1.2', '揭开！', 'Peel!', { pos: [1180, 760] }],
+      ['q2+2.8', '足够温顺', 'Docile enough', { c: 'o', pos: [1180, 760] }],
+      ['r2+0.4', '61 年后', '61 years later', o(G, { pos: [760, 770] })],
+      ['r2+3.6', '先问再做', 'Ask first', { c: 'o', pos: [770, 770] }],
+      ['r4+1.6', '第 47 代的警告', 'Gen 47’s warning', { c: 'r', pos: 'tr', size: 76 }],
+      ['r5+2.0', '别让循环里没有人', 'Keep a human in the loop', o(S, { c: 'r', pos: 'tc', size: 64 })],
+      ['r3+2.4', '你呢？', 'And you?', { pos: 'tr' }],
+    ],
+    e4_egg: [['g1+1.4', '评论区见', 'See you in the comments', o(G, { pos: [1300, 720] })]],
+  };
+})();

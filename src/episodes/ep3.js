@@ -1,6 +1,7 @@
 /* 《Clawd 造 Clawd》第 3 集《爆炸，还是撞墙？》— manifest + the episode's own scenes:
    cold open (分身思想实验：越改越快 vs 越改越慢) · recap · 本集问题 · the night road · cliffhanger · next-episode teaser.
-   The body lives in src/scenes/debate.js (tree · ratio · debate · walls) and src/scenes/timeline2026.js (forecasts). */
+   The body lives in src/scenes/debate.js (ratio · debate · walls) and src/scenes/timeline2026.js (forecasts).
+   v3: cold open runs 1.3× faster (SPD), recap 2 beats, no episode-number line, tighter night road, 3-beat teaser. */
 (function () {
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X, Sx = RSI.Series, MON = RSI.Monster;
@@ -11,6 +12,8 @@
   const MID = 960, GY = 800;                  // split divider · ground line of both futures
   const AX = 330, BX0 = 1150, BWALL = 1745, WALL_U = 7.2;
   const PXD = 1.6;                            // px per day — the same ruler on both sides
+  const SPD = 1.3, OFF = 0.6;                 // v3: the two futures play 1.3× faster, starting 0.6 s after k1 (v2: 1.0× / 0.9 s)
+  const cu = (u) => 'k1$+' + (OFF + u / SPD).toFixed(2);   // cue time for model time u
   const FX0 = 960, FY0 = 900, FS0 = 11;       // Clawd at the fork
   const nA = (u) => (u <= 0 ? 8 : u >= 4 ? Infinity : 8 + Math.log(1 - u / 4) / Math.log(0.75)); // each gen takes 3/4 of the last
   const nB = (u) => 8 + Math.log(1 + M.clamp(u, 0, WALL_U) / 2) / Math.log(1.5);                // each gen takes 1.5× the last
@@ -59,23 +62,23 @@
     }
   };
   RSI.defScene({
-    id: 'e3_cold', music: 'hook', hud: false, label: false, fade: [0.1, 0.25], lead: 0.35, pad: 1.0,
+    id: 'e3_cold', music: 'hook', hud: false, label: false, fade: [0.1, 0.25], lead: 0.3, pad: 0.6,
     lines: [
-      { id: 'k1', who: 'clawd', zh: '两条路，我选不出来……那就复制一个我，两条都走！', en: 'Two roads, and I can’t pick one… So I’ll copy myself and take both!', at: 0.35, min: 3.6, maxW: 620 },
-      { id: 'k2', who: 'clawd', zh: '第 9 代、第 10 代、第 11 代……一代比一代来得快！', en: 'Gen 9, Gen 10, Gen 11… each one comes faster than the last!', at: 'k1$+1.0', maxW: 440 },
-      { id: 'k3', who: 'clawd2', zh: '第 9 代……第 10 代……怎么一代比一代慢？', en: 'Gen 9… Gen 10… why is each one slower than the last?', at: 'k2$+0.15', maxW: 440 },
-      { id: 'k4', who: 'narr', zh: '同一个 Clawd，同一个循环——一个越改越快，一个越改越慢。', en: 'Same Clawd, same loop — one gets faster and faster, the other slower and slower.', at: 'k3$+0.5' },
-      { id: 'k5', who: 'clawd', zh: '所以我……到底会是哪一个？', en: 'So which one… will I turn out to be?', at: 'k4$+0.9', min: 2.8 },
+      { id: 'k1', who: 'clawd', zh: '两条路，我选不出来……那就复制一个我，两条都走！', en: 'Two roads, and I can’t pick one… So I’ll copy myself and take both!', at: 0.3, min: 3.1, maxW: 620 },
+      { id: 'k2', who: 'clawd', zh: '第 9 代、第 10 代、第 11 代……一代比一代来得快！', en: 'Gen 9, Gen 10, Gen 11… each one comes faster than the last!', at: 'k1$+0.7', maxW: 440 },
+      { id: 'k3', who: 'clawd2', zh: '第 9 代……第 10 代……怎么一代比一代慢？', en: 'Gen 9… Gen 10… why is each one slower than the last?', at: 'k2$+0.1', maxW: 440 },
+      { id: 'k4', who: 'narr', zh: '同一个循环：一个越改越快，一个越改越慢。', en: 'Same loop: one gets faster and faster, the other slower and slower.', at: 'k3$+0.3' },
+      { id: 'k5', who: 'clawd', zh: '所以我……到底会是哪一个？', en: 'So which one… will I turn out to be?', at: 'k4$+0.6', min: 2.0 },
     ],
     cues: [
-      [0.15, 'heart'], ['k1+1.7', 'heart'], ['k1$-0.12', 'copy'], ['k1$+0.1', 'whoosh'], ['k1$+0.45', 'cut'],
-      ...[9, 10, 11, 12, 13, 14, 15, 16].map((n) => ['k1$+' + (0.9 + uA(n)).toFixed(2), 'tick']),
-      ['k1$+' + (0.9 + 2.2).toFixed(2), 'riser', { dur: 1.8 }], ['k1$+4.9', 'boom'],
-      ...[9, 10, 11].map((n) => ['k1$+' + (0.9 + uB(n)).toFixed(2), 'thud']), ['k1$+' + (0.9 + WALL_U).toFixed(2), 'boing'],
+      [0.15, 'heart'], ['k1+1.5', 'heart'], ['k1$-0.12', 'copy'], ['k1$+0.1', 'whoosh'], ['k1$+0.4', 'cut'],
+      ...[9, 10, 11, 12, 13, 14, 15, 16].map((n) => [cu(uA(n)), 'tick']),
+      [cu(2.2), 'riser', { dur: 1.8 / SPD }], [cu(4.0), 'boom'],
+      ...[9, 10, 11].map((n) => [cu(uB(n)), 'thud']), [cu(WALL_U), 'boing'],
       ['k4$+0.1', 'restore'], ['k5', 'heart'],
     ],
     draw(ctx, t, S) {
-      const t1 = S.E('k1'), ts = t1 + 0.9, u = t - ts, tm = S.R('k4$+0.1');
+      const t1 = S.E('k1'), ts = t1 + OFF, u = (t - ts) * SPD, tm = S.R('k4$+0.1');
       const open = M.seg(t, t1 - 0.05, t1 + 0.55, M.ease.inOutCubic) * (1 - M.seg(t, tm, tm + 0.7, M.ease.inOutCubic));
       const merged = t >= tm + 0.7;
       fork(ctx, t);
@@ -151,10 +154,10 @@
         const mk = M.ease.inOutCubic(M.seg(t, tm, tm + 0.7));
         let expr = X.blink(t, 6) ? 'blink' : 'normal', look = [0, -0.6], armL = 0, armR = 0, hop = { dy: 0, sx: 1, sy: 1 };
         if (t < t1) {
-          if (t < 1.6) { expr = 'worried'; look = [-0.9, -0.9]; } else if (t < 2.7) { expr = 'worried'; look = [0.9, -0.5]; }
-          else { expr = 'determined'; look = [0, -0.3]; armL = armR = M.seg(t, 2.7, 3.0) * 0.95; hop = X.hop(t, t1 - 0.6, 0.4, 30); }
+          if (t < 1.3) { expr = 'worried'; look = [-0.9, -0.9]; } else if (t < 2.3) { expr = 'worried'; look = [0.9, -0.5]; }
+          else { expr = 'determined'; look = [0, -0.3]; armL = armR = M.seg(t, 2.3, 2.6) * 0.95; hop = X.hop(t, t1 - 0.6, 0.4, 30); }
           const hd = K.draw(ctx, FX0, FY0 + hop.dy, FS0, { gen: 8, expr, look, armL, armR, sx: hop.sx, sy: hop.sy });
-          if (t > 0.5 && t < 2.7) X.mark(ctx, '?', FX0 + (t < 1.6 ? -90 : 90), hd[1] - 20, t - (t < 1.6 ? 0.5 : 1.6), C.yellow, 64);
+          if (t > 0.4 && t < 2.3) X.mark(ctx, '?', FX0 + (t < 1.3 ? -90 : 90), hd[1] - 20, t - (t < 1.3 ? 0.4 : 1.3), C.yellow, 64);
           S.anchors.clawd = [FX0 + 104, hd[1] + 44]; S.sides.clawd = 'right';
         } else {
           // the two copies fly back together…
@@ -177,15 +180,12 @@
   // ================================================================== 2 · sting · recap · this episode's question
   Sx.sting(3);
   Sx.recap(3, [
-    { from: 'e2_cold', at: 'k5', zh: 'AI 改进自己 8 天，胜过了人类打磨 2 年。', en: 'An AI improving itself for 8 days beat two years of human polishing.' },
-    { from: 'r3', at: 'r3d', zh: '它已经会自己出题、自己当裁判——甚至给自己打满分。', en: 'It already sets its own practice problems and judges itself — even giving itself full marks.' },
-    { from: 'today', at: 's3+2', zh: '答案是：AI 已经在改进自己——但拍板的，还是人。', en: 'The answer: AI is already improving itself — but humans still make the call.' },
-    { from: 'e2_end', at: 'n4', zh: '梯子顶上一片浓雾，路分成两条：越转越快，还是越转越慢？', en: 'Above the ladder, only fog — and two roads: faster and faster, or slower and slower?' },
+    { from: 'e2_cold', at: 'k5', zh: 'AI 改进自己 8 天，胜过人类打磨 2 年。', en: 'An AI improving itself for 8 days beat two years of human polishing.' },
+    { from: 'e2_end', at: 'n4', zh: '再往上：越转越快，还是越转越慢？', en: 'Further up: faster and faster — or slower and slower?' },
   ], { gen: 8 });
   RSI.allScenes.e3_recap.hud = false;
   Sx.question(3, { zh: '智能会“爆炸”吗？\n还是迟早撞墙？', en: 'Will intelligence “explode”?\nOr hit a wall sooner or later?' }, {
-    lines: [{ id: 'q2', who: 'narr', zh: '这是《Clawd 造 Clawd》第 3 集（共 4 集）。上一集，我们看到 AI 已经开始改进自己；这一集，看看它会越改越快，还是越改越慢。', en: 'This is Episode 3 of 4. Last time we saw AI already starting to improve itself; this time, we ask whether it gets faster and faster — or slower and slower.', at: 'q+1.7', hold: 0.3 }],
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q2') - 0.2, S.T('q2') + 0.4); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 3, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 3, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e3_q.hud = false;
 
@@ -197,27 +197,27 @@
   const LOOP = [['bulb', { zh: '想法', en: 'idea' }], ['flask', { zh: '实验', en: 'experiment' }], ['chart', { zh: '评估', en: 'evaluate' }], ['decide', { zh: '决定', en: 'decide' }]];
   const stars = Array.from({ length: 90 }, (_, i) => [M.hash(i * 3.1) * W, M.hash(i * 7.7) * 560, 0.8 + M.hash(i * 1.3) * 2.2, M.hash(i * 9.1) * 6]);
   RSI.defScene({
-    id: 'e3_end', music: 'tension', lead: 0.8, pad: 1.0, chapter: { zh: '夜路', en: 'The night road' },
+    id: 'e3_end', music: 'tension', fade: [0.3, 0], lead: 0.5, pad: -0.5, chapter: { zh: '夜路', en: 'The night road' },
     lines: [
-      { id: 'x1', who: 'narr', zh: '所以，本集问题的答案是：还没有定论。但现在你知道该盯着什么了——r 比 1 大还是小，那几堵墙绕不绕得过去。', en: 'So the answer to this episode’s question: nobody knows yet. But now you know what to watch — whether r is above or below 1, and whether those walls can be got around.', hold: 0.6 },
-      { id: 'x1b', who: 'narr', zh: '可不管是哪一种，这个循环，已经开始转了。', en: 'Either way, the loop has already started turning.', gap: 0.3, hold: 0.6 },
-      { id: 'x2', who: 'narr', zh: '而就算它真能越转越快——路上，也未必太平。', en: 'And even if it really does keep speeding up — the road ahead may not be safe.', gap: 0.35, hold: 0.8 },
-      { id: 'x3', who: 'clawd', zh: '……谁在那儿？', en: '…Who’s there?', gap: 0.3, min: 2.6 },
+      { id: 'x1', who: 'narr', zh: '答案：还没有定论。但你知道该盯什么了——r 比 1 大还是小，那几堵墙绕不绕得过去。', en: 'The answer: nobody knows yet. But now you know what to watch — whether r is above or below 1, and whether those walls can be got around.', hold: 0.3 },
+      { id: 'x1b', who: 'narr', zh: '可不管是哪一种，这个循环，已经开始转了。', en: 'Either way, the loop has already started turning.', gap: 0.15, hold: 0.3 },
+      { id: 'x2', who: 'narr', zh: '而就算它真能越转越快——路上，也未必太平。', en: 'And even if it really does keep speeding up — the road ahead may not be safe.', gap: 0.15, hold: 0.4 },
+      { id: 'x3', who: 'clawd', zh: '……谁在那儿？', en: '…Who’s there?', gap: 0.2, min: 2.0 },
     ],
-    cues: [[0.3, 'sneak'], ['x1+2.6', 'pop'], ['x1+4.6', 'pop'], ['x1b+0.9', 'loopClose'], ['x1b+1.1', 'chime'], ['x2+1.3', 'whisper'], ['x2+1.7', 'buzz'], ['x3', 'gulp'], ['x3+0.3', 'heart']],
+    cues: [[0.3, 'sneak'], ['x1+1.6', 'pop'], ['x1+2.8', 'pop'], ['x1b+0.9', 'loopClose'], ['x1b+1.1', 'chime'], ['x2+1.3', 'whisper'], ['x2+1.7', 'buzz'], ['x3', 'gulp'], ['x3+0.3', 'heart']],
     draw(ctx, t, S) {
       const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#070A14'); g.addColorStop(0.55, '#111626'); g.addColorStop(1, '#0A0A0C'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       for (const [x, y, r, ph] of stars) { ctx.fillStyle = `rgba(240,238,230,${0.25 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.7 + ph))})`; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
       // crescent moon
       ctx.fillStyle = '#EDE6CF'; ctx.beginPath(); ctx.arc(1730, 120, 44, 0, 7); ctx.fill(); ctx.fillStyle = '#0A0D18'; ctx.beginPath(); ctx.arc(1750, 106, 40, 0, 7); ctx.fill();
       // ---- what to watch (x1): r vs 1, and the four walls — drawn like constellations
-      const wa = M.seg(t, S.T('x1') + 2.4, S.T('x1') + 2.9) * (1 - M.seg(t, S.T('x1b'), S.T('x1b') + 0.6));
+      const wa = M.seg(t, S.T('x1') + 1.6, S.T('x1') + 2.1) * (1 - M.seg(t, S.T('x1b'), S.T('x1b') + 0.6));
       if (wa > 0) {
         ctx.save(); ctx.globalAlpha *= wa;
         const cst = (x, y, w, h, col) => { ctx.strokeStyle = RSI.rgba(col, 0.6); ctx.lineWidth = 2; ctx.setLineDash([6, 8]); D.rr(ctx, x, y, w, h, 16); ctx.stroke(); ctx.setLineDash([]);
           [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].forEach(([a, b]) => D.sparkle(ctx, a, b, 12, col, 0.9, t)); };
         cst(300, 170, 380, 150, C.orange); T.line(ctx, 'r  >  1 ?', 490, 232, 72, C.orangeHi, 900, 'center'); T.line(ctx, { zh: '越转越快，还是越转越慢', en: 'faster, or slower?' }, 490, 292, 24, C.orangeL, 700, 'center');
-        const wb = M.seg(t, S.T('x1') + 4.4, S.T('x1') + 4.9);
+        const wb = M.seg(t, S.T('x1') + 2.8, S.T('x1') + 3.3);
         ctx.globalAlpha *= wb; cst(820, 170, 800, 150, C.blue);
         [{ zh: '算力墙', en: 'compute' }, { zh: '品味墙', en: 'taste' }, { zh: '并行墙', en: 'parallel' }, { zh: '现实墙', en: 'reality' }].forEach((w, i) => {
           const x = 850 + i * 192; for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) { ctx.fillStyle = (r + c) % 2 ? '#7A4434' : '#6A3A2D'; ctx.fillRect(x + 14 + c * 46 + (r % 2) * 10, 192 + r * 32, 44, 29); }
@@ -284,18 +284,17 @@
   // ================================================================== 4 · cliffhanger + next time
   Sx.cliff(3, { from: 'e3_end', at: 'x3$-0.5', fx: 1000, fy: 560, tx: 1240, ty: -230 });
   Sx.next(3, [
-    { from: 'e4_cold', at: 'k2', zh: '要让我训练第 48 代吗？', en: 'Shall I train Generation 48?', fb: { from: 'permission', at: 'e1+1.5' } },
+    { from: 'e4_cold', at: 'k2', zh: '要让我训练第 48 代吗？', en: 'Shall I train Generation 48?' },
     { from: 'cheater', at: 'h1+1.5', zh: '作弊怪：分数高就行？', en: 'The Cheater: as long as the score is high?' },
-    { from: 'telephone', at: 'p2+1', zh: '传话怪：传着传着，就走了样', en: 'The Whisperer: pass it along, and it drifts' },
-    { from: 'permission', at: 'e2', zh: '“以后都不用再问我”——这个选项，谁来按？', en: '“Don’t ask me again” — who presses that option?' },
-  ], { gen: 12, bye: { zh: '最后一集：三只小怪兽，和一个“以后都不用再问我”的按钮。下集见！', en: 'The final episode: three little monsters, and a “don’t ask me again” button. See you then!' } });
+    { from: 'permission', at: 'e1+1.5', zh: '“以后都不用再问我”——谁来按？', en: '“Don’t ask me again” — who presses it?' },
+  ], { gen: 12, bye: { zh: '最后一集：三只小怪兽。下集见！', en: 'The final episode: three little monsters. See you then!' } });
 
   // ================================================================== manifest
   Object.assign(RSI.EPS[2], {
-    scenes: ['e3_cold', 'e3_sting', 'e3_recap', 'e3_q', 'tree', 'ratio', 'debate', 'walls', 'forecasts', 'e3_end', 'e3_cliff', 'e3_next'],
+    scenes: ['e3_cold', 'e3_sting', 'e3_recap', 'e3_q', 'ratio', 'debate', 'walls', 'forecasts', 'e3_end', 'e3_cliff', 'e3_next'],
     chapters: {
       e3_cold: { zh: '开场', en: 'Cold open' }, e3_recap: { zh: '上回书说到', en: 'Previously' }, e3_q: { zh: '本集问题', en: 'This episode' },
-      tree: { zh: '低处的果子', en: 'Low-hanging fruit' }, ratio: { zh: '一个数：r', en: 'One number: r' }, debate: { zh: '两派之争', en: 'Two camps' },
+      ratio: { zh: '一个数：r', en: 'One number: r' }, debate: { zh: '两派之争', en: 'Two camps' },
       walls: { zh: '四堵墙', en: 'Four walls' }, forecasts: { zh: '什么时候？', en: 'When?' }, e3_end: { zh: '夜路', en: 'The night road' }, e3_next: { zh: '下集预告', en: 'Next time' },
     },
   });

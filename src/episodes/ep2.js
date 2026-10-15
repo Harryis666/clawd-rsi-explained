@@ -42,14 +42,14 @@
     }
   };
   RSI.defScene({
-    id: 'e2_cold', music: 'hook', hud: false, label: false, fade: [0.1, 0.25], lead: 0.35, pad: 1.3,
+    id: 'e2_cold', music: 'hook', hud: false, label: false, fade: [0.1, 0.25], lead: 0.35, pad: 0.8,
     lines: [
-      { id: 'k1', who: 'clawd', zh: '各位观众！欢迎来到——“AI 改进 AI”大赛！', en: 'Ladies and gentlemen! Welcome to — the “AI Improves AI” Championship!', min: 2.8 },
-      { id: 'k2', who: 'clawd', zh: '1 号赛道：人类工程师！这个 AI 程序，他们打磨了整整 2 年！', en: 'Lane one: human engineers! They spent two whole years polishing this AI program!', gap: 0.2 },
-      { id: 'k3', who: 'clawd', zh: '2 号赛道：AI 自己！它要改进的……正是它自己！', en: 'Lane two: the AI itself! And what it’s improving is… itself!', gap: 0.2 },
-      { id: 'k5', who: 'clawd', zh: '第 8 天——冲线了！破纪录！', en: 'Day eight — over the line! A new record!', at: 'k3$+4.07', min: 2.6 },
-      { id: 'k6', who: 'narr', zh: '这不是科幻：2026 年，一家 AI 公司公布了这项实验——AI 改进自己 8 天，胜过人类 2 年的打磨。', en: 'This isn’t science fiction: in 2026, an AI company published this experiment — an AI improving itself for 8 days beat two years of human polishing.', gap: 0.35, hold: 0.5 },
-      { id: 'k7', who: 'clawd', zh: '……等等。AI，已经在改进自己了？', en: '…Wait. AI is already improving itself?', gap: 0.3, min: 3.0 },
+      { id: 'k1', who: 'clawd', zh: '欢迎来到——“AI 改进 AI”大赛！', en: 'Welcome to — the “AI Improves AI” Championship!', min: 2.4 },
+      { id: 'k2', who: 'clawd', zh: '1 号赛道：人类工程师，这个程序他们打磨了 2 年！', en: 'Lane one: human engineers — two years polishing this program!', min: 2.9 },
+      { id: 'k3', who: 'clawd', zh: '2 号赛道：AI——它要改进的，正是它自己！', en: 'Lane two: the AI — and what it’s improving is itself!', min: 2.4 },
+      { id: 'k5', who: 'clawd', zh: '第 8 天——冲线了！破纪录！', en: 'Day eight — over the line! A new record!', at: 'k3$+4.07', min: 2.0 },
+      { id: 'k6', who: 'narr', zh: '这不是科幻：2026 年，一家 AI 公司公布了这项实验——AI 改进自己 8 天，胜过人类 2 年的打磨。', en: 'This isn’t science fiction: in 2026, an AI company published this experiment — an AI improving itself for 8 days beat two years of human polishing.', hold: 0.2 },
+      { id: 'k7', who: 'clawd', zh: '……等等。AI，已经在改进自己了？', en: '…Wait. AI is already improving itself?', min: 2.4 },
     ],
     cues: [
       [0, 'fanfare'], [0.1, 'whoosh'], ['k2+0.4', 'riser', { dur: 1.9 }], ['k2+2.35', 'stamp'], ['k3+0.1', 'land'], ['k3+1.3', 'pop'],
@@ -181,15 +181,12 @@
   // ================================================================== 2 · sting · recap · this episode's question
   Sx.sting(2);
   Sx.recap(2, [
-    { from: 'open', at: 'u1+2', zh: '人类给第 1 代 Clawd 下了一条离谱的任务：造一个比自己更聪明的 Clawd。', en: 'Humans gave Clawd Gen 1 a ridiculous task: build a Clawd smarter than itself.' },
-    { from: 'flip', at: 'f4', zh: 'Clawd 想到：让 AI 去改进“变聪明的方法”，就能一代造一代。', en: 'Clawd’s idea: let AI improve “the way to get smarter” — and each generation builds the next.' },
-    { from: 'compound', at: 'k3', zh: '而且每一代，都更会造下一代——利滚利。', en: 'And each generation is better at building the next — interest on interest.' },
-    { from: 'e1_dream', at: 'd4', zh: '可要是这个循环一直转下去……它停得下来吗？', en: 'But if the loop keeps spinning… can it stop?' },
+    { from: 'flip', at: 'f4', zh: 'AI 改进“变聪明的方法”，一代造一代——而且越造越快。', en: 'AI improves “the way to get smarter”: each generation builds the next — faster and faster.' },
+    { from: 'e1_dream', at: 'd4', zh: '可这个循环……停得下来吗？', en: 'But can this loop… ever stop?' },
   ], { gen: 3 });
   RSI.allScenes.e2_recap.hud = false;
   Sx.question(2, { zh: 'AI 已经在改进自己了吗？\n改到了哪一步？', en: 'Is AI already improving itself?\nHow far has it got?' }, {
-    lines: [{ id: 'q2', who: 'narr', zh: '这是《Clawd 造 Clawd》第 2 集（共 4 集）。上一集，我们搞懂了 RSI 是什么；这一集，看看现实中它走到了哪一步。', en: 'This is Episode 2 of 4. Last time we worked out what RSI is; this time, we see how far it has really come.', at: 'q+1.7', hold: 0.3 }],
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q2') - 0.2, S.T('q2') + 0.4); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 2, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 2, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e2_q.hud = false;
 
@@ -208,12 +205,12 @@
     T.line(ctx, text, (w - 34) / 2 + 6, 2, EN() ? 26 : 32, RSI.mix(C.paper, col, 0.5 * glow), 900, 'center'); ctx.restore();
   };
   RSI.defScene({
-    id: 'e2_end', music: 'tension', lead: 0.9, pad: 1.1, chapter: { zh: '浓雾里的岔路', en: 'A fork in the fog' },
+    id: 'e2_end', music: 'tension', fade: [0.3, 0], lead: 0.7, pad: -0.6, chapter: { zh: '两种预测', en: 'Two forecasts' },
     lines: [
-      { id: 'n1', who: 'narr', zh: '再往上，是一片浓雾。路，在这里分成了两条。', en: 'Above this point there’s only fog — and here, the road splits in two.', hold: 0.3 },
-      { id: 'n2', who: 'narr', zh: '有人说：这个循环会越转越快，像火箭一样，冲向“智能爆炸”；', en: 'Some say the loop will spin faster and faster, shooting up like a rocket toward an “intelligence explosion”;', gap: 0.3, hold: 0.4 },
-      { id: 'n3', who: 'narr', zh: '也有人说：它会越转越慢，迟早撞上一堵墙。', en: 'others say it will spin slower and slower — and sooner or later hit a wall.', gap: 0.3, hold: 0.9 },
-      { id: 'n4', who: 'clawd', zh: '我……会走哪一条？', en: 'Which one… will I take?', gap: 0.3, min: 2.8 },
+      { id: 'n1', who: 'narr', zh: '再往上会怎样？有两种预测。', en: 'What happens further up? There are two forecasts.', min: 2.2 },
+      { id: 'n2', who: 'narr', zh: '一种说：循环越转越快，冲向“智能爆炸”；', en: 'One: the loop spins faster and faster, toward an “intelligence explosion”;', min: 2.7 },
+      { id: 'n3', who: 'narr', zh: '另一种说：越转越慢，迟早撞墙。', en: 'the other: it spins slower and slower, and sooner or later hits a wall.', min: 2.5 },
+      { id: 'n4', who: 'clawd', zh: '我……会走哪一条？', en: 'Which one… will I take?', min: 2.0 },
     ],
     cues: [[0.25, 'climb'], [0.7, 'land'], ['n1+1.1', 'thud'], ['n2+0.5', 'rocket'], ['n3+0.6', 'roll'], ['n3+2.25', 'thud'], ['n4', 'heart']],
     draw(ctx, t, S) {
@@ -272,20 +269,19 @@
   // ================================================================== 4 · cliffhanger + next time
   Sx.cliff(2, { from: 'e2_end', at: 'n4$-0.6', fx: 800, fy: 640, tx: 1330, ty: -250 });
   Sx.next(2, [
-    { from: 'e3_cold', at: 'k2', zh: '越改越快？还是越改越慢？', en: 'Faster and faster — or slower and slower?', fb: { from: 'tree', at: 'e3' } },
-    { from: 'forecasts', at: 'o1+2.5', zh: '什么时候到顶？专家们吵翻了天', en: 'When do we reach the top? The experts can’t agree' },
-    { from: 'walls', at: 'w3+1.0', zh: '一万个 Clawd 一起干活，会快一万倍吗？', en: 'Ten thousand Clawds at once — ten thousand times faster?' },
-    { from: 'e3_end', at: 'x3', zh: '……谁在那儿？', en: '…Who’s there?', fb: { from: 'walls', at: 'w6' } },
-  ], { gen: 8, bye: { zh: '爆炸，还是撞墙？下集，听听科学家们怎么吵。下集见！', en: 'Explosion, or a wall? Next time, we hear the scientists fight it out. See you then!' } });
+    { from: 'e3_cold', at: 'k2', zh: '越改越快？还是越改越慢？', en: 'Faster — or slower?' },
+    { from: 'walls', at: 'w3+1.0', zh: '一万个 Clawd，会快一万倍吗？', en: '10,000 Clawds — 10,000× faster?' },
+    { from: 'e3_end', at: 'x3', zh: '……谁在那儿？', en: '…Who’s there?' },
+  ], { gen: 8, bye: { zh: '爆炸，还是撞墙？下集见！', en: 'Explosion, or a wall? See you next time!' } });
 
   // ================================================================== manifest
   Object.assign(RSI.EPS[1], {
     scenes: ['e2_cold', 'e2_sting', 'e2_recap', 'e2_q', 'ladder', 'r1', 'r2', 'r3', 'r4', 'r5', 'today', 'top', 'e2_end', 'e2_cliff', 'e2_next'],
     chapters: {
       e2_cold: { zh: '开场', en: 'Cold open' }, e2_recap: { zh: '上回书说到', en: 'Previously' }, e2_q: { zh: '本集问题', en: 'This episode' },
-      ladder: { zh: '五级梯子', en: 'A five-rung ladder' }, r1: { zh: '第 1 级', en: 'Rung 1' }, r2: { zh: '第 2 级', en: 'Rung 2' }, r3: { zh: '第 3 级', en: 'Rung 3' },
-      r4: { zh: '第 4 级', en: 'Rung 4' }, r5: { zh: '第 5 级', en: 'Rung 5' }, today: { zh: '本集答案', en: 'The answer' }, top: { zh: '梯子顶端', en: 'The top' },
-      e2_end: { zh: '浓雾里的岔路', en: 'A fork in the fog' }, e2_next: { zh: '下集预告', en: 'Next time' },
+      ladder: { zh: '五个层级', en: 'Five rungs' }, r1: { zh: '第 1 级', en: 'Rung 1' }, r2: { zh: '第 2 级', en: 'Rung 2' }, r3: { zh: '第 3 级', en: 'Rung 3' },
+      r4: { zh: '第 4 级', en: 'Rung 4' }, r5: { zh: '第 5 级', en: 'Rung 5' }, today: { zh: '本集答案', en: 'The answer' }, top: { zh: '最高一级', en: 'The top rung' },
+      e2_end: { zh: '两种预测', en: 'Two forecasts' }, e2_next: { zh: '下集预告', en: 'Next time' },
     },
   });
 })();

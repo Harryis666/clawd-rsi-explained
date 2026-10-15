@@ -7,18 +7,17 @@
 
   // ---------------- the human research loop ----------------
   RSI.defScene({
-    id: 'lab', music: 'lofi', lead: 0.8,
+    id: 'lab', music: 'lofi',
     lines: [
-      { id: 'l1', who: 'narr', zh: '先看看今天的 AI 是怎么变强的：靠人。', en: 'First, how does AI get better today? Through people.' },
-      { id: 'l2', who: 'narr', zh: '研究员提出{b|想法}，写代码做{b|实验}，看{b|评估}分数，再{b|决定}下一步。', en: 'Researchers come up with an {b|idea}, run an {b|experiment}, {b|evaluate} the score, then {b|decide} what to do next.', hold: 1.0 },
-      { id: 'l3', who: 'narr', zh: '这样转一圈，往往要几天到几周——研究员还得吃饭、睡觉、开组会。', en: 'One lap takes days to weeks — and researchers also need to eat, sleep and sit through meetings.', hold: 1.2 },
+      { id: 'l2', who: 'narr', zh: '今天的 AI 靠人来改进：研究员提出{b|想法}，做{b|实验}，看{b|评估}分数，再{b|决定}下一步。', en: 'Today, people improve AI: researchers come up with an {b|idea}, run an {b|experiment}, {b|evaluate} the score, then {b|decide} the next step.', hold: 0.6 },
+      { id: 'l3', who: 'narr', zh: '这样转一圈，往往要几天到几周——研究员还得吃饭、睡觉、开组会。', en: 'One lap takes days to weeks — and researchers also need to eat, sleep and sit through meetings.', hold: 0.5 },
       { id: 'l4', who: 'clawd', zh: '所以这个圈转得慢，是因为……人要睡觉？', en: 'So the loop is slow because… humans need sleep?', maxW: 470 },
     ],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
       X.floor(ctx, 820);
-      const day = t / 7; const night = (day % 1) > 0.62;
-      const hl = t < S.T('l2') ? -1 : t < S.E('l2') ? Math.min(3, Math.floor(M.seg(t, S.T('l2'), S.T('l2') + 4.6) * 4)) : -1;
+      const day = t / 5; const night = (day % 1) > 0.62;
+      const hl = t < S.T('l2') ? -1 : t < S.E('l2') ? Math.min(3, Math.floor(M.seg(t, S.T('l2') + 0.8, S.T('l2') + 4.8) * 4)) : -1;
       const st = night ? 'sleep' : hl === 1 ? 'type' : hl === 0 || hl === 2 ? 'think' : 'type';
       RSI.Human.desk(ctx, 330, 820, 1.35, { state: st, t });
       // day counter
@@ -41,8 +40,8 @@
 
   // ---------------- I. J. Good, 1965 ----------------
   const QUOTE = {
-    zh: '“既然设计机器也是一种智力活动，那么一台超智能机器就能设计出更好的机器；届时无疑会出现一场‘智能爆炸’，人类的智力将被远远甩在后面。因此，第一台超智能机器，将是人类需要做出的最后一项发明，”',
-    en: '“Since the design of machines is one of these intellectual activities, an ultraintelligent machine could design even better machines; there would then unquestionably be an ‘intelligence explosion,’ and the intelligence of man would be left far behind. Thus the first ultraintelligent machine is the last invention that man need ever make,”',
+    zh: '“……一台超智能机器能设计出更好的机器；届时无疑会出现一场‘智能爆炸’……因此，第一台超智能机器，将是人类需要做出的最后一项发明，”',
+    en: '“…an ultraintelligent machine could design even better machines; there would then unquestionably be an ‘intelligence explosion’… Thus the first ultraintelligent machine is the last invention that man need ever make,”',
   };
   RSI.QUOTE2 = { zh: '“……前提是，这台机器足够温顺，愿意告诉我们如何控制它。”', en: '“…provided that the machine is docile enough to tell us how to keep it under control.”' };
   RSI.drawPaper = (ctx, t, S, o) => {
@@ -66,15 +65,14 @@
     return { sy };
   };
   RSI.defScene({
-    id: 'good', music: 'lofi', lead: 0.6,
+    id: 'good', music: 'lofi', pad: 1.0,
     lines: [
-      { id: 'g1', who: 'narr', zh: '那一年，曾与图灵共事的英国数学家 I. J. Good 写道：', en: 'That year, I. J. Good — a British mathematician who had worked with Alan Turing — wrote:' },
-      { id: 'q', who: 'sys', zh: QUOTE.zh, en: QUOTE.en, at: 'g1+1.2', dur: 9.5, par: 1 },
-      { id: 'g2', who: 'narr', zh: '这句话还没完，后面还有半句。', en: 'And the sentence isn’t over — there’s a second half.', at: 'q$+0.2', min: 2.2 },
-      { id: 'g2b', who: 'clawd', zh: '后半句……先贴起来！', en: 'The second half… let’s cover it up!', gap: 0.15, min: 1.9 },
-      { id: 'g2c', who: 'clawd', zh: '你猜它写了什么？答案，留到第 4 集揭晓。', en: 'Guess what it says? We’ll reveal it in Episode 4.', gap: 0.35 },
+      { id: 'g1', who: 'narr', zh: '1965 年，曾与图灵共事的数学家 I. J. Good，就写下了这个念头：', en: 'In 1965, I. J. Good — a mathematician who had worked with Alan Turing — already wrote this idea down:' },
+      { id: 'q', who: 'sys', zh: QUOTE.zh, en: QUOTE.en, at: 'g1+1.2', dur: 7.2, par: 1 },
+      { id: 'g2', who: 'narr', zh: '这句话还没完，后面还有半句。', en: 'And the sentence isn’t over — there’s a second half.', at: 'q$+0.1', min: 1.6 },
+      { id: 'g2b', who: 'clawd', zh: '后半句……先贴起来！', en: 'The second half… let’s cover it up!', gap: 0.1, min: 1.6 },
     ],
-    cues: [['g2b+0.1', 'hop'], ['g2b+0.85', 'stick'], ['g2c+0.2', 'pop']],
+    cues: [['g2b+0.1', 'hop'], ['g2b+0.85', 'stick'], ['g2b$+0.1', 'pop']],
     draw(ctx, t, S) {
       const ty = S.typed('q'); const tIn = S.T('g2') + 0.4, tThrow = S.R('g2b+0.4'), tSlap = S.R('g2b+0.85');
       RSI.drawPaper(ctx, t, S, { reveal: t < S.T('q') ? 0 : ty.n, sticky: t > tSlap ? 1 : 0, peel: 0 });
@@ -83,7 +81,7 @@
       if (t > tIn) {
         const k = M.ease.outBack(M.seg(t, tIn, tIn + 0.45)); const hp = X.hop(t, S.R('g2b+0.1'), 0.4, 46);
         const cx = 1790, cy = 1010 + (1 - k) * 160 + hp.dy;
-        const throwing = t > tThrow - 0.25 && t < tThrow + 0.3; const point = t > S.T('g2c') && t < S.E('g2c');
+        const throwing = t > tThrow - 0.25 && t < tThrow + 0.3; const point = t > S.E('g2b') && t < S.E('g2b') + 1.0;
         const hd = K.draw(ctx, cx, cy, 8, { gen: 1, expr: point ? 'happy' : t > tSlap ? 'determined' : X.blink(t, 4) ? 'blink' : 'normal', look: [-0.9, -0.5], armL: throwing ? 1.1 : point ? 0.9 : 0.2, sx: hp.sx, sy: hp.sy });
         S.anchors.clawd = [cx - 30, hd[1]]; S.sides.clawd = 'up';
         if (t < tThrow) { ctx.save(); ctx.translate(cx - 86, cy - 64); ctx.rotate(-0.2); ctx.fillStyle = '#F3D46B'; ctx.fillRect(-22, -22, 44, 44); ctx.restore(); }
@@ -111,13 +109,13 @@
     }
   };
   RSI.defScene({
-    id: 'flip', music: 'lofi', lead: 0.6,
+    id: 'flip', music: 'lofi',
     lines: [
-      { id: 'f1', who: 'narr', zh: 'Clawd 的第四招，就是：把循环里的人，换成 AI 自己。', en: 'Clawd’s fourth trick: replace the human in the loop with the AI itself.' },
-      { id: 'f2', who: 'clawd', zh: '想点子、跑实验、打分、做决定——都交给我。', en: 'Ideas, experiments, grading, decisions — leave it all to me.', hold: 0.6 },
-      { id: 'f3', who: 'narr', zh: '如果 Clawd 造出的第 2 代更聪明，那第 2 代改进第 3 代时，也会做得更好、更快。', en: 'If the Gen-2 Clawd it builds is smarter, then Gen 2 will do a better, faster job building Gen 3.', hold: 0.8 },
+      { id: 'f1', who: 'narr', zh: '第四招：把循环里的人，换成 AI 自己。', en: 'Trick four: replace the human in the loop with the AI itself.' },
+      { id: 'f2', who: 'clawd', zh: '想点子、跑实验、打分、做决定——都交给我。', en: 'Ideas, experiments, grading, decisions — leave it all to me.', hold: 0.3 },
+      { id: 'f3', who: 'narr', zh: '如果 Clawd 造出的第 2 代更聪明，那第 2 代改进第 3 代时，也会做得更好、更快。', en: 'If the Gen-2 Clawd it builds is smarter, then Gen 2 will do a better, faster job building Gen 3.', hold: 0.4 },
       { id: 'f4', who: 'clawd2', zh: '嗨，前辈。下一代交给我吧！', en: 'Hey, senior. I\'ll take the next one!' },
-      { id: 'f5', who: 'narr', zh: '这就是{o|递归}：每一轮的成果，都变成下一轮的工具。', en: 'That\'s the {o|recursion}: each round\'s output becomes the next round\'s tool.', hold: 1.0 },
+      { id: 'f5', who: 'narr', zh: '这就是{o|递归}：每一轮的成果，都变成下一轮的工具。', en: 'That\'s the {o|recursion}: each round\'s output becomes the next round\'s tool.', hold: 0.6 },
     ],
     gen: [['f3+1.0', 2], ['f4$+0.4', 3]],
     cues: [['f2+0.2', 'flipNode'], ['f2+0.9', 'flipNode'], ['f2+1.6', 'flipNode'], ['f2+2.3', 'flipNode'], ['f3+0.2', 'build'], ['f3+1.0', 'rezUp'], ['f4$-0.2', 'build'], ['f4$+0.4', 'rezUp']],
@@ -163,13 +161,12 @@
 
   // ---------------- compounding staircase ----------------
   RSI.defScene({
-    id: 'compound', music: 'lofi', lead: 0.6,
+    id: 'compound', music: 'lofi',
     lines: [
-      { id: 'k1', who: 'narr', zh: '普通的进步像爬楼梯：每一步，台阶差不多高。', en: 'Ordinary progress is like climbing stairs: every step is about the same height.' },
-      { id: 'k2', who: 'narr', zh: 'RSI 的关键在于：被改进的，正是“改进”这件事本身。于是台阶越来越高，步子也越来越快。', en: 'The key to RSI: the thing being improved is improvement itself. So the steps get taller — and come faster.', hold: 0.6 },
-      { id: 'k3', who: 'narr', manual: true, zh: '不只是变强，而是变得{o|更会变强}。', en: 'Not just getting better — getting {o|better at getting better}.', dur: 4.2 },
+      { id: 'k1', who: 'narr', zh: '人来改进 AI：每一轮的提升，差不多一样大。', en: 'When people improve AI, each round brings roughly the same gain.' },
+      { id: 'k2', who: 'narr', zh: 'RSI 不一样：被改进的，正是“改进”这件事本身。所以每一轮提升更大，来得也更快。', en: 'RSI is different: what gets improved is improvement itself. So each round’s gain is bigger — and comes sooner.', hold: 0.3 },
+      { id: 'k3', who: 'narr', manual: true, zh: '不只是变强，而是变得{o|更会变强}。', en: 'Not just getting better — getting {o|better at getting better}.', dur: 3.0 },
       { id: 'k4', who: 'clawd', zh: '听起来……会一发不可收拾？', en: 'Sounds like… it could spiral out of control?' },
-      { id: 'k5', who: 'narr', zh: '这个“一发不可收拾”的念头，其实早在 1965 年，就有人写下来了。', en: 'This “spiral out of control” idea was actually written down back in 1965.' },
     ],
     cues: [['k3+0.1', 'statement']],
     draw(ctx, t, S) {
@@ -178,14 +175,14 @@
       D.axes(ctx, ox, oy - gh, gw, gh, { xl: { zh: '轮次 →', en: 'rounds →' }, yl: { zh: '能力 →', en: 'capability →' } });
       // linear stairs (blue)
       const n = 10, sw = gw / n;
-      const pa = M.seg(t, S.T('k1'), S.T('k1') + 3.5);
+      const pa = M.seg(t, S.T('k1'), S.T('k1') + 2.6);
       ctx.save(); ctx.strokeStyle = C.blue; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(ox, oy);
       const stepsA = Math.floor(pa * n);
       for (let i = 0; i < stepsA; i++) { ctx.lineTo(ox + i * sw, oy - (i + 1) * 34); ctx.lineTo(ox + (i + 1) * sw, oy - (i + 1) * 34); }
       ctx.stroke(); ctx.restore();
-      if (pa > 0.3) T.line(ctx, { zh: '人来改进：每步差不多高', en: 'humans improving: equal steps' }, ox + gw - 10, oy - 34 * n - 40, 28, C.blue, 700, 'right');
+      if (pa > 0.3) T.line(ctx, { zh: '人来改进：每轮提升差不多', en: 'people improving: similar gains each round' }, ox + gw - 10, oy - 34 * n - 40, 28, C.blue, 700, 'right');
       // accelerating stairs (orange): step i width shrinks, height grows
-      const pb = M.seg(t, S.T('k2') + 0.6, S.T('k2') + 5.0);
+      const pb = M.seg(t, S.T('k2') + 0.4, S.T('k2') + 4.0);
       let x = ox, y = oy, w0 = 260, h0 = 22; const pts = [[x, y]];
       for (let i = 0; i < 14; i++) { const w = w0 * Math.pow(0.78, i), h = h0 * Math.pow(1.42, i); y -= h; pts.push([x, y]); x += w; pts.push([x, y]); if (y < oy - gh) break; }
       const total = pts.length - 1; const m = pb * total;
@@ -194,7 +191,7 @@
       for (let i = 1; i <= Math.floor(m); i++) ctx.lineTo(pts[i][0], Math.max(oy - gh, pts[i][1]));
       if (m < total && Math.floor(m) + 1 <= total) { const a = pts[Math.floor(m)], b = pts[Math.floor(m) + 1]; const f = m - Math.floor(m); ctx.lineTo(M.lerp(a[0], b[0], f), Math.max(oy - gh, M.lerp(a[1], b[1], f))); }
       ctx.stroke(); ctx.restore();
-      if (pb > 0.5) T.line(ctx, { zh: 'AI 改进 AI：台阶越来越高、越来越快', en: 'AI improving AI: taller, faster steps' }, ox + 520, oy - gh + 30, 28, C.orange, 700, 'left');
+      if (pb > 0.5) T.line(ctx, { zh: 'AI 改进 AI：提升越来越大、越来越快', en: 'AI improving AI: bigger gains, sooner' }, ox + 520, oy - gh + 30, 28, C.orange, 700, 'left');
       // little Clawd riding the orange stairs
       const ci = Math.min(total, Math.max(0, Math.floor(m))); const cp = pts[ci];
       if (pb > 0) K.draw(ctx, Math.min(cp[0] + 10, ox + gw), Math.max(oy - gh + 10, cp[1]), 3.2, { gen: 3, expr: 'happy', shadow: false });
@@ -205,7 +202,7 @@
         ctx.translate(W / 2, 470); ctx.scale(sc, sc);
         T.text(ctx, RSI.L(S.sc.byId.k3), 0, -60, { size: RSI.lang === 'en' ? 70 : 84, weight: 900, align: 'center', maxW: 1600 });
         ctx.restore();
-        const hx = 1600, hy = 860; const hd = K.draw(ctx, hx, hy, 8, { gen: 3, expr: t > S.T('k4') && t < S.E('k4') ? 'worried' : X.blink(t, 6) ? 'blink' : 'normal', look: [-0.5, -0.3], alpha: M.seg(t, S.T('k4') - 0.8, S.T('k4') - 0.2) });
+        const hx = 1600, hy = 860; const hd = K.draw(ctx, hx, hy, 8, { gen: 3, expr: t > S.T('k4') && t < S.E('k4') ? 'worried' : X.blink(t, 6) ? 'blink' : 'normal', look: [-0.5, -0.3], alpha: M.seg(t, S.T('k4') - 0.6, S.T('k4') - 0.15) });
         S.anchors.clawd = [hx - 30, hd[1]];
       }
     },

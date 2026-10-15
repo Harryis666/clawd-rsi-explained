@@ -1,118 +1,12 @@
-/* 第 3 集《爆炸，还是撞墙？》主体：低处的果子（拔河）· 一个数 r（你猜？）· 两派之争（Clawd 当裁判）· 四堵墙（你猜？）。 */
+/* 第 3 集《爆炸，还是撞墙？》主体：一个数 r（两股力量 · 你猜？）· 两派之争（Clawd 当裁判）· 四堵墙（你猜？）。
+   v3: the 'tree' scene (低处的果子 · 拔河的比方) is cut — ratio v0 now states the two forces directly. */
 (function () {
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
   const W = RSI.W, H = RSI.H;
   const EN = () => RSI.lang === 'en';
-  const fruit = (ctx, x, y, s, a = 1) => {
-    if (a <= 0) return;
-    ctx.save(); ctx.globalAlpha *= a;
-    ctx.strokeStyle = '#5B4330'; ctx.lineWidth = Math.max(2, s * 0.16); ctx.beginPath(); ctx.moveTo(x, y - s * 0.8); ctx.lineTo(x + s * 0.25, y - s * 1.45); ctx.stroke();
-    ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(x - s * 0.35, y - s * 0.35, s * 0.3, 0, 7); ctx.fill();
-    ctx.restore();
-  };
   /** hand position of a Clawd drawn at (x,y) with scale s (side −1 = left arm, +1 = right arm; arm = raise 0..1) */
   const hand = (x, y, s, side, arm) => [x + side * 8.7 * s, y + (-10 + 4 - arm * 3.2) * s];
-
-  // ================================================================== tree: the higher you jump, the fewer fruit are left
-  const TIERS = [{ y: 640, n: 6, span: 380 }, { y: 530, n: 4, span: 290 }, { y: 420, n: 2, span: 180 }, { y: 312, n: 1, span: 0 }];
-  const FRUITS = (() => { const r = M.rng(42); const a = []; TIERS.forEach((tr, k) => { for (let i = 0; i < tr.n; i++) { const x = 560 + (tr.n === 1 ? 0 : (i / (tr.n - 1) - 0.5) * tr.span) + (r() - 0.5) * 24; a.push({ k, x, y: tr.y + (r() - 0.5) * 30, s: 21 + r() * 5 }); } }); return a; })();
-  const HIGH = [{ x: 470, y: 190, s: 22 }, { x: 655, y: 160, s: 22 }];
-  const APEX = [0.9, 2.3, 3.5, 4.5];           // s after line e1 ends — the jumps come quicker and quicker
-  const JUMP = TIERS.map((tr) => 700 - tr.y + 26);
-  const BASKET = [330, 724];
-  const drawTree = (ctx) => {
-    ctx.fillStyle = '#5B4330'; ctx.beginPath(); ctx.moveTo(530, 760); ctx.lineTo(600, 760); ctx.lineTo(585, 420); ctx.lineTo(545, 420); ctx.fill();
-    const blobs = [[560, 300, 230], [400, 380, 170], [720, 380, 170], [470, 220, 150], [650, 220, 150], [560, 480, 160]];
-    for (const b of blobs) { ctx.fillStyle = '#2F5A3E'; ctx.beginPath(); ctx.arc(b[0], b[1], b[2], 0, 7); ctx.fill(); }
-    for (const b of blobs) { ctx.fillStyle = '#3B7050'; ctx.beginPath(); ctx.arc(b[0] - 20, b[1] - 24, b[2] * 0.75, 0, 7); ctx.fill(); }
-  };
-  const boulder = (ctx, x, y, s, label) => {
-    ctx.fillStyle = '#6E6A62'; ctx.beginPath(); ctx.moveTo(x - 40 * s, y); ctx.quadraticCurveTo(x - 46 * s, y - 50 * s, x - 6 * s, y - 62 * s); ctx.quadraticCurveTo(x + 40 * s, y - 64 * s, x + 44 * s, y - 20 * s); ctx.quadraticCurveTo(x + 46 * s, y, x + 30 * s, y); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#86817A'; ctx.beginPath(); ctx.ellipse(x - 10 * s, y - 44 * s, 18 * s, 9 * s, -0.3, 0, 7); ctx.fill();
-    if (label) T.line(ctx, label, x + 2 * s, y - 26 * s, 26 * s, '#2A2825', 900, 'center');
-  };
-  RSI.defScene({
-    id: 'tree', music: 'tension', lead: 0.6,
-    lines: [
-      { id: 'e0', who: 'narr', zh: '先打个比方：把“能让 AI 变强的好点子”，想成树上的果子。', en: 'Picture it like this: the “good ideas that make AI stronger” are fruit on a tree.', hold: 0.3 },
-      { id: 'e1', who: 'clawd', zh: '我每升一代，就更聪明一点——跳得更高，也跳得更快！', en: 'Every generation I get a little smarter — I jump higher, and faster!' },
-      { id: 'e2', who: 'narr', zh: '可是，低处的果子总是先被摘光。越往上，果子越少——每一跳，摘到的越来越少。', en: 'But the low-hanging fruit always goes first. Higher up there’s less — each jump brings back less.', at: 'e1$+3.1', hold: 0.5 },
-      { id: 'e3', who: 'narr', zh: '于是，这是一场拔河：一边是“变聪明带来的加速”，一边是“问题变难的阻力”。', en: 'So it’s a tug-of-war: the “speed-up from getting smarter” against the “drag from problems getting harder”.', gap: 0.4, hold: 1.0 },
-      { id: 'e4', who: 'clawd', zh: '那……谁会赢？', en: 'So… who wins?', min: 2.2 },
-    ],
-    gen: APEX.map((a, k) => [`e1$+${a}`, 9 + k]),
-    cues: [...APEX.map((a) => [`e1$+${(a - 0.4).toFixed(2)}`, 'hop']), ...APEX.map((a) => [`e1$+${(a + 0.05).toFixed(2)}`, 'pop']), ['e3+0.6', 'rope'], ['e4', 'surprise']],
-    draw(ctx, t, S) {
-      D.dots(ctx, 0.03); X.floor(ctx, 760);
-      const tE3 = S.T('e3'), ap = APEX.map((a) => S.R(`e1$+${a}`));
-      const shift = M.seg(t, tE3 - 0.2, tE3 + 0.8, M.ease.inOutCubic) * -130;
-      ctx.save(); ctx.translate(shift, 0);
-      drawTree(ctx);
-      // how high each generation reached
-      ctx.setLineDash([8, 10]); ctx.lineWidth = 2;
-      ap.forEach((a, k) => { if (t < a) return; const y = TIERS[k].y; ctx.strokeStyle = 'rgba(240,238,230,0.28)'; ctx.beginPath(); ctx.moveTo(880, y); ctx.lineTo(950, y); ctx.stroke(); T.line(ctx, EN() ? `gen ${9 + k}` : `第 ${9 + k} 代`, 962, y, 22, C.ink3, 600, 'left'); });
-      ctx.setLineDash([]);
-      // fruit: tier k flies into the basket at jump k's apex
-      FRUITS.forEach((f) => {
-        const ta = ap[f.k];
-        if (t <= ta) { fruit(ctx, f.x, f.y, f.s); return; }
-        const p = M.seg(t, ta, ta + 0.6, M.ease.inOutCubic); if (p >= 1) return;
-        fruit(ctx, M.lerp(f.x, BASKET[0], p), M.lerp(f.y, BASKET[1] - 10, p) - Math.sin(p * Math.PI) * 90, f.s * (1 - 0.35 * p));
-      });
-      HIGH.forEach((f) => fruit(ctx, f.x, f.y, f.s));
-      let got = 0; ap.forEach((a, k) => { if (t > a + 0.6) got += TIERS[k].n; });
-      for (let i = 0; i < got; i++) fruit(ctx, BASKET[0] - 44 + (i % 5) * 22, BASKET[1] - 2 - Math.floor(i / 5) * 13, 12);
-      ctx.fillStyle = '#8A6A3E'; ctx.beginPath(); ctx.moveTo(BASKET[0] - 62, BASKET[1]); ctx.lineTo(BASKET[0] + 62, BASKET[1]); ctx.lineTo(BASKET[0] + 50, 760); ctx.lineTo(BASKET[0] - 50, 760); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = '#6B5030'; ctx.lineWidth = 3; for (let i = 1; i < 3; i++) { const y = BASKET[1] + i * 12; ctx.beginPath(); ctx.moveTo(BASKET[0] - 60 + i * 4, y); ctx.lineTo(BASKET[0] + 60 - i * 4, y); ctx.stroke(); }
-      // the jumping Clawd
-      let k = -1; ap.forEach((a, i) => { if (t > a - 0.5) k = i; });
-      const hop = k >= 0 ? X.hop(t, ap[k] - 0.35, 0.7, JUMP[k]) : { dy: 0, sx: 1, sy: 1 };
-      const air = hop.dy < -20, cx = 560;
-      const expr = air ? 'determined' : t > S.T('e4') ? 'worried' : X.blink(t, 2) ? 'blink' : t > S.T('e2') + 2 ? 'normal' : 'happy';
-      const hd = K.draw(ctx, cx, 760 + hop.dy, 6, { gen: S.gen().g, expr, armL: air ? 1 : 0, armR: air ? 1 : 0, sx: hop.sx, sy: hop.sy, look: t > tE3 ? [1, -0.1] : [0.2, -0.7] });
-      S.anchors.clawd = [cx + 20 + shift, hd[1]]; S.sides.clawd = 'right';
-      ap.forEach((a, i) => X.mark(ctx, '+' + TIERS[i].n, cx + 130, TIERS[i].y + 10, t - a, C.green, 54));
-      ctx.restore();
-      // the two quantities, side by side: jump height ↑ vs fruit per jump ↓
-      const ca = M.seg(t, ap[0] - 0.1, ap[0] + 0.4) * (1 - M.seg(t, tE3 - 0.4, tE3 + 0.2));
-      if (ca > 0) {
-        ctx.save(); ctx.globalAlpha *= ca;
-        D.panel(ctx, 1090, 170, 760, 640, { fill: 'rgba(28,27,24,0.88)', r: 22 });
-        T.line(ctx, { zh: '跳得多高', en: 'how high' }, 1290, 225, 34, C.orange, 900, 'center');
-        T.line(ctx, { zh: '这一跳摘到几个', en: 'fruit per jump' }, 1650, 225, 34, C.red, 900, 'center');
-        ctx.fillStyle = 'rgba(240,238,230,0.15)'; ctx.fillRect(1469, 255, 2, 500);
-        for (let i = 0; i < 4; i++) {
-          const bx = 1150 + i * 86, fx = 1515 + i * 86, base = 712;
-          T.line(ctx, String(9 + i), bx + 30, base + 26, 24, C.ink3, 700, 'center', 'mono'); T.line(ctx, String(9 + i), fx + 30, base + 26, 24, C.ink3, 700, 'center', 'mono');
-          if (t < ap[i]) continue;
-          const pa = M.ease.outBack(M.seg(t, ap[i], ap[i] + 0.45));
-          const bh = (JUMP[i] / JUMP[3]) * 370 * pa;
-          ctx.fillStyle = C.orange; D.rr(ctx, bx, base - bh, 60, Math.max(1, bh), 8); ctx.fill();
-          for (let j = 0; j < TIERS[i].n; j++) fruit(ctx, fx + 30, base - 26 - j * 58 * pa, 22, M.clamp(pa));
-        }
-        T.line(ctx, { zh: '第几代 →', en: 'generation →' }, 1290, 772, 22, C.ink3, 500, 'center'); T.line(ctx, { zh: '第几代 →', en: 'generation →' }, 1650, 772, 22, C.ink3, 500, 'center');
-        const ta = M.seg(t, ap[3] + 0.5, ap[3] + 0.9);
-        if (ta > 0) { ctx.globalAlpha *= ta; T.line(ctx, { zh: '↑ 越来越高', en: '↑ higher' }, 1290, 278, 28, C.orangeL, 800, 'center'); T.line(ctx, { zh: '↓ 越来越少', en: '↓ fewer' }, 1650, 278, 28, '#F08A7E', 800, 'center'); }
-        ctx.restore();
-      }
-      // tug of war (right side)
-      const a = M.seg(t, tE3, tE3 + 0.8);
-      if (a > 0) {
-        ctx.save(); ctx.globalAlpha *= a;
-        const cy = 640; const sway = Math.sin((t - tE3) * 1.3) * 40 * M.seg(t, tE3 + 0.6, tE3 + 1.5);
-        ctx.strokeStyle = '#C9A46A'; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(1000, cy - 30); ctx.lineTo(1840, cy - 30); ctx.stroke();
-        ctx.fillStyle = C.yellow; ctx.fillRect(1418 + sway - 4, cy - 70, 8, 80);
-        for (let j = 0; j < 3; j++) K.draw(ctx, 1060 + j * 95 + sway, cy + 10, 3.6, { gen: S.gen().g, expr: 'determined', armR: 0.4, look: [-0.5, 0], rot: -0.12 });
-        for (let j = 0; j < 3; j++) boulder(ctx, 1610 + j * 90 + sway, cy + 10, 1.0, j === 1 ? { zh: '难', en: '!' } : null);
-        T.text(ctx, { zh: '变聪明带来的{o|加速}', en: '{o|speed-up} from smarter AI' }, 1180, 712, { size: 32, weight: 700, align: 'center' });
-        T.text(ctx, { zh: '问题变难的{b|阻力}', en: '{b|drag} from harder problems' }, 1700, 712, { size: 32, weight: 700, align: 'center' });
-        T.line(ctx, 'VS', 1418, 520, 40, C.ink3, 900, 'center');
-        ctx.restore();
-      }
-    },
-  });
 
   // ================================================================== ratio: one number, r — with a guess
   const RX0 = 330, RPX = 2.6;   // day 0 at x = 330; 2.6 px per day — one ruler for all three rows (500 days = 1300 px)
@@ -135,35 +29,64 @@
     }
     return gens;
   };
+  const GEN0 = [0.4, 1.0, 1.6, 2.2];                       // s after v0: generations 9–12 arrive (moved here from the cut 'tree' scene)
+  const SPEEDUP = [0.34, 0.52, 0.74, 1.0], HARDER = [0.3, 0.5, 0.76, 1.0];
   RSI.defScene({
-    id: 'ratio', music: 'tension', lead: 0.6,
+    id: 'ratio', music: 'tension', lead: 0.35,
     lines: [
-      { id: 'v1', who: 'narr', zh: '研究者把这场拔河写成一个数，叫 {O|r}：加速有多猛，除以变难有多快。', en: 'Researchers turn this tug-of-war into one number, {O|r}: how strong the speed-up is, divided by how fast things get harder.', hold: 0.5 },
-      { id: 'v2', who: 'narr', zh: '{o|r 大于 1}：加速赢了，每一代都比上一代来得快——就像开头的 Clawd·A。', en: '{o|r > 1}: the speed-up wins, and each generation arrives faster than the last — like Clawd A at the start.', hold: 0.4 },
+      { id: 'v0', who: 'narr', zh: '每升一代，AI 更聪明、研究更快，这是{o|加速}；可容易的先做完了，后面越来越难，这是{b|阻力}。', en: 'Each generation, AI gets smarter and researches faster — that’s the {o|speed-up}. But the easy wins get used up and the rest gets harder — that’s the {b|drag}.', hold: 0.1 },
+      { id: 'v1', who: 'narr', zh: '研究者把这两股力量写成一个数，叫 {O|r}：加速有多猛，除以变难有多快。', en: 'Researchers boil the two forces down to one number, {O|r}: how strong the speed-up is, divided by how fast things get harder.', hold: 0.2 },
+      { id: 'v2', who: 'narr', zh: '{o|r 大于 1}：加速赢了，每一代都比上一代来得快——就像开头的 Clawd·A。', en: '{o|r > 1}: the speed-up wins, and each generation arrives faster than the last — like Clawd A at the start.', hold: 0.2 },
       { id: 'v2q', who: 'clawd', zh: '考考你：第一代 100 天，之后每代只要上一代的 3/4。无数代，一共要多久？', en: 'Quiz: the first generation takes 100 days, and each one after takes 3/4 as long as the one before. How long for infinitely many?', maxW: 700 },
-      { id: 'v2r', who: 'narr', zh: '答案是：约 400 天！无数代，挤进了一年多一点——所以有人管它叫“智能爆炸”。', en: 'The answer: about 400 days! Infinitely many generations squeezed into just over a year — that’s why some call it an “intelligence explosion”.', at: 'v2q$+2.6', hold: 0.8 },
-      { id: 'v3', who: 'narr', zh: '{y|r 等于 1}：打成平手，稳步前进。{b|r 小于 1}：阻力赢了，越往后越慢——就像开头的 Clawd·B。', en: '{y|r = 1}: a draw — steady progress. {b|r < 1}: the drag wins, and it gets slower and slower — like Clawd B at the start.', hold: 1.6 },
-      { id: 'v4', who: 'clawd', zh: '所以——现实里的 r，到底是多少？', en: 'So — what is r in the real world?', min: 2.4 },
+      { id: 'v2r', who: 'narr', zh: '答案：约 400 天！无数代，挤进一年多一点——所以有人叫它“智能爆炸”。', en: 'The answer: about 400 days! Infinitely many generations in just over a year — that’s why some call it an “intelligence explosion”.', at: 'v2q$+1.5', hold: 0.5, kick: true },
+      { id: 'v3', who: 'narr', zh: '{y|r 等于 1}：打成平手，稳步前进。{b|r 小于 1}：阻力赢了，越往后越慢——就像开头的 Clawd·B。', en: '{y|r = 1}: a draw — steady progress. {b|r < 1}: the drag wins, and it gets slower and slower — like Clawd B at the start.', hold: 0.3 },
+      { id: 'v4', who: 'clawd', zh: '所以——现实里的 r，到底是多少？', en: 'So — what is r in the real world?', min: 2.0 },
     ],
-    cues: [['v1+0.2', 'pop'], ['v2+0.4', 'build'], ['v2q+0.6', 'quizIn'],
+    gen: GEN0.map((g, k) => [`v0+${g}`, 9 + k]),
+    cues: [...GEN0.map((g) => [`v0+${(g - 0.2).toFixed(2)}`, 'hop']), ...GEN0.map((g) => [`v0+${g}`, 'pop']), ['v1+0.3', 'pop'], ['v2+0.4', 'build'], ['v2q+0.6', 'quizIn'],
       ...[0, 1, 2].map((k) => [(b) => b.v2q.t + 1.0 + ((b.v2r.t + 0.9) - (b.v2q.t + 1.0)) * k / 3, 'tick']), [(b) => b.v2r.t + 0.9, 'ding'],
-      [(b) => b.v2r.t + 1.1, 'shepard', { dur: 1.6 }], [(b) => b.v2r.t + 2.7, 'boom'], ['v3+0.2', 'build'], ['v3+2.6', 'build']],
+      [(b) => b.v2r.t + 1.1, 'shepard', { dur: 1.6 }], [(b) => b.v2r.t + 2.7, 'boom'], ['v3+0.2', 'build'], ['v3+1.9', 'build']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
-      const fa = M.seg(t, S.T('v1'), S.T('v1') + 0.5, M.ease.outCubic);
+      // v0: the two forces, stated directly — one bar per generation on each side
+      const tv0 = S.T('v0'), ga = M.seg(t, tv0 - 0.2, tv0 + 0.2) * (1 - M.seg(t, S.T('v1') - 0.1, S.T('v1') + 0.3));
+      if (ga > 0) {
+        ctx.save(); ctx.globalAlpha *= ga;
+        const panel = (x0, title, sub, col, hs, ta) => {
+          D.panel(ctx, x0, 180, 560, 630, { fill: 'rgba(28,27,24,0.88)', r: 22 });
+          const k = M.seg(t, ta, ta + 0.3);
+          ctx.save(); ctx.globalAlpha *= 0.45 + 0.55 * k;
+          T.text(ctx, title, x0 + 280, 196, { size: 46, weight: 900, align: 'center' });
+          T.line(ctx, sub, x0 + 280, 300, EN() ? 24 : 28, C.ink2, 600, 'center');
+          ctx.restore();
+          const base = 728;
+          for (let i = 0; i < 4; i++) {
+            const bx = x0 + 64 + i * 116;
+            T.line(ctx, String(9 + i), bx + 42, base + 28, 24, C.ink3, 700, 'center', 'mono');
+            const ti = tv0 + GEN0[i]; if (t < ti) continue;
+            const pa = M.ease.outBack(M.seg(t, ti, ti + 0.4)), bh = hs[i] * 360 * pa;
+            ctx.fillStyle = col; D.rr(ctx, bx, base - bh, 84, Math.max(1, bh), 8); ctx.fill();
+          }
+          T.line(ctx, { zh: '第几代 →', en: 'generation →' }, x0 + 280, base + 62, 22, C.ink3, 500, 'center');
+        };
+        panel(170, { zh: '{o|加速} ↑', en: '{o|speed-up} ↑' }, { zh: '更聪明 → 研究更快', en: 'smarter → faster research' }, C.orange, SPEEDUP, tv0);
+        panel(1190, { zh: '{b|阻力} ↑', en: '{b|drag} ↑' }, { zh: '容易的先做完 → 越来越难', en: 'easy wins used up → harder' }, C.blue, HARDER, tv0 + 2.0);
+        let k = -1; GEN0.forEach((g, i) => { if (t > tv0 + g - 0.2) k = i; });
+        const hop = k >= 0 ? X.hop(t, tv0 + GEN0[k] - 0.2, 0.4, 46) : { dy: 0, sx: 1, sy: 1 };
+        K.draw(ctx, 960, 780 + hop.dy, 6, { gen: S.gen().g, expr: t > tv0 + 2.4 ? 'worried' : hop.dy < -10 ? 'happy' : 'determined', look: t > tv0 + 2.4 ? [1, -0.3] : [-1, -0.3], armL: hop.dy < -10 ? 1 : 0.2, armR: hop.dy < -10 ? 1 : 0.2, sx: hop.sx, sy: hop.sy });
+        ctx.restore();
+      }
+      const fa = M.seg(t, S.T('v1'), S.T('v1') + 0.4, M.ease.outCubic);
       ctx.save(); ctx.globalAlpha *= fa; T.text(ctx, { zh: '{O|r} = 加速 ÷ 变难', en: '{O|r} = speed-up ÷ difficulty' }, W / 2, 110 + (1 - fa) * 14, { size: 72, weight: 900, align: 'center' }); ctx.restore();
-      // v1: the tug-of-war becomes a fraction
-      const fr = M.seg(t, S.T('v1') + 0.8, S.T('v1') + 1.3) * (1 - M.seg(t, S.T('v2') - 0.35, S.T('v2') + 0.1));
+      // v1: the two forces become one fraction
+      const fr = M.seg(t, S.T('v1') + 0.25, S.T('v1') + 0.7) * (1 - M.seg(t, S.T('v2') - 0.35, S.T('v2') + 0.1));
       if (fr > 0) {
-        ctx.save(); ctx.globalAlpha *= fr; const nx = 1040, pk = M.ease.outBack(M.seg(t, S.T('v1') + 0.8, S.T('v1') + 1.3));
+        ctx.save(); ctx.globalAlpha *= fr; const nx = 1040, pk = M.ease.outBack(M.seg(t, S.T('v1') + 0.25, S.T('v1') + 0.7));
         T.text(ctx, '{O|r} =', 610, 392, { size: 130, weight: 900, align: 'right' });
         ctx.save(); ctx.translate(nx, 470); ctx.scale(pk, pk); ctx.translate(-nx, -470);
         T.line(ctx, { zh: '变聪明带来的加速', en: 'speed-up from getting smarter' }, nx, 388, EN() ? 44 : 54, C.orange, 900, 'center');
         ctx.fillStyle = C.ink; ctx.fillRect(nx - 360, 466, 720, 9);
         T.line(ctx, { zh: '问题变难的阻力', en: 'drag from harder problems' }, nx, 556, EN() ? 44 : 54, C.blue, 900, 'center');
-        for (let i = 0; i < 3; i++) K.draw(ctx, nx - 470 - i * 66, 414, 2.8, { gen: S.gen().g, expr: 'determined', look: [-1, 0], armL: 0.7 });
-        for (let i = 0; i < 3; i++) { ctx.fillStyle = i === 1 ? '#6E6A64' : '#5E5A55'; ctx.beginPath(); ctx.ellipse(nx + 430 + i * 66, 566, 30, 24, 0, 0, 7); ctx.fill(); }
-        T.line(ctx, { zh: '难', en: 'hard' }, nx + 496, 568, EN() ? 16 : 22, C.ink, 900, 'center');
         ctx.restore(); ctx.restore();
       }
       const sa = M.seg(t, S.T('v2'), S.T('v2') + 0.5);
@@ -176,10 +99,10 @@
       const tA = S.T('v2r') + 0.9, tBoom = tA + 1.8;
       const days = [
         t < tA + 0.2 ? 273.4375 * M.seg(t, S.T('v2') + 0.4, S.T('v2') + 2.6) : 273.4375 + (400 - 273.4375) * M.ease.inCubic(M.seg(t, tA + 0.2, tBoom)),
-        500 * M.seg(t, S.T('v3') + 0.2, S.T('v3') + 2.7),
-        500 * M.seg(t, S.T('v3') + 2.6, S.T('v3') + 5.1),
+        500 * M.seg(t, S.T('v3') + 0.2, S.T('v3') + 2.0),
+        500 * M.seg(t, S.T('v3') + 1.9, S.T('v3') + 3.9),
       ];
-      const shown = [S.T('v2') + 0.1, S.T('v3'), S.T('v3') + 2.4];
+      const shown = [S.T('v2') + 0.1, S.T('v3'), S.T('v3') + 1.8];
       ROWS.forEach((row, i) => {
         const a = M.seg(t, shown[i] - 0.3, shown[i] + 0.2); if (a <= 0) return;
         ctx.save(); ctx.globalAlpha *= a;
@@ -201,7 +124,7 @@
       // callbacks to the cold open: Clawd A (glowing) and Clawd B (dizzy)
       const ia = M.seg(t, tBoom + 0.3, tBoom + 0.8);
       if (ia > 0) { K.draw(ctx, 1840, ROWS[0].y + 26, 3, { gen: 9, expr: 'happy', alpha: ia, glow: 10, tag: 'A' }); }
-      const ib = M.seg(t, S.T('v3') + 5.1, S.T('v3') + 5.6);
+      const ib = M.seg(t, S.T('v3') + 3.9, S.T('v3') + 4.4);
       if (ib > 0) { const hb = K.draw(ctx, 1840, ROWS[2].y + 26, 3, { gen: 9, expr: 'x', alpha: ib, tag: 'B' }); X.dizzy(ctx, 1840, hb[1] + 4, t, 34, ib); }
       // the guess
       X.quiz(ctx, t, 1350, 405, { opts: [{ zh: '永远造不完', en: 'forever' }, { zh: '约 400 天', en: 'about 400 days' }, { zh: '约 4000 天', en: 'about 4,000 days' }], ans: 1, t0: S.T('v2q') + 0.6, tA, tEnd: tA + 1.4, w: 520 });
@@ -243,16 +166,15 @@
     id: 'debate', music: 'tension', lead: 0.6,
     lines: [
       { id: 'd1', who: 'narr', zh: '现实里的 r 是多少？科学家们分成了两派。', en: 'So what is r in reality? Scientists split into two camps.' },
-      { id: 'd1b', who: 'clawd', zh: '那我来当裁判！', en: 'Then I’ll referee!', min: 2.0 },
       { id: 'd2', who: 'left', label: { zh: '加速派', en: 'The fast camp' }, labelColor: C.orange, zh: '有估计说：r 约等于 1.4，大于 1！每次“研发速度翻倍”，只需上一次约 3/4 的时间。', en: 'One estimate says r is about 1.4 — above 1! Each “doubling of research speed” takes only about 3/4 as long as the last.', maxW: 640 },
-      { id: 'd3', who: 'card', zh: 'Chan、Hinton、Bengio 等（2026.9）：照这个估计，约 17 个月后，AI 研发会快 10 倍——一年的进展，约 5 周完成。前提：没有别的瓶颈。', en: 'Chan, Hinton, Bengio et al. (Sep 2026): on this estimate, AI R&D runs 10× faster in about 17 months — a year of progress in about 5 weeks. Assuming no other bottlenecks.', src: { zh: 'Chan 等 22 位作者，arXiv:2609.36054', en: 'Chan et al. (22 authors), arXiv:2609.36054' } },
-      { id: 'd3b', who: 'clawd', zh: '3/4？跟刚才那道题一样……那岂不是真要爆炸？', en: '3/4? Just like that quiz… so it really would explode?' },
+      { id: 'd3', who: 'card', zh: 'Chan、Hinton、Bengio 等（2026.9）：照此估计，约 17 个月后 AI 研发快 10 倍——一年的进展约 5 周完成（前提：没有别的瓶颈）。', en: 'Chan, Hinton, Bengio et al. (Sep 2026): on this estimate, AI R&D is 10× faster in about 17 months — a year of progress in ~5 weeks (assuming no other bottlenecks).', src: { zh: 'Chan 等 22 位作者，arXiv:2609.36054', en: 'Chan et al. (22 authors), arXiv:2609.36054' } },
+      { id: 'd3b', who: 'clawd', zh: '3/4？跟刚才那道题一样……真要爆炸？', en: '3/4? Just like that quiz… so it really explodes?' },
       { id: 'd4', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '别急。OpenAI 的研究员，用 AI 的量涨了 124 倍，做的实验却只多了 1.6 倍。', en: 'Not so fast. OpenAI’s researchers use 124× more AI — but run only 1.6× more experiments.', maxW: 640 },
-      { id: 'd4b', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '忙得热火朝天，不等于进步飞快。', en: 'Being busy isn’t the same as making fast progress.', gap: 0.2, maxW: 640 },
-      { id: 'd6', who: 'narr', zh: '两派唯一的共识：现有的数据，还不足以下定论。', en: 'The one thing both camps agree on: the data so far can’t settle it.', hold: 0.6 },
-      { id: 'd7', who: 'clawd', zh: '这一局……我判不了。', en: 'This round… I can’t call it.', min: 2.4 },
+      { id: 'd4b', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '忙，不等于进步快。', en: 'Busy isn’t the same as fast progress.', gap: 0.1, maxW: 640 },
+      { id: 'd6', who: 'narr', zh: '两派唯一的共识：现有的数据，还不足以下定论。', en: 'The one thing both camps agree on: the data so far can’t settle it.', hold: 0.3 },
+      { id: 'd7', who: 'clawd', zh: '这局……判不了。', en: 'This round… no call.', min: 1.6 },
     ],
-    cues: [['d1b', 'hop'], ['d1b+0.35', 'whoosh'], ['d2', 'swish'], ['d3', 'card'], ['d3b', 'surprise'], ['d4', 'swish'], ['d4+0.8', 'build'], ['d6+0.4', 'tick'], ['d7', 'boing']],
+    cues: [['d1+0.3', 'hop'], ['d1+0.65', 'whoosh'], ['d2', 'swish'], ['d3', 'card'], ['d3b', 'surprise'], ['d4', 'swish'], ['d4+0.8', 'build'], ['d6+0.4', 'tick'], ['d7', 'boing']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
       const LX = 300, RX = 1620, PY = 770;
@@ -289,7 +211,7 @@
       }
       if (S.on('d4') || S.on('d4b')) X.src(ctx, { zh: 'Ramez Naam，Noahpinion，2026.9.27（引 OpenAI 数据）', en: 'Ramez Naam, Noahpinion, 2026-09-27 (citing OpenAI data)' });
       // Clawd the referee, with two flags
-      const t1 = S.T('d1b'); const enter = M.seg(t, t1, t1 + 0.45, M.ease.outCubic);
+      const t1 = S.T('d1') + 0.3; const enter = M.seg(t, t1, t1 + 0.45, M.ease.outCubic);
       const hop = X.hop(t, t1, 0.45, 60);
       const cx = M.lerp(1100, GX, enter), cy = 860 + hop.dy, s = 5.5;
       ctx.fillStyle = '#3A3732'; D.rr(ctx, GX - 70, 860, 140, 40, 8); ctx.fill(); ctx.fillStyle = 'rgba(240,238,230,0.12)'; ctx.fillRect(GX - 70, 860, 140, 4);
@@ -318,7 +240,8 @@
     { name: { zh: '并行墙', en: 'Parallel' }, icon: 'people', lit: 'w3r' },
     { name: { zh: '现实墙', en: 'Reality' }, icon: 'globe', lit: 'w4' },
   ];
-  const ARRIVE = ['w0b$+1.3', 'w1$+2.6', 'w2b$+2.8', 'w3s$+2.8'], LEAVE = ['w1$+0.3', 'w2b$+0.5', 'w3s$+0.5', 'w6+0.5'];
+  const ARRIVE = ['w0b$+1.1', 'w1$+1.8', 'w2b$+1.8', 'w3s$+1.8'], LEAVE = ['w1$+0.2', 'w2b$+0.2', 'w3s$+0.2', 'w6+0.5'];
+  const HOPD = 0.9;                                     // the hop over a wall (v2: 1.3 s)
   const shf = (spec, d) => { const m = spec.match(/^(.*?)([+-]\d+(?:\.\d+)?)$/); const base = m ? m[1] : spec, off = (m ? parseFloat(m[2]) : 0) + d; return base + (off >= 0 ? '+' : '') + off.toFixed(2); };
   const motion = (t, S) => {
     const ar = ARRIVE.map((s) => S.R(s)), lv = LEAVE.map((s) => S.R(s)), run0 = S.R('w0b$+0.1');
@@ -327,14 +250,14 @@
     if (t < ar[0]) return R({ x: M.lerp(360, STOP, M.seg(t, run0, ar[0])), dy: 0, cam: 0, mode: 'run', k: 0 });
     for (let k = 0; k < 4; k++) {
       const o = k * SP;
-      if (k > 0 && t < ar[k]) return R({ x: o + M.lerp(LAND, STOP, M.seg(t, lv[k - 1] + 1.3, ar[k])), dy: 0, cam: o, mode: 'run', k });
+      if (k > 0 && t < ar[k]) return R({ x: o + M.lerp(LAND, STOP, M.seg(t, lv[k - 1] + HOPD, ar[k])), dy: 0, cam: o, mode: 'run', k });
       if (t < lv[k]) return R({ x: o + STOP, dy: 0, cam: o, mode: t < ar[k] + 0.35 ? 'bonk' : 'wait', k });
-      const last = k === 3, p = M.seg(t, lv[k], lv[k] + 1.3);
+      const last = k === 3, p = M.seg(t, lv[k], lv[k] + HOPD);
       if (p < 1) {
         const px = Math.pow(M.seg(p, 0.22, 1), 1.4), x1 = last ? o + 1900 : o + SP + LAND;
         return R({ x: M.lerp(o + STOP, x1, px), dy: -Math.sin(p * Math.PI) * 560, cam: M.lerp(o, last ? o + 1300 : o + SP, M.ease.inOutCubic(p)), mode: 'hop', k });
       }
-      if (last) return R({ x: o + 1900 + (t - lv[k] - 1.3) * 130, dy: 0, cam: o + 1300, mode: 'walk', k });
+      if (last) return R({ x: o + 1900 + (t - lv[k] - HOPD) * 130, dy: 0, cam: o + 1300, mode: 'walk', k });
     }
     return R({ x: 3 * SP + 1900, dy: 0, cam: 3 * SP + 1300, mode: 'walk', k: 3 });
   };
@@ -472,25 +395,25 @@
   RSI.defScene({
     id: 'walls', music: 'tension', lead: 0.5,
     lines: [
-      { id: 'w0', who: 'narr', zh: '怀疑派还说：这条路上，有好几堵墙。', en: 'The skeptics add: there are walls on this road.', min: 2.4 },
+      { id: 'w0', who: 'narr', zh: '怀疑派还指出：路上有好几堵“墙”——也就是瓶颈。', en: 'The skeptics also point to “walls” on the road — bottlenecks.' },
       { id: 'w0b', who: 'clawd', zh: '墙？加速派说 r 大于 1——那我就全速冲过去！', en: 'Walls? The fast camp says r is above 1 — so I’ll charge right through!' },
-      { id: 'w1', who: 'narr', zh: '{o|算力墙}：好点子要靠实验验证，实验要靠芯片来算——这就是“算力”。一次大训练要跑好几个月：想得再快，也得等它跑完。', en: '{o|The compute wall}: ideas are tested by experiments, and experiments run on chips — that’s “compute”. A big training run takes months: however fast you think, you wait for it to finish.', at: 'w0b$+1.6', hold: 0.6 },
-      { id: 'w2', who: 'narr', zh: '{o|品味墙}：普林斯顿的研究者，用“还没发表的论文”里的题目考 AI——它不可能提前见过答案。这叫“影子评测”。', en: '{o|The taste wall}: Princeton researchers tested AI on questions from papers not yet published — so it couldn’t have seen the answers. A “shadow evaluation”.', at: 'w1$+2.9', hold: 0.3 },
-      { id: 'w2b', who: 'narr', zh: '结果：AI 很会动手做实验，却不太会判断“该研究什么”——探索得太少，结论下得太快。', en: 'The result: AI was good at running experiments, but weak at judging what to research — it explored too little and concluded too fast.', gap: 0.3, hold: 1.4 },
-      { id: 'w3', who: 'clawd', zh: '一个我不够快？那就复制一万个我，一起冲！', en: 'One of me isn’t fast enough? Then copy me ten thousand times and charge together!', at: 'w2b$+3.1' },
-      { id: 'w3q', who: 'narr', zh: '考考你：一万个 Clawd 一起干，能快多少倍？', en: 'Quiz: ten thousand Clawds working together — how many times faster?', gap: 0.2 },
-      { id: 'w3r', who: 'narr', zh: '答案：约 100 倍。这就是{o|并行墙}：有条经验法则说，速度大约只随数量的平方根增长——数量翻 4 倍，速度才翻 2 倍。', en: 'The answer: about 100×. That’s {o|the parallel wall}: a rule of thumb says speed grows only with the square root of the number — four times as many, only twice as fast.', at: 'w3q$+2.4', hold: 0.6 },
-      { id: 'w3s', who: 'narr', zh: '因为它们常常想到一块儿去：一万个我，冒出的是同一个点子。', en: 'Because they often think alike: ten thousand of me, all having the same idea.', hold: 0.8 },
-      { id: 'w4', who: 'narr', zh: '{o|现实墙}：还有些事，只能在真实世界里慢慢等——芯片要造，电厂要建，实验要等结果。', en: '{o|The reality wall}: some things can only wait on the physical world — chips must be made, power plants built, experiments waited on.', at: 'w3s$+3.1', hold: 0.6 },
+      { id: 'w1', who: 'narr', zh: '{o|算力墙}：点子要靠实验验证，一次大训练要跑好几个月——想得再快，也得等它跑完。', en: '{o|The compute wall}: ideas must be tested by experiments, and a big training run takes months — however fast you think, you wait for it to finish.', at: 'w0b$+1.3', hold: 0.3 },
+      { id: 'w2', who: 'narr', zh: '{o|品味墙}：普林斯顿的研究者，用“还没发表的论文”里的题目考 AI——它不可能提前见过答案。', en: '{o|The taste wall}: Princeton researchers tested AI on questions from papers not yet published — so it couldn’t have seen the answers.', at: 'w1$+2.0' },
+      { id: 'w2b', who: 'narr', zh: '结果：AI 很会动手做实验，却不太会判断“该研究什么”——探索得太少，结论下得太快。', en: 'The result: AI was good at running experiments, but weak at judging what to research — it explored too little and concluded too fast.', gap: 0.2, hold: 0.8 },
+      { id: 'w3', who: 'clawd', zh: '一个我不够快？那就复制一万个我，一起冲！', en: 'One of me isn’t fast enough? Then copy me ten thousand times and charge together!', at: 'w2b$+1.95' },
+      { id: 'w3q', who: 'narr', zh: '考考你：一万个 Clawd 一起干，能快多少倍？', en: 'Quiz: ten thousand Clawds working together — how many times faster?', gap: 0.15 },
+      { id: 'w3r', who: 'narr', zh: '答案：约 100 倍。这就是{o|并行墙}：按一条经验法则，速度只随数量的平方根增长——翻 4 倍，才快 2 倍。', en: 'The answer: about 100×. That’s {o|the parallel wall}: by a rule of thumb, speed grows only with the square root of the number — four times as many, only twice as fast.', at: 'w3q$+1.5', hold: 0.5, kick: true },
+      { id: 'w3s', who: 'narr', zh: '因为它们常常想到一块儿去：一万个我，冒出的是同一个点子。', en: 'Because they often think alike: ten thousand of me, all having the same idea.', hold: 0.4 },
+      { id: 'w4', who: 'narr', zh: '{o|现实墙}：有些事只能在真实世界里等——芯片要造，电厂要建。', en: '{o|The reality wall}: some things can only wait on the physical world — chips must be made, power plants built.', at: 'w3s$+1.95', hold: 0.3 },
       { id: 'w5', who: 'clawd', zh: '所以……不是爆炸，而是一路撞墙？', en: 'So… not an explosion, but wall after wall?' },
-      { id: 'w6', who: 'narr', zh: '也可能是：撞上一堵，绕过去，再撞下一堵。两派真正吵的，就是这些墙绕不绕得过去。', en: 'Or maybe: hit one, get past it, hit the next. What the two camps really argue about is whether these walls can be got around.', hold: 1.8 },
+      { id: 'w6', who: 'narr', zh: '也可能：撞一堵，绕过去，再撞下一堵。两派真正吵的，是这些墙绕不绕得过去。', en: 'Or maybe: hit one, get past it, hit the next. What the camps really argue about is whether these walls can be got around.', hold: 0.6 },
     ],
     cues: [
       ['w0b$+0.1', 'whoosh'], ...ARRIVE.map((a) => [a, 'thud']), ...ARRIVE.map((a) => [shf(a, 0.05), 'boing']), ...LEAVE.map((a) => [a, 'hop']), ...LEAVE.map((a) => [shf(a, 0.35), 'whoosh']),
-      ['w1+0.6', 'pop'], ['w1+4.7', 'snore'], ['w2+0.8', 'pop'], ['w2b+1.0', 'swish'], ['w2b+2.6', 'stamp'], ['w2b+3.8', 'chime'],
+      ['w1+0.6', 'pop'], ['w1+3.1', 'snore'], ['w2+0.8', 'pop'], ['w2b+1.0', 'swish'], ['w2b+2.6', 'stamp'], ['w2b+3.8', 'chime'],
       ['w3+0.9', 'copy'], ['w3+1.35', 'copy'], ['w3+1.8', 'copy'], ['w3+2.25', 'copy'], ['w3q+0.5', 'quizIn'],
       ...[0, 1, 2].map((k) => [(b) => b.w3q.t + 0.9 + ((b.w3r.t + 0.9) - (b.w3q.t + 0.9)) * k / 3, 'tick']), [(b) => b.w3r.t + 0.9, 'ding'],
-      ['w3s+0.4', 'idea'], ['w3s$+0.2', 'erase'], ['w4+0.4', 'build'], ['w6+1.9', 'land'],
+      ['w3s+0.4', 'idea'], ['w3s$+0.2', 'erase'], ['w4+0.4', 'build'], ['w6+1.4', 'land'],
     ],
     draw(ctx, t, S) {
       const m = motion(t, S), cam = m.cam;
@@ -509,7 +432,7 @@
       if (m.mode === 'walk') { expr = X.blink(t, 4) ? 'blink' : 'normal'; look = [1, -0.3]; }
       if (m.mode === 'wait') {
         expr = X.blink(t, 3) ? 'blink' : 'normal';
-        if (m.k === 0) { const tw = S.T('w1'); if (t > tw + 2.8) look = [-1, 0]; if (t > tw + 4.6 && t < m.lv[0] - 0.5) { expr = 'sleep'; syq = 0.9; sxq = 1.04; } if (t >= m.lv[0] - 0.5) expr = 'surprised'; }
+        if (m.k === 0) { const tw = S.T('w1'); if (t > tw + 2.0) look = [-1, 0]; if (t > tw + 3.0 && t < m.lv[0] - 0.5) { expr = 'sleep'; syq = 0.9; sxq = 1.04; } if (t >= m.lv[0] - 0.5) expr = 'surprised'; }
         if (m.k === 1) { const tb = S.T('w2b'); look = [-1, 0]; if (t > tb + 1.0) look = [-1, -0.2]; if (t > tb + 2.4 && t < tb + 3.8) { expr = 'happy'; armR = 1; } if (t > tb + 3.8) expr = 'surprised'; }
         if (m.k === 2) { expr = S.on('w3') ? 'determined' : X.blink(t, 3) ? 'blink' : 'normal'; look = [-1, -0.2]; }
         if (m.k === 3) { look = [-1, 0]; armL = 0.6; expr = t > S.T('w5') ? 'worried' : X.blink(t, 3) ? 'blink' : 'normal'; }

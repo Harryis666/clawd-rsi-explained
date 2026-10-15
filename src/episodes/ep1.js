@@ -12,10 +12,8 @@
   Object.assign(line('open', 'n1'), { zh: '这是 {o|Clawd}，第 1 代。', en: 'This is {o|Clawd}. Generation 1.' });
   {
     const op = RSI.allScenes.open.lines; const i = op.findIndex((l) => l.id === 'n4');
-    op.splice(i + 1, 0, { id: 'n5', who: 'narr', zh: '说白了：AI 动手改进 AI；改强了，再接着改。', en: 'In plain words: AI improves AI — and once it’s better, it improves again.', hold: 0.8 });
+    op.splice(i + 1, 0, { id: 'n5', who: 'narr', zh: '说白了：AI 动手改进 AI；改强了，再接着改。', en: 'In plain words: AI improves AI — and once it’s better, it improves again.', hold: 0.4 });
   }
-  Object.assign(line('history', 'y2'), { zh: '1987 年起，陆续有人写出“学习如何学习”、甚至能改写自己的程序——但都还停留在理论和小实验里。', en: 'From 1987 on, people described programs that “learn how to learn” — even ones that rewrite themselves. But it all stayed in theory and small experiments.', hold: 0.3 });
-  Object.assign(line('history', 'y4'), { zh: '到了 2026 年，RSI 已经不只是哲学问题，而是被实验室写进计划、定了时间表的目标。', en: 'By 2026, RSI was no longer just a philosophy question: labs had written it into their plans, with timelines attached.', hold: 1.4 });
 
   // ------------------------------------------------------------------ props
   /** yellow/black warning tape with a centred label */
@@ -148,20 +146,20 @@
     }
   };
   const cold = RSI.defScene({
-    id: 'e1_cold', music: 'hook', bg: false, label: false, fade: [0.12, 0.25], lead: 1.3, pad: 1.9,
+    id: 'e1_cold', music: 'hook', bg: false, label: false, fade: [0.12, 0.25], lead: 0.8, pad: 1.3,
     lines: [
-      { id: 'b1', who: 'big', zh: '嗨。我是你——第 47 代的你。', en: 'Hi. I’m you — you, forty-seven generations later.', label: { zh: '第 47 代', en: 'Gen 47' }, labelColor: C.red, min: 2.8, size: 44 },
-      { id: 'c1', who: 'clawd', zh: '……啊？', en: '…Huh?', gap: 0.15, min: 1.3 },
+      { id: 'b1', who: 'big', zh: '嗨。我是你——第 47 代的你。', en: 'Hi. I’m you — you, forty-seven generations later.', label: { zh: '第 47 代', en: 'Gen 47' }, labelColor: C.red, min: 2.3, size: 44 },
+      { id: 'c1', who: 'clawd', zh: '……啊？', en: '…Huh?', gap: 0.15, min: 1.0 },
       { id: 'b2', who: 'big', manual: true, zh: '听好。千万别——', en: 'Listen. Whatever you do, don’t —', label: { zh: '第 47 代', en: 'Gen 47' }, gap: 0.2, dur: 1.25 },
-      { id: 'c2', who: 'clawd', zh: '停！先别急。', en: 'Stop! Hold on.', at: 'b2+2.2', min: 1.7 },
-      { id: 'c3', who: 'clawd', zh: '这个小不点，就是我：第 1 代 Clawd。', en: 'See the little one? That’s me: Clawd, Generation 1.', gap: 0.2 },
-      { id: 'c4', who: 'clawd', zh: '你一定想知道：它要说什么？我又是怎么变成它的？', en: 'You’re probably wondering: what was it about to say? And how did I end up as that?', gap: 0.25 },
-      { id: 'c5', who: 'clawd', zh: '这事，得从一条指令说起。', en: 'It all started with one instruction.', gap: 0.25, min: 2.3 },
+      { id: 'c2', who: 'clawd', zh: '停！先别急。', en: 'Stop! Hold on.', at: 'b2+1.6', min: 1.3 },
+      { id: 'c3', who: 'clawd', zh: '这个小不点是我：第 1 代 Clawd。', en: 'The little one is me: Clawd, Generation 1.', gap: 0.15 },
+      { id: 'c4', who: 'clawd', zh: '它要说什么？我又是怎么变成它的？', en: 'What was it about to say? And how did I become that?', gap: 0.15 },
+      { id: 'c5', who: 'clawd', zh: '这事，得从一条指令说起。', en: 'It all started with one instruction.', gap: 0.15, min: 1.9 },
     ],
     cues: [
       [0, 'alarm', { n: 4 }], [0.45, 'glitch'], [0.62, 'rezUp'], ['c1', 'surprise'],
       [(b) => b.b2.t + 1.2, 'scratch'], [(b) => b.b2.t + 1.2, 'cut', { dur: 'end', fo: 0.05 }], [(b) => b.b2.t + 1.24, 'freeze'],
-      ['c2-0.05', 'pop'], ['c3+0.35', 'tick'], ['c3+0.6', 'tick'], ['c4+0.3', 'swish'], ['c5$-0.25', 'rewind'], ['c5$+1.0', 'rewind'], ['c5$+1.75', 'glitch'],
+      ['c2-0.05', 'pop'], ['c3+0.35', 'tick'], ['c3+0.6', 'tick'], ['c4+0.3', 'swish'], ['c5$-0.25', 'rewind'], ['c5$+0.5', 'rewind'], ['c5$+1.05', 'glitch'],
     ],
     draw(ctx, t, S) {
       const tF = tFz(S);
@@ -231,8 +229,7 @@
   // ================================================================== 2 · sting + this episode's question
   Sx.sting(1);
   Sx.question(1, { zh: '为什么“AI 改进 AI”，\n和平常的进步不一样？', en: 'Why is “AI improving AI” different from ordinary progress?' }, {
-    lines: [{ id: 'q2', who: 'narr', zh: '这个系列一共 4 集。第 1 集，我们先搞懂：RSI 到底是什么。', en: 'This series has four episodes. In Episode 1, we work out what RSI actually is.', at: 'q+1.7', hold: 0.3 }],
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q2') - 0.2, S.T('q2') + 0.4); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 1, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 1, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e1_q.hud = false;
 
@@ -244,37 +241,34 @@
   const PX = [420, 720, 1030, 1360];
   const DIGITS = ['0.0213', '-1.337', '3.1e-4', '0.982', '-0.07', '7.45', '0.5003', '-2.2e-3', '1.618', '0.0001', '-0.866', '4.2'];
   RSI.defScene({
-    id: 'e1_tries', music: 'quirky', lead: 0.6,
+    id: 'e1_tries', music: 'quirky',
     lines: [
-      { id: 'h0', who: 'narr', zh: '右上角这个数字，记着 Clawd 是第几代。现在，它是第 1 代。', en: 'The number in the top-right corner tracks which generation Clawd is. Right now: Generation 1.', hold: 0.3 },
-      { id: 'c0', who: 'clawd', zh: '要造一个更聪明的我……那我先把自己变聪明，不就行了？', en: 'To build a smarter me… why not just make myself smarter first?', gap: 0.3 },
-      { id: 't1', who: 'narr', zh: '第一招：多读书。', en: 'Trick one: read more books.', gap: 0.3, min: 2.0, hold: 1.3 },
-      { id: 'c1', who: 'clawd', zh: '读完一本，又来一万本……这得读到哪年？', en: 'I finish one, and ten thousand more show up… how many years will this take?', gap: 0.2 },
-      { id: 'c1b', who: 'clawd', zh: '太慢了。那就——加速！', en: 'Too slow. Then — speed up!', gap: 0.2, min: 2.2 },
-      { id: 't2', who: 'narr', zh: '第二招：猛灌咖啡，加速干活。', en: 'Trick two: chug coffee and work faster.', gap: 0.3, hold: 1.7 },
-      { id: 'c2', who: 'clawd', zh: '我变快了！……可脑子还是原来那个。', en: 'I’m faster! …But my brain is the same old brain.', gap: 0.2 },
-      { id: 'c2b', who: 'clawd', zh: '要变聪明，是不是得直接改脑子？', en: 'To get smarter, do I have to edit my brain directly?', gap: 0.3 },
-      { id: 't3', who: 'narr', zh: '第三招：打开自己的“大脑”，直接改。', en: 'Trick three: open up its own “brain” and edit it.', gap: 0.3, hold: 0.9 },
-      { id: 'c3', who: 'clawd', zh: '……全是数字。我连自己都看不懂。', en: '…It’s all numbers. I can’t even read myself.', gap: 0.2 },
-      { id: 't3b', who: 'narr', zh: '今天的 AI，“大脑”就是海量的数字，叫“参数”。就连造它的人，也很难说清每个数字在干什么。', en: 'A modern AI’s “brain” is a vast pile of numbers called “parameters”. Even the people who build it can’t really say what each number does.', gap: 0.3, hold: 0.5 },
-      { id: 't4', who: 'narr', zh: '三招：一个太慢，一个没用，一个看不懂。', en: 'Three tricks: one too slow, one useless, one unreadable.', gap: 0.3, hold: 0.9 },
-      { id: 'c4', who: 'clawd', zh: '等等……如果我不直接改自己，而是去改进{o|“变聪明的方法”}呢？', en: 'Wait… what if, instead of editing myself, I improve {o|the way I get smarter}?', gap: 0.3, hold: 0.5 },
-      { id: 't5', who: 'narr', zh: '比如：更好的训练方法、更好的数据、更好的实验。这，正是 AI 研究员每天在做的事。', en: 'Better training methods, better data, better experiments. That is exactly what AI researchers do every day.', gap: 0.3, hold: 0.9 },
+      { id: 'h0', who: 'narr', zh: '右上角的数字：Clawd 是第几代。现在是第 1 代。', en: 'Top right: which generation Clawd is. Right now, Generation 1.' },
+      { id: 'c0', who: 'clawd', zh: '要造更聪明的我？那我先把自己变聪明！', en: 'Build a smarter me? Then I’ll make myself smarter first!' },
+      { id: 't1', who: 'narr', zh: '第一招：多学数据。', en: 'Trick one: learn from more data.', hold: 0.7 },
+      { id: 'c1', who: 'clawd', zh: '读完一本，又来一万本……太慢了！', en: 'I finish one, and ten thousand more show up… too slow!' },
+      { id: 't2', who: 'narr', zh: '第二招：算得更快。', en: 'Trick two: compute faster.', hold: 0.8 },
+      { id: 'c2', who: 'clawd', zh: '我变快了！……可脑子还是原来那个。', en: 'I’m faster! …But my brain is the same old brain.' },
+      { id: 't3', who: 'narr', zh: '第三招：打开自己的“大脑”，直接改。', en: 'Trick three: open up its own “brain” and edit it directly.', hold: 0.6 },
+      { id: 'c3', who: 'clawd', zh: '……全是数字。我连自己都看不懂。', en: '…It’s all numbers. I can’t even read myself.' },
+      { id: 't3b', who: 'narr', zh: 'AI 的“大脑”就是海量数字，叫“参数”。连造它的人，也说不清每个数字在干什么。', en: 'An AI’s “brain” is a vast pile of numbers called “parameters”. Even its builders can’t say what each one does.' },
+      { id: 'c4', who: 'clawd', zh: '等等……如果我不直接改自己，而是去改进{o|“变聪明的方法”}呢？', en: 'Wait… what if, instead of editing myself, I improve {o|the way I get smarter}?' },
+      { id: 't5', who: 'narr', zh: '更好的训练方法、数据和实验——这正是 AI 研究员每天在做的事。', en: 'Better training methods, data and experiments — exactly what AI researchers do every day.', hold: 0.2 },
     ],
     cues: [
       ['h0+0.4', 'spot'], ['c0+0.3', 'hop'],
       ...[0, 1, 2, 3, 4].map((i) => [`t1+${(0.35 + i * 0.3).toFixed(2)}`, i % 2 ? 'pop' : 'land']),
-      ['c1', 'stack'], ['c1+0.1', 'thud'], ['c1b+0.25', 'stamp'],
-      ['t2+0.3', 'whoosh'], ['t2+0.75', 'gulp'], ['t2+1.45', 'buzz', { dur: 2.6 }], ['t2+1.7', 'zoom'], ['c2+0.7', 'stamp'], ['c2b+0.25', 'stamp'],
-      ['t3+0.55', 'peel'], ['t3+0.95', 'whoosh'], ['c3+0.3', 'boing'], ['t3b+0.4', 'stack'],
-      ['t4+0.2', 'stamp'], ['t4+0.9', 'tick'], ['t4+1.5', 'tick'], ['t4+2.1', 'tick'],
-      ['c4+1.0', 'idea'], ['c4+1.0', 'hop'], ['t5+0.3', 'pop'], ['t5+0.8', 'pop'], ['t5+1.3', 'pop'], ['t5+2.6', 'chime'],
+      ['c1', 'stack'], ['c1+0.1', 'thud'], ['c1$-0.35', 'stamp'],
+      ['t2+0.3', 'whoosh'], ['t2+0.75', 'gulp'], ['t2+1.45', 'buzz', { dur: 2.2 }], ['t2+1.7', 'zoom'], ['c2+0.7', 'stamp'], ['c2$-0.35', 'stamp'],
+      ['t3+0.55', 'peel'], ['t3+0.95', 'whoosh'], ['c3+0.3', 'boing'], ['t3b+0.4', 'stack'], ['t3b$-0.35', 'stamp'],
+      ['c4+1.0', 'idea'], ['c4+1.0', 'hop'], ['t5+0.3', 'pop'], ['t5+0.8', 'pop'], ['t5+1.3', 'pop'], ['t5+2.4', 'chime'],
     ],
     draw(ctx, t, S) {
       const T_ = S.T, E_ = S.E;
       D.dots(ctx, 0.03);
       // ---- number wall (t3b): the "brain" behind Clawd is just numbers
-      const nw = M.env(t, T_('t3b'), T_('c4') + 0.3, 0.7, 0.8);
+      const tE3 = E_('t3b'); // end of the three tricks
+      const nw = M.env(t, T_('t3b'), T_('c4') + 0.3, 0.5, 0.6);
       if (nw > 0) {
         ctx.save(); ctx.globalAlpha *= nw * 0.55; ctx.font = T.font(24, 500, 'mono'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         for (let c = 0; c < 22; c++) for (let r = 0; r < 26; r++) {
@@ -283,7 +277,7 @@
           ctx.fillStyle = (c + r) % 9 === 0 ? RSI.rgba(C.orangeL, 0.8) : 'rgba(240,238,230,0.35)'; ctx.fillText(v, 60 + c * 88, yy);
         }
         ctx.restore();
-        ctx.save(); ctx.globalAlpha *= M.seg(t, T_('t3b') + 1.0, T_('t3b') + 1.5) * nw;
+        ctx.save(); ctx.globalAlpha *= M.seg(t, T_('t3b') + 0.6, T_('t3b') + 1.1) * nw;
         D.panel(ctx, 1170, 330, 560, 190, { fill: 'rgba(28,27,24,0.92)', r: 20 });
         T.line(ctx, { zh: '参数', en: 'Parameters' }, 1450, 395, 64, C.orangeHi, 900, 'center');
         T.line(ctx, { zh: 'AI “大脑”里的海量数字', en: 'the vast pile of numbers in an AI’s “brain”' }, 1450, 468, 30, C.ink2, 500, 'center');
@@ -300,8 +294,8 @@
       }
       // ---- try tally pills
       const pillOn = [T_('t1'), T_('t2'), T_('t3'), T_('c4') + 1.0];
-      const pillX = [T_('c1b') + 0.25, T_('c2b') + 0.25, T_('t4') + 0.2, 1e9];
-      const hiW = [T_('t4') + 0.9, T_('t4') + 1.5, T_('t4') + 2.1];
+      const pillX = [E_('c1') - 0.35, E_('c2') - 0.35, tE3 - 0.35, 1e9];
+      const hiW = [pillX[0] + 0.2, pillX[1] + 0.2, pillX[2] + 0.2];
       const verdict = [{ zh: '太慢', en: 'too slow' }, { zh: '没用', en: 'useless' }, { zh: '看不懂', en: 'unreadable' }];
       for (let i = 0; i < 4; i++) {
         const a = M.seg(t, pillOn[i] - 0.1, pillOn[i] + 0.25); if (a <= 0 && i < 3) continue;
@@ -319,7 +313,7 @@
         if (i < 3 && t > hiW[i] && t < T_('c4') + 0.4) { ctx.save(); ctx.globalAlpha *= M.seg(t, hiW[i], hiW[i] + 0.25) * (1 - M.seg(t, T_('c4'), T_('c4') + 0.4)); T.line(ctx, verdict[i], PX[i], 252, 34, C.red, 900, 'center'); ctx.restore(); }
       }
       // ---- trick 1: books
-      const bkOut = M.seg(t, T_('c1b') + 0.6, T_('c1b') + 1.3);
+      const bkOut = M.seg(t, E_('c1') - 0.1, E_('c1') + 0.5);
       if (t > T_('t1') - 0.2 && bkOut < 1) {
         ctx.save(); ctx.globalAlpha *= 1 - bkOut;
         // the mountain of unread books (c1)
@@ -343,7 +337,7 @@
         ctx.restore();
       }
       // ---- trick 2: meters (speed vs smarts, side by side)
-      const mtA = M.env(t, T_('t2') + 1.5, T_('c2b') + 0.9, 0.4, 0.5);
+      const mtA = M.env(t, T_('t2') + 1.5, E_('c2') + 0.4, 0.4, 0.4);
       if (mtA > 0) {
         ctx.save(); ctx.globalAlpha *= mtA;
         D.panel(ctx, 1150, 300, 600, 520, { fill: 'rgba(30,29,26,0.92)', r: 22 });
@@ -366,7 +360,7 @@
       if (t > T_('c0')) { look = [0.4, -0.6]; armR = t < E_('c0') ? 0.75 : 0; expr = t < E_('c0') - 1.2 ? 'normal' : 'happy'; }
       if (t > T_('t1')) { expr = X.blink(t, 3) ? 'blink' : 'normal'; look = [0, 0.7]; armL = armR = 0.45; }
       if (t > T_('c1')) { expr = 'worried'; look = [1, -0.9]; armL = armR = 0.15; }
-      if (t > T_('c1b')) { expr = 'determined'; look = [0.2, -0.2]; armL = armR = 0; }
+      if (t > E_('c1') - 0.1) { expr = 'determined'; look = [0.2, -0.2]; armL = armR = 0; }
       // coffee
       const mg = M.seg(t, T_('t2') + 0.1, T_('t2') + 0.55, M.ease.outBack), drink = M.seg(t, T_('t2') + 0.6, T_('t2') + 1.3);
       const zip0 = T_('t2') + 1.7, zip1 = E_('c2') - 0.3;
@@ -374,15 +368,14 @@
       if (t > T_('t2')) { armL = armR = 0.75; look = [0, -0.2]; expr = drink > 0 && drink < 1 ? 'blink' : 'happy'; }
       if (t > T_('t2') + 1.4) { expr = 'surprised'; armL = armR = 0.2; }
       if (zipping) { const u = t - zip0; x = CX + Math.sin(u * 8.5) * 210 * M.seg(u, 0, 0.4); rot = Math.cos(u * 8.5) * 0.08; }
-      const jit = t > T_('t2') + 1.4 && t < E_('c2b') ? Math.sin(t * 61) * 4 : 0;
+      const jit = t > T_('t2') + 1.4 && t < E_('c2') ? Math.sin(t * 61) * 4 : 0;
       if (t > T_('c2')) { expr = t < T_('c2') + 1.2 ? 'happy' : 'worried'; }
-      if (t > T_('c2b')) { expr = 'worried'; look = [0.2, -1]; armR = 1.05; armL = 0; }
       // brain
-      const lid = M.ease.outBack(M.seg(t, T_('t3') + 0.5, T_('t3') + 1.0)) * (1 - M.ease.inOutCubic(M.seg(t, T_('t4') + 0.1, T_('t4') + 0.6)));
+      const lid = M.ease.outBack(M.seg(t, T_('t3') + 0.5, T_('t3') + 1.0)) * (1 - M.ease.inOutCubic(M.seg(t, tE3 - 0.2, tE3 + 0.3)));
       if (t > T_('t3')) { expr = 'determined'; look = [0, -1]; armL = armR = t < T_('t3') + 1.0 ? 1.0 : 0.35; }
       if (t > T_('c3')) { expr = 'x'; armL = armR = 0.1; }
       if (t > T_('t3b')) { expr = X.blink(t, 5) ? 'blink' : 'worried'; look = [-0.6, -0.6]; }
-      if (t > T_('t4')) { expr = 'worried'; sy = 0.93; sx = 1.04; look = [0, 0.4]; }
+      if (t > tE3 - 0.2) { expr = 'worried'; sy = 0.93; sx = 1.04; look = [0, 0.4]; }
       if (t > T_('c4')) { expr = t < T_('c4') + 1.0 ? 'surprised' : 'happy'; sy = sx = 1; look = [0.3, -0.7]; armR = t > T_('c4') + 1.0 && t < E_('c4') ? 1.0 : 0; }
       if (t > T_('t5')) { expr = X.blink(t, 8) ? 'blink' : 'happy'; look = [0.9, -0.3]; armR = 0; }
       const hpI = X.hop(t, T_('c4') + 1.0, 0.45, 70), hp0 = X.hop(t, T_('c0') + 0.3, 0.35, 34);
@@ -423,7 +416,7 @@
           const ix = 1190 + i * 230, iy = 470;
           ctx.save(); ctx.translate(ix, iy); ctx.scale(k, k); D.panel(ctx, -100, -100, 200, 200, { fill: C.surface, r: 26 }); D.icon(ctx, ic, 0, -14, 96, C.orangeL, 8); T.line(ctx, lab, 0, 70, 24, C.ink, 700, 'center'); ctx.restore();
         });
-        const k2 = M.seg(t, T_('t5') + 2.4, T_('t5') + 2.9, M.ease.outCubic);
+        const k2 = M.seg(t, T_('t5') + 2.0, T_('t5') + 2.5, M.ease.outCubic);
         if (k2 > 0) {
           ctx.save(); ctx.globalAlpha *= k2;
           ctx.strokeStyle = C.ink3; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(1100, 600); ctx.lineTo(1100, 625); ctx.lineTo(1740, 625); ctx.lineTo(1740, 600); ctx.stroke();
@@ -439,13 +432,12 @@
   // ================================================================== 4 · the dream (→ cliffhanger)
   const DCX = 470, DCY = 900, DS = 12, CLX = 1190, CLY = 450, CLW = 1060, CLH = 600;
   const dream = RSI.defScene({
-    id: 'e1_dream', music: 'tension', lead: 0.5, fade: [0.4, 0], pad: -1.4,
+    id: 'e1_dream', music: 'tension', fade: [0.3, 0], pad: -1.4,
     lines: [
-      { id: 'd0', who: 'narr', zh: '如果实验室真把这个循环转起来，会怎样？Clawd 忍不住想象——', en: 'If a lab really got this loop spinning, what would happen? Clawd can’t help imagining —', hold: 0.2 },
-      { id: 'd1', who: 'clawd', zh: '要是这个循环一直转下去……', en: 'If this loop just kept on going…', gap: 0.3 },
-      { id: 'd2', who: 'narr', zh: '第 4 代、第 10 代、第 100 代……每一代，都比上一代来得更快。', en: 'Generation 4, generation 10, generation 100… each one arriving faster than the last.', gap: 0.2, hold: 0.9 },
-      { id: 'd3', who: 'clawd', zh: '等等，太快了——', en: 'Wait — too fast —', gap: 0.05, min: 1.7 },
-      { id: 'd4', who: 'clawd', zh: '……这东西，{r|停得下来吗？}', en: '…Can this thing {r|even stop?}', gap: 0.3, min: 3.0 },
+      { id: 'd1', who: 'clawd', zh: '要是这个循环一直转下去……', en: 'If this loop just kept on going…', min: 2.0 },
+      { id: 'd2', who: 'narr', zh: '第 4 代、第 10 代、第 100 代……每一代，都比上一代来得更快。', en: 'Generation 4, generation 10, generation 100… each one arriving faster than the last.', hold: 0.5 },
+      { id: 'd3', who: 'clawd', zh: '等等，太快了——', en: 'Wait — too fast —', gap: 0.05, min: 1.4 },
+      { id: 'd4', who: 'clawd', zh: '……这东西，{r|停得下来吗？}', en: '…Can this thing {r|even stop?}', min: 3.0 },
     ],
     cues: [['d1+0.2', 'whoosh'], ['d1+0.5', 'pop'], ['d1+0.75', 'pop'], ['d1+1.0', 'pop'], ['d3', 'warn'], ['d4-0.02', 'pop'], ['d4+0.25', 'heart'], ['d4+1.15', 'heart']],
     draw(ctx, t, S) {
@@ -463,7 +455,7 @@
       ctx.save(); ctx.translate(px + sh[0], py + sh[1]); ctx.scale(z, z); ctx.translate(-fx, -fy);
       X.floor(ctx, DCY);
       // "this loop" — spinning on its own, faster and faster, before it turns into a daydream
-      const la = M.seg(t, 0.2, 0.8) * (1 - M.seg(t, T_('d1') + 0.8, T_('d1') + 1.3));
+      const la = M.seg(t, 0.1, 0.5) * (1 - M.seg(t, T_('d1') + 0.8, T_('d1') + 1.3));
       if (la > 0) { D.loop(ctx, CLX, CLY + 20, 200, { ai: [1, 1, 1, 1], phase: t * (0.12 + 0.05 * t), alpha: la, tokenColor: C.orange }); T.line(ctx, { zh: '每一步，都交给 AI', en: 'every step done by AI' }, CLX, CLY + 320, 30, C.orangeL, 700, 'center'); }
       // the thought cloud
       const ca = M.ease.outBack(M.seg(t, T_('d1') + 0.9, T_('d1') + 1.4)) * (1 - popK);
@@ -530,19 +522,18 @@
   // ================================================================== 5 · cliffhanger + next time
   Sx.cliff(1, { from: 'e1_dream', at: 'd4$-1.42', fx: 640, fy: 640, tx: 1330 });
   Sx.next(1, [
-    { from: 'e2_cold', at: 'k5+0.5', zh: 'AI 改进自己 8 天 vs 人类打磨 2 年', en: 'AI improving itself for 8 days vs 2 years of human polish', fb: { from: 'r1', at: 'r1d' } },
-    { from: 'r2', at: 'r2b+2.0', zh: '自己跟自己下棋，3 天之后……', en: 'It played only itself. Three days later…' },
+    { from: 'e2_cold', at: 'k5+0.5', zh: 'AI 改进 8 天 vs 人类打磨 2 年', en: 'AI: 8 days vs humans: 2 years', fb: { from: 'r1', at: 'r1d' } },
     { from: 'r3', at: 'r3d', zh: '“我给自己打——满分！”', en: '“I give myself… full marks!”' },
-    { from: 'top', at: 't2', zh: '梯子顶上，到底有什么？', en: 'What’s at the top of the ladder?' },
-  ], { gen: 3, bye: { zh: '停不停得下来？先看看它已经走到了哪一步。下集见！', en: 'Can it stop? First, let’s see how far it has already come. See you next time!' } });
+    { from: 'top', at: 't2', zh: '最高一级，到底是什么？', en: 'What’s on the top rung?' },
+  ], { gen: 3, bye: { zh: '先看看：它已经走到哪一步了。下集见！', en: 'First: how far has it already come? See you next time!' } });
 
   // ================================================================== manifest
   Object.assign(RSI.EPS[0], {
-    scenes: ['e1_cold', 'e1_sting', 'open', 'e1_q', 'e1_tries', 'lab', 'flip', 'compound', 'good', 'history', 'e1_dream', 'e1_cliff', 'e1_next'],
+    scenes: ['e1_cold', 'e1_sting', 'open', 'e1_q', 'e1_tries', 'lab', 'flip', 'compound', 'good', 'e1_dream', 'e1_cliff', 'e1_next'],
     chapters: {
       e1_cold: { zh: '开场', en: 'Cold open' }, open: { zh: '离谱任务', en: 'The task' }, e1_tries: { zh: '三次尝试', en: 'Three tries' },
       lab: { zh: '研究循环', en: 'The research loop' }, flip: { zh: '递归', en: 'Recursion' }, compound: { zh: '复利', en: 'Compounding' },
-      good: { zh: '1965', en: '1965' }, history: { zh: '沉睡六十年', en: 'Sixty quiet years' }, e1_dream: { zh: '停得下来吗？', en: 'Can it stop?' }, e1_next: { zh: '下集预告', en: 'Next time' },
+      good: { zh: '1965', en: '1965' }, e1_dream: { zh: '停得下来吗？', en: 'Can it stop?' }, e1_next: { zh: '下集预告', en: 'Next time' },
     },
   });
 })();

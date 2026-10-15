@@ -39,6 +39,6 @@ for (const a of args) {
 await browser.close();
 if (process.env.SHEET && files.length) {
   const sheet = path.join(out, `sheet_${process.env.SHEET}.jpg`);
-  execFileSync('magick', ['montage', ...files, '-tile', '2x', '-geometry', '960x540+4+4', '-background', '#000', '-quality', '85', sheet]);
+  execFileSync('magick', ['montage', ...files, '-tile', process.env.TILE || '2x', '-geometry', (process.env.GEOM || '960x540') + '+4+4', '-background', '#000', '-quality', '85', sheet]);
   console.log('sheet', sheet);
 }
