@@ -11,7 +11,7 @@ TARGET="${TARGET:--16}"
 I=$(ffmpeg -hide_banner -nostats -i "$RAW" -af ebur128 -f null - 2>&1 | grep -A1 "Integrated loudness" | awk '/I:/{print $2}')
 G=$(python3 -c "print(round(${TARGET}-(${I}),2))")
 echo "EP${N} ${L}: integrated ${I} LUFS → gain ${G} dB"
-ffmpeg -hide_banner -loglevel error -y -i "$RAW" -af "volume=${G}dB,alimiter=limit=0.84:attack=4:release=80:level=false:latency=true" -c:a pcm_s16le -ar 48000 "$WAV"
+ffmpeg -hide_banner -loglevel error -y -i "$RAW" -af "volume=${G}dB,alimiter=limit=0.75:attack=4:release=80:level=false:latency=true" -c:a pcm_s16le -ar 48000 "$WAV"
 if [ "$L" = "en" ]; then
   TITLES=("" "The Ridiculous Task" "How High Has It Climbed?" "Explosion, or a Wall?" "Don't Ask Me Again")
   TITLE="Clawd Builds Clawd · EP ${N}/4 · ${TITLES[$N]}"; COMMENT="A pure-code animation about recursive self-improvement (RSI)"

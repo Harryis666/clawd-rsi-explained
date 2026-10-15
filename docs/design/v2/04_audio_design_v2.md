@@ -46,7 +46,16 @@
 
 ## 5. 母带
 
-每集单独母带（[`tools/master.sh`](../../../tools/master.sh)）：先用 ffmpeg 的 `ebur128` 测整体响度 I，增益到 −16 LUFS，再接峰值限制器（`alimiter`，上限 0.84，启动 4 ms，释放 80 ms），AAC 编码后与画面合成。元数据写入系列名、集数（`track`）和标题，不含网址。
+每集单独母带（[`tools/master.sh`](../../../tools/master.sh)）：先用 ffmpeg 的 `ebur128` 测整体响度 I，增益到 −16 LUFS，再接峰值限制器（`alimiter`，上限 0.75，启动 4 ms，释放 80 ms），AAC 编码后与画面合成。元数据写入系列名、集数（`track`）和标题，不含网址。
+
+| 集 | 原始响度 | 增益 | 成品响度 | 响度范围 LRA | 真峰值 |
+|---|---|---|---|---|---|
+| 第 1 集 | −22.0 LUFS | +6.0 dB | −16.2 LUFS | 5.1 LU | −1.8 dBTP |
+| 第 2 集 | −19.9 LUFS | +3.9 dB | −16.2 LUFS | 6.8 LU | −1.4 dBTP |
+| 第 3 集 | −19.2 LUFS | +3.2 dB | −16.2 LUFS | 4.4 LU | −1.4 dBTP |
+| 第 4 集 | −22.2 LUFS | +6.2 dB | −16.3 LUFS | 3.5 LU | −0.8 dBTP |
+
+注：限制器上限最初是 0.84（与 v1 相同），但 AAC 编码后第 3、4 集的真峰值超过了 0 dBTP（+0.5 / +0.2），所以降到 0.75。
 
 ```bash
 EP=2 node tools/render-audio.mjs                 # → out/audio_raw_ep2_zh.wav + 响度报告
