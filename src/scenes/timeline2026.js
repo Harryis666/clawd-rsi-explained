@@ -129,34 +129,38 @@
 
   // ---------------- forecasts ----------------
   const FC = [
-    { x: 0.05, up: 1, col: C.red, who: { zh: 'Gladstone 报告（2026.10）', en: 'Gladstone report (Oct 2026)' }, what: { zh: '多数受访内部人士：3–12 个月内开始', en: 'most insiders interviewed: starts within 3–12 months' } },
-    { x: 0.30, up: 0, col: C.orange, who: { zh: 'Jack Clark（2026.5）', en: 'Jack Clark (May 2026)' }, what: { zh: '2028 年底前发生的概率约 60%', en: '~60% chance by end of 2028' } },
-    { x: 0.42, up: 1, col: C.orange, who: { zh: 'OpenAI 目标', en: 'OpenAI goal' }, what: { zh: '2028 年 3 月：自动化 AI 研究员', en: 'Mar 2028: automated AI researcher' } },
-    { x: 0.60, up: 0, col: C.yellow, who: { zh: 'AI Futures（2026 Q1）', en: 'AI Futures (Q1 2026)' }, what: { zh: '“自动化程序员”中位数：2028 年中–2030 年中', en: '“automated coder” medians: mid-2028 to mid-2030' } },
-    { x: 0.80, up: 1, col: C.blue, who: { zh: 'Ramez Naam（2026.9）', en: 'Ramez Naam (Sep 2026)' }, what: { zh: '怀疑“爆炸”：瓶颈在实验和现实', en: 'skeptical: bottlenecks in experiments & reality' } },
-    { x: 0.97, up: 0, col: C.blue, who: { zh: 'Arvind Narayanan（2026.7）', en: 'Arvind Narayanan (Jul 2026)' }, what: { zh: '除非出现断裂，AI 仍是“普通技术”', en: 'AI stays a “normal technology” unless something breaks' } },
+    { x: 0.05, up: 1, col: C.red, who: { zh: 'Gladstone 报告', en: 'Gladstone report' }, what: { zh: '2026.10 · 多数受访的实验室内部人士：3–12 个月内就会开始', en: 'Oct 2026 · most lab insiders interviewed: it starts within 3–12 months' } },
+    { x: 0.30, up: 0, col: C.orange, who: { zh: 'Jack Clark（Anthropic 联合创始人）', en: 'Jack Clark (Anthropic co-founder)' }, what: { zh: '2026.5 · 2028 年底前实现的概率约 60%', en: 'May 2026 · ~60% chance by the end of 2028' } },
+    { x: 0.42, up: 1, col: C.orange, who: { zh: 'OpenAI 的目标', en: 'OpenAI’s goal' }, what: { zh: '2028 年 3 月：做出“自动化 AI 研究员”——能自己搞 AI 研究的 AI', en: 'March 2028: an “automated AI researcher” — an AI that does AI research itself' } },
+    { x: 0.60, up: 0, col: C.yellow, who: { zh: 'AI Futures 团队', en: 'AI Futures Project' }, what: { zh: '2026 Q1 · “自动化程序员”（能干顶尖程序员的活）：预计 2028 年中–2030 年中', en: 'Q1 2026 · an “automated coder” (does a top programmer’s job): mid-2028 to mid-2030' } },
+    { x: 0.80, up: 1, col: C.blue, who: { zh: 'Ramez Naam（未来学家）', en: 'Ramez Naam (futurist)' }, what: { zh: '2026.9 · 怀疑“爆炸”：瓶颈在实验和现实世界', en: 'Sep 2026 · skeptical of a “boom”: the bottlenecks are experiments and the real world' } },
+    { x: 0.97, up: 0, col: C.blue, who: { zh: 'Arvind Narayanan（普林斯顿大学）', en: 'Arvind Narayanan (Princeton)' }, what: { zh: '2026.7 · 除非出现断裂，AI 仍是一种“普通技术”', en: 'Jul 2026 · unless something breaks, AI stays a “normal technology”' } },
   ];
+  const FCT = (i) => `o1+${(0.8 + i * 1.25).toFixed(2)}`;
   RSI.defScene({
-    id: 'forecasts', music: 'reflect', lead: 0.6,
+    id: 'forecasts', music: 'reflect', lead: 0.6, chapter: { zh: '什么时候？', en: 'When?' },
     lines: [
-      { id: 'o1', who: 'narr', zh: '那么，什么时候会到顶？预测五花八门。', en: 'So when do we reach the top? Forecasts are all over the map.', hold: 6.5 },
-      { id: 'o2', who: 'narr', zh: '还要提醒一句：这些数字大多来自实验室自己的测量，用的是自己的评估——有时，裁判就是 AI。', en: 'One caveat: most of these numbers come from labs measuring themselves, with their own evaluations — sometimes with AI as the judge.', hold: 0.6 },
-      { id: 'o3', who: 'clawd', zh: '谁来当裁判？……这个问题，我好像在哪儿听过。', en: 'Who\'s the judge?… I feel like I\'ve heard that question before.' },
+      { id: 'o1', who: 'narr', zh: '那么，AI 什么时候会真正“自己造自己”？预测五花八门。', en: 'So when will AI truly start “building itself”? The forecasts are all over the map.', hold: 7.6 },
+      { id: 'o2', who: 'narr', zh: '还要提醒一句：这些数字，大多是实验室自己量、自己评的——有时候，打分的裁判就是 AI。', en: 'One caveat: most of these numbers are measured and graded by the labs themselves — and sometimes the judge doing the grading is an AI.', hold: 0.5 },
+      { id: 'o3', who: 'clawd', zh: 'AI 当裁判？……这不就是第 2 集那个“自己给自己打分”吗？', en: 'An AI as the judge?… Isn’t that the “grading yourself” from Episode 2?', gap: 0.3, min: 3.4, maxW: 700 },
     ],
-    cues: FC.map((f, i) => [`o1+${(0.8 + i * 0.9).toFixed(1)}`, 'tick']),
+    cues: [...FC.map((f, i) => [FCT(i), 'tick']), ['o2+0.4', 'gavel'], ['o3', 'surprise'], ['o3+1.3', 'rewind'], ['o3+1.5', 'page']],
     draw(ctx, t, S) {
       D.dots(ctx, 0.03);
+      const dim = 1 - 0.78 * M.seg(t, S.T('o3') - 0.3, S.T('o3') + 0.3);
+      ctx.save(); ctx.globalAlpha *= dim;
       const x0 = 250, x1 = 1670, y = 520;
       const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, C.red); g.addColorStop(0.45, C.yellow); g.addColorStop(1, C.blue);
       ctx.fillStyle = g; D.rr(ctx, x0, y - 6, x1 - x0, 12, 6); ctx.fill();
       T.line(ctx, { zh: '很快', en: 'very soon' }, x0 - 30, y, 30, C.red, 900, 'right'); T.line(ctx, { zh: '很慢 / 未必', en: 'slow / maybe not' }, x1 + 30, y, 30, C.blue, 900, 'left');
+      T.line(ctx, { zh: 'AI 什么时候会“自己造自己”？', en: 'When will AI “build itself”?' }, W / 2, 150, 44, C.ink, 900, 'center');
       FC.forEach((f, i) => {
-        const ti = S.R(`o1+${(0.8 + i * 0.9).toFixed(1)}`); const a = M.seg(t, ti, ti + 0.4); if (a <= 0) return;
+        const ti = S.R(FCT(i)); const a = M.seg(t, ti, ti + 0.4); if (a <= 0) return;
         const x = x0 + f.x * (x1 - x0); const up = f.up; const ly = up ? y - 70 : y + 70;
         ctx.save(); ctx.globalAlpha *= a;
         ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(x, y, 14, 0, 7); ctx.fill(); ctx.strokeStyle = C.bg; ctx.lineWidth = 4; ctx.stroke();
         ctx.strokeStyle = RSI.rgba(f.col, 0.6); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y + (up ? -16 : 16)); ctx.lineTo(x, ly); ctx.stroke();
-        const bw = 330; const bx = M.clamp(x - bw / 2, 40, W - 40 - bw);
+        const bw = 360; const bx = M.clamp(x - bw / 2, 40, W - 40 - bw);
         const L = T.layout(ctx, RSI.L(f.what), { size: 23, weight: 500, maxW: bw - 30, lh: 1.35 }); const bh = L.h + 70;
         const by = up ? ly - bh : ly;
         D.panel(ctx, bx, by, bw, bh, { fill: C.surface, r: 14 }); ctx.fillStyle = f.col; ctx.fillRect(bx, up ? by + bh - 5 : by, bw, 5);
@@ -164,12 +168,36 @@
         ctx.restore();
       });
       if (t > S.T('o2')) {
-        const a = M.seg(t, S.T('o2'), S.T('o2') + 0.6);
-        ctx.save(); ctx.globalAlpha *= a; D.icon(ctx, 'gavel', 1640, 840, 80, C.yellow, 8);
-        T.line(ctx, { zh: '自我测量 · 自我评估 · AI 当裁判', en: 'self-measured · self-evaluated · AI-judged' }, 1560, 845, 28, C.yellow, 700, 'right'); ctx.restore();
+        const a = M.seg(t, S.T('o2') + 0.3, S.T('o2') + 0.8);
+        ctx.save(); ctx.globalAlpha *= a; D.icon(ctx, 'gavel', 1640, 815, 80, C.yellow, 8);
+        T.line(ctx, { zh: '自己量 · 自己评 · 有时 AI 当裁判', en: 'self-measured · self-graded · sometimes AI-judged' }, 1570, 820, 28, C.yellow, 700, 'right'); ctx.restore();
       }
-      const ca = M.seg(t, S.T('o3') - 0.6, S.T('o3'));
-      if (ca > 0) { const hd = K.draw(ctx, 300, 900, 6, { gen: S.gen().g, expr: 'worried', look: [0.6, -0.4], alpha: ca }); S.anchors.clawd = [320, hd[1]]; }
+      ctx.restore();
+      // ---- Clawd remembers Episode 2’s self-grading judge
+      const ca = M.seg(t, S.T('o3') - 0.5, S.T('o3') - 0.1);
+      if (ca > 0) {
+        const tt = t - S.T('o3'), hop = X.hop(t, S.T('o3') + 0.05, 0.4, 34);
+        const expr = tt < 1.2 ? 'surprised' : 'worried';
+        const hd = K.draw(ctx, 330, 860 + hop.dy, 9, { gen: S.gen().g, expr, look: tt < 1.2 ? [0.2, -0.6] : [0.8, -0.8], armR: tt > 1.2 ? 0.55 : 0.2, sx: hop.sx, sy: hop.sy, alpha: ca });
+        S.anchors.clawd = [430, hd[1] + 40]; S.sides.clawd = 'right';
+        if (tt > 0.15 && tt < 1.6) X.mark(ctx, '!', 300, hd[1] - 30, tt - 0.15, C.yellow, 70);
+        const ka = M.ease.outBack(M.seg(t, S.T('o3') + 1.3, S.T('o3') + 1.7));
+        if (ka > 0) {
+          // memory dots from Clawd’s head to the picture
+          ctx.save(); ctx.globalAlpha *= M.clamp(ka); ctx.fillStyle = 'rgba(240,238,230,0.75)';
+          [[400, hd[1] - 40, 9], [450, hd[1] - 110, 13], [510, hd[1] - 190, 17]].forEach(([x, y2, r]) => { ctx.beginPath(); ctx.arc(x, y2, r, 0, 7); ctx.fill(); });
+          ctx.restore();
+          const fx = 560, fy = 260, fw = 520, fh = 292;
+          const c = RSI.Series.snap('r3', RSI.prepScene(RSI.allScenes.r3).R('r3d') + 0.6 + Math.min(1.5, Math.max(0, tt - 1.3)) * 0.4, { slot: 'o3', k: 0.4 });
+          ctx.save(); ctx.translate(fx + fw / 2, fy + fh / 2); ctx.scale(ka, ka); ctx.rotate(-0.02);
+          ctx.fillStyle = C.paper; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 24; ctx.fillRect(-fw / 2 - 14, -fh / 2 - 14, fw + 28, fh + 28); ctx.shadowColor = 'transparent';
+          ctx.filter = 'sepia(0.7) saturate(0.8) contrast(1.05) brightness(0.95)'; ctx.drawImage(c, -fw / 2, -fh / 2, fw, fh); ctx.filter = 'none';
+          ctx.restore();
+          ctx.save(); ctx.globalAlpha *= M.clamp(ka);
+          D.pill(ctx, { zh: '第 2 集 · 第 3 级：自己当裁判', en: 'Episode 2 · Rung 3: its own judge' }, fx + fw / 2, fy - 34, { size: 26, fill: C.orange, align: 'center' });
+          ctx.restore();
+        }
+      }
     },
   });
 })();

@@ -16,7 +16,7 @@
     { n: 1, title: { zh: '离谱任务', en: 'The Ridiculous Task' }, hook: { zh: 'AI 改进 AI，停得下来吗？', en: 'When AI improves AI — can it stop?' }, genStart: 1 },
     { n: 2, title: { zh: '爬到第几级了？', en: 'How High Has It Climbed?' }, hook: { zh: 'AI 已经在改进自己了吗？', en: 'Is AI already improving itself?' }, genStart: 3 },
     { n: 3, title: { zh: '爆炸，还是撞墙？', en: 'Explosion, or a Wall?' }, hook: { zh: '智能会“爆炸”吗？', en: 'Will intelligence “explode”?' }, genStart: 8 },
-    { n: 4, title: { zh: '以后都不用再问我', en: 'Don’t Ask Me Again' }, hook: { zh: '最后那个选项，谁来按？', en: 'Who presses the last option?' }, genStart: 8 },
+    { n: 4, title: { zh: '以后都不用再问我', en: 'Don’t Ask Me Again' }, hook: { zh: '最后那个选项，谁来按？', en: 'Who presses the last option?' }, genStart: 12 },
   ];
   const Sx = (RSI.Series = {});
   Sx.epLabel = (n) => (EN() ? `EP ${n}` : `第 ${n} 集`);
