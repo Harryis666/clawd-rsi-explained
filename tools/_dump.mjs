@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
+import fs from 'node:fs';
+const root = process.argv[2];
+const browser = await chromium.launch({ executablePath: '/usr/local/bin/chromium' });
+const page = await browser.newPage();
+page.on('pageerror', (e) => console.log('[pageerror]', e.message));
+await page.goto(pathToFileURL(root + '/index.html').href + '?mode=render' + (process.argv[3] || ''));
+await page.waitForFunction(() => window.RSI && RSI.ready);
+const d = await page.evaluate(() => RSI.scenes.map((s) => ({ id: s.id, start: +s.start.toFixed(1), dur: +s.dur.toFixed(1), music: s.music, lines: s.lines.map((l) => `${l.id || ''}|${l.who}|${(+l.t).toFixed(1)}|${l.zh}`), cues: (s.cues || []).map((c) => c[1]).join(','), gen: JSON.stringify(s.gen || []) })));
+fs.writeFileSync('/tmp/scenes.json', JSON.stringify(d, null, 1));
+for (const s of d) console.log(`${s.id} @${s.start} dur ${s.dur} [${s.music}] lines ${s.lines.length} gen ${s.gen}`);
+await browser.close();

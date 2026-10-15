@@ -3,7 +3,10 @@
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, T = RSI.T, D = RSI.D;
   RSI.scenes = []; RSI.chapters = []; RSI.cues = []; RSI.genEvents = [];
-  RSI.defScene = (d) => { RSI.scenes.push(d); return d; };
+  /** every scene ever defined, by id (a later definition with the same id replaces the earlier one) */
+  RSI.allScenes = {};
+  RSI.defScene = (d) => { RSI.allScenes[d.id] = d; return d; };
+  RSI.genStart = 1;
   const CHAR = { clawd: 1, clawd2: 1, clawd3: 1, monster: 1, human: 1, left: 1, right: 1, user: 1 };
   RSI.isChar = (who) => !!CHAR[who];
 
@@ -20,23 +23,38 @@
     const base = ln.who === 'card' ? 2.6 + n / 8 : ln.who === 'narr' ? 1.2 + n / 8.6 : 1.0 + n / 7.6;
     return Math.max(ln.min || 2.0, base) + (ln.hold || 0);
   };
-  RSI.build = () => {
+  /** time all lines of one scene (idempotent; also used for flashbacks / teasers of scenes outside the current episode) */
+  RSI.prepScene = (sc) => {
+    if (sc._prepped) return sc;
+    const byId = {}; let cur = sc.lead == null ? 0.7 : sc.lead;
+    for (const ln of sc.lines || (sc.lines = [])) {
+      ln.dur = ln.dur != null ? ln.dur : RSI.lineDur(ln);
+      ln.t = ln.at != null ? resolve(ln.at, byId, sc) : cur + (ln.gap != null ? ln.gap : 0.35);
+      if (!ln.par) cur = Math.max(cur, ln.t + ln.dur);
+      if (ln.id) byId[ln.id] = ln;
+      if (ln.who === 'card' || ln.who === 'sys') ln.manual = ln.manual !== false;
+    }
+    sc.byId = byId;
+    sc.dur = sc.dur != null ? sc.dur : Math.max(sc.minDur || 0, cur + (sc.pad == null ? 1.0 : sc.pad));
+    sc.R = (spec) => resolve(spec, byId, sc);
+    sc._prepped = true;
+    return sc;
+  };
+  /** build the timeline of one episode (RSI.ep, 1-based) from the series manifest (src/series.js) */
+  RSI.build = (ep) => {
+    if (ep != null) RSI.ep = ep;
+    const E = RSI.EPS && RSI.EPS[(RSI.ep || 1) - 1];
+    if (E) {
+      RSI.scenes = E.scenes.map((id) => { const sc = RSI.allScenes[id]; if (!sc) throw new Error('episode ' + E.n + ': unknown scene ' + id); return sc; });
+      RSI.genStart = E.genStart || 1; RSI.epInfo = E;
+    }
     let t0 = 0; RSI.chapters = []; RSI.cues = []; RSI.genEvents = [];
     for (const sc of RSI.scenes) {
-      sc.start = t0; const byId = {}; let cur = sc.lead == null ? 0.7 : sc.lead;
-      for (const ln of sc.lines || (sc.lines = [])) {
-        ln.dur = ln.dur != null ? ln.dur : RSI.lineDur(ln);
-        ln.t = ln.at != null ? resolve(ln.at, byId, sc) : cur + (ln.gap != null ? ln.gap : 0.35);
-        if (!ln.par) cur = Math.max(cur, ln.t + ln.dur);
-        if (ln.id) byId[ln.id] = ln;
-        if (ln.who === 'card' || ln.who === 'sys') ln.manual = ln.manual !== false;
-      }
-      sc.byId = byId;
-      sc.dur = sc.dur != null ? sc.dur : Math.max(sc.minDur || 0, cur + (sc.pad == null ? 1.0 : sc.pad));
-      sc.R = (spec) => resolve(spec, byId, sc);
-      if (sc.chapter) RSI.chapters.push({ t: t0, label: sc.chapter, id: sc.id });
-      for (const c of sc.cues || []) RSI.cues.push(Object.assign({ t: t0 + resolve(c[0], byId, sc), type: c[1] }, c[2] || {}));
-      for (const g of sc.gen || []) RSI.genEvents.push({ t: t0 + resolve(g[0], byId, sc), g: g[1] });
+      RSI.prepScene(sc); sc.start = t0;
+      const chap = (E && E.chapters && E.chapters[sc.id]) || sc.chapter;
+      if (chap) RSI.chapters.push({ t: t0, label: chap, id: sc.id });
+      for (const c of sc.cues || []) RSI.cues.push(Object.assign({ t: t0 + sc.R(c[0]), type: c[1] }, c[2] || {}));
+      for (const g of sc.gen || []) RSI.genEvents.push({ t: t0 + sc.R(g[0]), g: g[1] });
       t0 += sc.dur;
     }
     RSI.genEvents.sort((a, b) => a.t - b.t);
@@ -46,7 +64,8 @@
   };
   /** current generation at absolute time */
   RSI.genAt = (ta) => {
-    let g = 1, since = 1e9, prev = 1;
+    if (RSI._genOverride != null) return { g: RSI._genOverride, since: 1e9, prev: RSI._genOverride };
+    let g = RSI.genStart || 1, since = 1e9, prev = g;
     for (const e of RSI.genEvents) { if (e.t <= ta) { prev = g; g = e.g; since = ta - e.t; } else break; }
     return { g, since, prev };
   };
@@ -90,9 +109,10 @@
     return S;
   }
 
-  function drawLines(ctx, sc, S, t) {
+  function drawLines(ctx, sc, S, t, noNarr) {
     for (const ln of sc.lines) {
       if (ln.manual || t < ln.t || t > ln.t + ln.dur) continue;
+      if (noNarr && ln.who === 'narr') continue;
       const age = t - ln.t; const a = M.env(t, ln.t, ln.t + ln.dur, 0.15, 0.25);
       const reveal = age * RSI.lineRate(ln); const text = RSI.L(ln);
       if (ln.who === 'narr') { T.caption(ctx, text, { alpha: a, reveal }); continue; }
@@ -135,22 +155,43 @@
   }
   function chapterLabel(ctx, sc, ta) {
     if (sc.label === false || sc.isCard) return;
-    let ch = null; for (const c of RSI.chapters) if (c.t <= ta + 0.01) ch = c;
-    if (!ch) return;
+    const E = RSI.epInfo; let s = null;
+    if (E) s = RSI.lang === 'en' ? `EP ${E.n} · ${RSI.L(E.title)}` : `第 ${E.n} 集 · ${RSI.L(E.title)}`;
+    else { let ch = null; for (const c of RSI.chapters) if (c.t <= ta + 0.01) ch = c; if (ch) s = RSI.L(ch.label); }
+    if (!s) return;
     ctx.save(); ctx.globalAlpha = 0.55 * M.seg(ta - sc.start, 0, 0.6);
-    T.line(ctx, ch.label, 56, 56, 22, C.ink2, 500, 'left');
+    T.line(ctx, s, 56, 56, 22, C.ink2, 500, 'left');
     ctx.restore();
   }
   const helpers = new Map();
+  const helperFor = (sc) => { let S = helpers.get(sc); if (!S) { S = helper(sc); helpers.set(sc, S); } return S; };
+  /**
+   * Draw any (prepped) scene at local time t — used for freeze frames, flashbacks and "next episode" teasers.
+   * o: {lines (default true), gen (constant generation while drawing), bg (default true)}
+   */
+  RSI.drawSceneAt = (ctx, sc, t, o = {}) => {
+    RSI.prepScene(sc);
+    const S = helperFor(sc); const saved = [S.t, S.anchors, S.sides, S.hud];
+    S.t = t; S.anchors = {}; S.sides = {}; S.hud = null; S.frame = o.frame || 0; S.flash = true;
+    const g0 = RSI._genOverride; if (o.gen != null) RSI._genOverride = o.gen;
+    ctx.save();
+    if (o.bg !== false && sc.bg !== false) D.bg(ctx, sc.bg || {});
+    ctx.save(); sc.draw(ctx, t, S); ctx.restore();
+    if (o.lines !== false) drawLines(ctx, sc, S, t, o.lines === 'bubbles');
+    ctx.restore();
+    RSI._genOverride = g0; S.flash = false;
+    [S.t, S.anchors, S.sides, S.hud] = saved;
+  };
   RSI.renderFrame = (ctx, ta, frame = 0) => {
     ta = M.clamp(ta, 0, RSI.total - 1e-4);
     const sc = RSI.sceneAt(ta); const t = ta - sc.start;
-    let S = helpers.get(sc); if (!S) { S = helper(sc); helpers.set(sc, S); }
-    S.t = t; S.anchors = {}; S.sides = {}; S.hud = null; S.frame = frame;
+    const S = helperFor(sc);
+    S.t = t; S.anchors = {}; S.sides = {}; S.hud = null; S.frame = frame; S.noLines = false;
     ctx.save();
     if (sc.bg !== false) D.bg(ctx, sc.bg || {});
     ctx.save(); sc.draw(ctx, t, S); ctx.restore();
-    drawLines(ctx, sc, S, t);
+    if (!S.noLines) drawLines(ctx, sc, S, t);
+    if (sc.over) { ctx.save(); sc.over(ctx, t, S); ctx.restore(); }
     chapterLabel(ctx, sc, ta);
     hud(ctx, sc, ta, S);
     const fi = sc.fade ? sc.fade[0] : 0.4, fo = sc.fade ? sc.fade[1] : 0.4;

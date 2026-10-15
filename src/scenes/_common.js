@@ -3,6 +3,7 @@
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T;
   const X = (RSI.X = {});
+  const W = RSI.W;
   X.blink = (t, seed = 0) => { const p = 3.1 + M.hash(seed) * 1.4; const ph = (t + M.hash(seed + 3) * p) % p; return ph < 0.13; };
   /** hop: returns {dy, sx, sy} for a hop starting at t0 */
   X.hop = (t, t0, dur = 0.5, h = 60) => {
@@ -51,6 +52,51 @@
   };
   /** small source note at top-right, under the HUD */
   X.src = (ctx, s, a = 1) => { ctx.save(); ctx.globalAlpha *= a; T.line(ctx, (RSI.lang === 'en' ? 'Source: ' : '来源：') + RSI.L(s), RSI.W - 58, 136, 21, C.ink3, 400, 'right'); ctx.restore(); };
+  // ---------------- v2 helpers ----------------
+  /** server rack with blinking LEDs */
+  X.rack = (ctx, x, y, w, h, t, seed = 1) => {
+    ctx.fillStyle = '#1A1918'; D.rr(ctx, x, y, w, h, 10); ctx.fill(); ctx.strokeStyle = 'rgba(240,238,230,0.12)'; ctx.lineWidth = 2; ctx.stroke();
+    const n = Math.floor((h - 30) / 46);
+    for (let i = 0; i < n; i++) {
+      const yy = y + 18 + i * 46; ctx.fillStyle = '#262523'; D.rr(ctx, x + 14, yy, w - 28, 34, 5); ctx.fill();
+      for (let k = 0; k < 5; k++) { const on = M.hash(seed * 31 + i * 7 + k + Math.floor(t * (3 + (k % 3)))) > 0.45; ctx.fillStyle = on ? (k === 4 && M.hash(i + seed) > 0.6 ? C.red : C.green) : 'rgba(240,238,230,0.12)'; ctx.fillRect(x + 28 + k * 16, yy + 13, 8, 8); }
+      ctx.fillStyle = 'rgba(240,238,230,0.08)'; ctx.fillRect(x + w - 90, yy + 10, 60, 14);
+    }
+  };
+  /** flying paper sheets */
+  X.papers = (ctx, t, n = 10, seed = 3, a = 1) => {
+    ctx.save(); ctx.globalAlpha *= a;
+    for (let i = 0; i < n; i++) {
+      const sp = 140 + M.hash(seed + i) * 260, x = ((M.hash(seed + i * 3) * (W + 300) + t * sp) % (W + 300)) - 150;
+      const y = 180 + M.hash(seed + i * 5) * 640 + Math.sin(t * 1.7 + i) * 50;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(t * (M.hash(i + seed) - 0.5) * 4 + i); ctx.scale(1, 0.55 + 0.45 * Math.abs(Math.sin(t * 2 + i)));
+      ctx.fillStyle = C.paper; ctx.fillRect(-26, -34, 52, 68); ctx.fillStyle = 'rgba(60,50,40,0.35)'; for (let k = 0; k < 5; k++) ctx.fillRect(-18, -24 + k * 11, 36 - (k % 2) * 12, 3);
+      ctx.restore();
+    }
+    ctx.restore();
+  };
+  /** speed lines streaming to the left behind a point */
+  X.speed = (ctx, x, y, t, w = 500, hgt = 260, a = 1, color = 'rgba(240,238,230,0.5)') => {
+    ctx.save(); ctx.globalAlpha *= a; ctx.strokeStyle = color; ctx.lineCap = 'round';
+    for (let i = 0; i < 14; i++) { const yy = y + (M.hash(i * 3.1) - 0.5) * hgt; const len = 60 + M.hash(i * 5.7) * 160; const ph = ((t * (2.2 + M.hash(i) * 2) + M.hash(i * 9)) % 1); const xx = x - ph * w;
+      ctx.lineWidth = 3 + M.hash(i * 2) * 4; ctx.globalAlpha = a * (1 - ph); ctx.beginPath(); ctx.moveTo(xx, yy); ctx.lineTo(xx - len, yy); ctx.stroke(); }
+    ctx.restore();
+  };
+  /** dizzy stars orbiting a point */
+  X.dizzy = (ctx, x, y, t, r = 70, a = 1) => { for (let i = 0; i < 3; i++) { const an = t * 5 + (i * M.TAU) / 3; D.sparkle(ctx, x + Math.cos(an) * r, y + Math.sin(an) * r * 0.32, 16, C.yellow, a, an); } };
+  /** hand-drawn circle (progress p) */
+  X.scribble = (ctx, x, y, rx, ry, p, color = C.red, lw = 7) => {
+    if (p <= 0) return; ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.beginPath();
+    const n = 60, m = Math.floor(n * 1.15 * M.clamp(p));
+    for (let i = 0; i <= m; i++) { const an = -2.2 + (i / n) * M.TAU; const k = 1 + 0.06 * Math.sin(i * 0.7) + i / n * 0.08; const px = x + Math.cos(an) * rx * k, py = y + Math.sin(an) * ry * k; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+    ctx.stroke(); ctx.restore();
+  };
+  /** big quiz countdown ring: p = 0..1 elapsed; n = seconds label */
+  X.countdown = (ctx, x, y, r, p, label, color = C.yellow) => {
+    ctx.save(); ctx.lineWidth = 12; ctx.strokeStyle = 'rgba(240,238,230,0.14)'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+    ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + M.TAU * (1 - M.clamp(p))); ctx.stroke();
+    T.line(ctx, label, x, y + 4, r * 0.9, color, 900, 'center'); ctx.restore();
+  };
   /** count-up number formatting */
   X.num = (v, d = 0) => v.toFixed(d);
 })();

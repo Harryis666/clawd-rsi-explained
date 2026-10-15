@@ -3,18 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>我让 Clawd 造了一个更聪明的自己 · RSI 纯代码动画</title>
+<title>Clawd 造 Clawd · 递归自我改进（RSI）四集纯代码科普动画</title>
 <style>
   html,body{margin:0;height:100%;background:#0c0c0b;overflow:hidden;font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;color:#F0EEE6}
   #stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
   canvas{display:block;background:#141413}
-  body.render #ui,body.render #start{display:none}
-  #start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(12,12,11,.55);cursor:pointer}
-  #start .btn{font-size:22px;font-weight:700;padding:16px 34px;border-radius:999px;background:#D97757;color:#1b1a18;box-shadow:0 10px 40px rgba(217,119,87,.35)}
-  #start .hint{font-size:15px;opacity:.7}
+  body.render #ui,body.render #start,body.render #end{display:none!important}
+  #start,#end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(12,12,11,.78);cursor:pointer;text-align:center;padding:20px}
+  #end{display:none;background:rgba(12,12,11,.6)}
+  #stitle{font-size:44px;font-weight:900;letter-spacing:1px}
+  #stag{font-size:17px;opacity:.7;margin-bottom:8px}
+  #eps{display:grid;grid-template-columns:repeat(4,minmax(150px,230px));gap:14px}
+  @media (max-width:900px){#eps{grid-template-columns:repeat(2,minmax(140px,230px))}}
+  .ep{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:16px 16px 14px;border-radius:16px;border:1px solid rgba(240,238,230,.18);background:rgba(34,33,30,.9);color:#F0EEE6;cursor:pointer;font:inherit}
+  .ep:hover,.ep.on{border-color:#D97757;box-shadow:0 8px 30px rgba(217,119,87,.25)}
+  .ep b{font-size:14px;color:#F2A687}.ep i{font-style:normal;font-size:21px;font-weight:800}.ep small{font-size:13px;opacity:.66;line-height:1.4}
+  .btn,#end button{font-size:20px;font-weight:700;padding:14px 30px;border-radius:999px;background:#D97757;color:#1b1a18;border:0;cursor:pointer;box-shadow:0 10px 40px rgba(217,119,87,.35);font-family:inherit}
+  #end button.sec{background:rgba(240,238,230,.12);color:#F0EEE6;box-shadow:none}
+  .hint{font-size:14px;opacity:.6}
   #ui{position:absolute;left:0;right:0;bottom:0;padding:14px 22px 18px;background:linear-gradient(transparent,rgba(0,0,0,.7));display:flex;align-items:center;gap:14px;transition:opacity .3s}
   #ui.hide{opacity:0}
-  #ui button{background:none;border:1px solid rgba(240,238,230,.25);color:#F0EEE6;border-radius:8px;padding:6px 12px;font:600 14px/1 inherit;cursor:pointer}
+  #ui button{background:none;border:1px solid rgba(240,238,230,.25);color:#F0EEE6;border-radius:8px;padding:6px 12px;font:600 14px/1 inherit;cursor:pointer;white-space:nowrap}
   #ui button:hover{border-color:#D97757;color:#F2A687}
   #bar{position:relative;flex:1;height:8px;border-radius:4px;background:rgba(240,238,230,.18);cursor:pointer}
   #fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#D97757;width:0}
@@ -26,9 +35,11 @@
 </head>
 <body>
 <div id="stage"><canvas id="c" width="1920" height="1080"></canvas></div>
-<div id="start"><div class="btn">▶ 播放 · Play</div><div class="hint">建议开启声音 · 空格 暂停 · ←/→ 快退/快进 · F 全屏 · ?lang=en for English</div></div>
+<div id="start"><div id="stitle"></div><div id="stag"></div><div id="eps"></div><div class="btn">▶ 播放 · Play</div><div class="hint">建议开启声音 · 空格 暂停 · ←/→ 快退/快进 · N/P 下/上一集 · F 全屏 · ?lang=en for English · ?ep=2 直达第 2 集</div></div>
+<div id="end"><button id="nextb"></button><div style="display:flex;gap:12px"><button id="again" class="sec">↺ 重看 · Replay</button><button id="menu" class="sec">☰ 选集 · Episodes</button></div></div>
 <div id="ui" class="hide">
   <button id="pp">❚❚</button>
+  <button id="epn">EP</button>
   <div id="bar"><div id="fill"></div></div>
   <div id="time">0:00 / 0:00</div>
   <button id="lang">EN</button>
@@ -41,13 +52,18 @@
 <script src="src/timeline.js"></script>
 <script src="src/audio.js"></script>
 <script src="src/scenes/_common.js"></script>
-<script src="src/scenes/00_open.js"></script>
-<script src="src/scenes/01_act1.js"></script>
-<script src="src/scenes/02_act2.js"></script>
-<script src="src/scenes/03_act3.js"></script>
-<script src="src/scenes/04_act4.js"></script>
-<script src="src/scenes/05_act5.js"></script>
-<script src="src/scenes/06_epilogue.js"></script>
+<script src="src/series.js"></script>
+<script src="src/scenes/task.js"></script>
+<script src="src/scenes/loop.js"></script>
+<script src="src/scenes/ladder.js"></script>
+<script src="src/scenes/debate.js"></script>
+<script src="src/scenes/monsters.js"></script>
+<script src="src/scenes/timeline2026.js"></script>
+<script src="src/scenes/finale.js"></script>
+<script src="src/episodes/ep1.js"></script>
+<script src="src/episodes/ep2.js"></script>
+<script src="src/episodes/ep3.js"></script>
+<script src="src/episodes/ep4.js"></script>
 <script src="src/player.js"></script>
 </body>
 </html>

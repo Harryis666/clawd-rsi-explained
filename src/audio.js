@@ -40,21 +40,25 @@
       G.master.connect(comp); comp.connect(dest); G.comp = comp;
     } else G.master.connect(dest);
     const bus = (v) => { const g = ac.createGain(); g.gain.value = v; g.connect(G.master); return g; };
-    G.music = bus(AU.mix.music); G.sfx = bus(AU.mix.sfx); G.voice = bus(AU.mix.voice);
+    G.mduck = ac.createGain(); G.mduck.connect(G.master); // music-only ducking (record-scratch stops, freeze frames)
+    G.music = ac.createGain(); G.music.gain.value = AU.mix.music; G.music.connect(G.mduck);
+    G.sfx = bus(AU.mix.sfx); G.voice = bus(AU.mix.voice);
     G.verb = ac.createConvolver(); G.verb.normalize = true; G.verb.buffer = irBuf(ac);
     const vo = ac.createGain(); vo.gain.value = AU.mix.verb; G.verb.connect(vo); vo.connect(G.master);
+    G.mverb = ac.createConvolver(); G.mverb.normalize = true; G.mverb.buffer = irBuf(ac);
+    const mvo = ac.createGain(); mvo.gain.value = AU.mix.verb; G.mverb.connect(mvo); mvo.connect(G.mduck);
     G.noise = noiseBuf(ac);
     return G;
   }
   AU.mix = { music: 0.5, sfx: 0.7, voice: 0.6, verb: 0.55 };
   /** per-style loudness trims (calibrated from tools/render-audio.mjs loudness reports) */
-  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.45, quirky: 2.2, reflect: 1.06, epilogue: 1.25, outro: 1.06 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
+  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.45, quirky: 2.2, reflect: 1.06, epilogue: 1.25, outro: 1.06, story: 1.25, tease: 0.95, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
   function out(G, node, a, send, pan) {
     let x = node; const ac = G.ac;
     if (pan) { const p = ac.createStereoPanner(); p.pan.value = M.clamp(pan, -1, 1); x.connect(p); x = p; }
     x.connect(G[a.bus || 'music']);
     const s = a.send != null ? a.send : send;
-    if (s > 0) { const g = ac.createGain(); g.gain.value = s; x.connect(g); g.connect(G.verb); }
+    if (s > 0) { const g = ac.createGain(); g.gain.value = s; x.connect(g); g.connect(!a.bus || a.bus === 'music' ? G.mverb : G.verb); }
   }
   function osc(G, type, f, t0, t1) { const o = G.ac.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t0); o.start(t0); o.stop(t1); return o; }
   function noiseSrc(G, t0, t1, off) { const s = G.ac.createBufferSource(); s.buffer = G.noise; s.loop = true; s.start(t0, ((off || 0) * 0.7919) % 1.9); s.stop(t1); return s; }
@@ -183,6 +187,25 @@
     const g = G.ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + at); g.gain.exponentialRampToValueAtTime(EMIN, t + Math.max(dur, at + 0.01));
     s.connect(f); f.connect(g); out(G, g, a, 0.2, a.pan);
   };
+  function ksBuf(ac, f, dur, bright) { // Karplus–Strong plucked string with fractional-delay tuning
+    const cache = ac._ks || (ac._ks = new Map()); const key = f.toFixed(2) + '|' + dur + '|' + bright;
+    let b = cache.get(key); if (b) return b;
+    const sr = ac.sampleRate, len = Math.ceil(sr * dur), D0 = sr / f - 0.5, N = Math.floor(D0), fr = D0 - N;
+    b = ac.createBuffer(1, len, sr); const y = b.getChannelData(0); const r = M.rng(Math.round(f * 13));
+    let lpv = 0; const rho = Math.pow(0.5, 1 / (f * Math.max(0.25, dur * 0.42)));
+    for (let i = 0; i < len; i++) {
+      if (i <= N + 1) { const nz = r() * 2 - 1; lpv += bright * (nz - lpv); y[i] = lpv; continue; }
+      const a0 = 0.5 * (y[i - N] + y[i - N - 1]), a1 = i - N - 2 >= 0 ? 0.5 * (y[i - N - 1] + y[i - N - 2]) : a0;
+      y[i] = rho * ((1 - fr) * a0 + fr * a1);
+    }
+    for (let i = 0; i < Math.min(len, 64); i++) y[i] *= i / 64;
+    cache.set(key, b); return b;
+  }
+  I.zheng = (G, t, a) => { // plucked string (古筝-like): m, dur, vel, bright
+    const b = ksBuf(G.ac, mtof(a.m), a.dur || 1.6, a.bright || 0.62), src = G.ac.createBufferSource(); src.buffer = b;
+    const f = lp(G, a.cut || 5200, 0.6), g = gainNode(G, V(a, 0.5) * 0.55);
+    src.connect(f); f.connect(g); out(G, g, a, 0.22, a.pan); src.start(t);
+  };
   I.shepard = (G, t, a) => { // endlessly rising Shepard tone
     const dur = a.dur || 6, N = 6, P = a.period || 2.4, steps = Math.max(8, Math.ceil(dur * 40));
     const g = G.ac.createGain(), v = V(a, 0.5) * 0.06;
@@ -199,6 +222,60 @@
   // ---------------------------------------------------------------- SFX (cue type → primitive events)
   const h = (x) => M.hash(x * 1.37 + 0.5);
   const SFX = (AU.SFX = {
+    // ---- v2 series grammar
+    logo: (P, c) => { // sonic logo: the motif in 8-bit (pixel Clawd), then again a fifth higher & smooth (vector Clawd)
+      const mot = ns('D5 A5 F#5 D6'), dt = [0, 0.14, 0.28, 0.46];
+      mot.forEach((m, i) => P(c.t + dt[i], 'pluck', { m, vel: 0.62, dur: 0.22, wave: 'square', cut: 3400, pan: -0.25 }));
+      mot.forEach((m, i) => P(c.t + 0.9 + dt[i] * 0.9, 'bell', { m: m + 7, vel: 0.5, dur: 1.8, ratio: 2.0, idx: 1.1, pan: 0.25 }));
+      P(c.t + 0.9, 'pad', { notes: ns('D3 A3 E4 F#4 A4'), dur: 1.3, at: 0.08, rel: 1.8, vel: 0.6, cut: 2400, send: 0.6 });
+      P(c.t, 'tone', { f0: 70, f1: 46, dur: 0.6, vel: 0.6 }); P(c.t + 0.9, 'kick', { vel: 0.6 });
+      P(c.t + 0.86, 'noise', { type: 'highpass', f0: 5000, dur: 1.2, vel: 0.14, at: 0.05 });
+    },
+    logoEnd: (P, c) => {
+      ns('A5 E6 C#6 A6').forEach((m, i) => P(c.t + i * 0.12, 'bell', { m, vel: 0.42, dur: 1.6, ratio: 2.0, idx: 1.0 }));
+      P(c.t + 0.55, 'bell', { m: n('D6'), vel: 0.5, dur: 3.0, ratio: 2.0, idx: 1.2 }); P(c.t, 'kick', { vel: 0.8 });
+      P(c.t, 'pad', { notes: ns('D3 A3 F#4 A4 E5'), dur: 2.2, at: 0.05, rel: 2.6, vel: 0.6, cut: 2200, send: 0.7 });
+    },
+    stamp: (P, c) => { P(c.t, 'tone', { f0: 130, f1: 58, dur: 0.24, vel: 1.0, send: 0.25 }); P(c.t, 'noise', { type: 'lowpass', f0: 1200, dur: 0.09, vel: 0.7 }); P(c.t + 0.005, 'wood', { f: 420, vel: 0.8 }); },
+    gavel: (P, c) => { // 醒木 — a hard wooden block slapped on the storyteller's table
+      const v = c.big ? 1.15 : 1;
+      P(c.t, 'noise', { type: 'highpass', f0: 2400, dur: 0.03, vel: 1.1 * v, at: 0.001, send: 0.5 });
+      P(c.t, 'noise', { type: 'bandpass', f0: 1150, q: 2.2, dur: 0.15, vel: 1.0 * v, at: 0.001, send: 0.55 });
+      P(c.t, 'tone', { f0: 260, f1: 150, dur: 0.13, vel: 1.0 * v, send: 0.5 });
+      P(c.t, 'wood', { f: 1020, vel: 1.4 * v, send: 0.5 }); P(c.t, 'wood', { f: 610, vel: 1.0 * v, send: 0.4 });
+      P(c.t, 'tone', { f0: 95, f1: 48, dur: 0.3, vel: 0.85 * v });
+    },
+    scratch: (P, c) => { // record scratch
+      P(c.t, 'noise', { f0: 650, f1: 4200, dur: 0.1, q: 5, vel: 1.0, at: 0.004 });
+      P(c.t + 0.1, 'noise', { f0: 4200, f1: 420, dur: 0.17, q: 5, vel: 0.9, at: 0.004 });
+      P(c.t, 'tone', { f0: 280, f1: 1400, dur: 0.1, vel: 0.4, wave: 'sawtooth', cut: 3000 });
+      P(c.t + 0.1, 'tone', { f0: 1400, f1: 180, dur: 0.17, vel: 0.4, wave: 'sawtooth', cut: 3000 });
+    },
+    freeze: (P, c) => { // freeze-frame: shutter + sub drop + shimmer
+      P(c.t, 'noise', { type: 'highpass', f0: 3500, dur: 0.02, vel: 0.9 }); P(c.t + 0.045, 'noise', { type: 'highpass', f0: 3000, dur: 0.025, vel: 0.7 });
+      P(c.t, 'tone', { f0: 110, f1: 36, dur: 0.9, vel: 0.9, send: 0.2 }); P(c.t, 'noise', { type: 'lowpass', f0: 2000, f1: 200, dur: 0.6, vel: 0.35 });
+      P(c.t + 0.02, 'bell', { m: n('A6'), vel: 0.25, dur: 2.2 }); P(c.t + 0.02, 'bell', { m: n('D#6'), vel: 0.18, dur: 2.0 });
+    },
+    riser: (P, c) => { const d = c.dur || 2; P(c.t, 'noise', { f0: 300, f1: 6000, dur: d, q: 1.2, vel: 0.5, at: d * 0.95 }); P(c.t, 'tone', { f0: 110, f1: 880, dur: d, vel: 0.12, wave: 'sawtooth', cut: 2200, at: d * 0.9 }); },
+    swish: (P, c) => { P(c.t - 0.12, 'noise', { f0: 1500, f1: 7000, dur: 0.24, q: 1.4, vel: 0.5, at: 0.18 }); P(c.t, 'kick', { vel: 0.55 }); },
+    page: (P, c) => { P(c.t, 'noise', { f0: 2500, f1: 5200, dur: 0.22, q: 1.2, vel: 0.32, at: 0.08 }); P(c.t + 0.16, 'noise', { type: 'highpass', f0: 4000, dur: 0.05, vel: 0.22 }); },
+    gliss: (P, c) => ns(c.down ? 'D6 B5 A5 F#5 E5 D5 B4 A4 F#4 E4 D4' : 'D4 E4 F#4 A4 B4 D5 E5 F#5 A5 B5 D6').forEach((m, i) => P(c.t + i * 0.035, 'zheng', { m, vel: 0.45, dur: 1.2 })),
+    cut: () => {}, // music duck window (handled in AU.build)
+    quizIn: (P, c) => { P(c.t, 'tone', { f0: 440, f1: 880, dur: 0.12, vel: 0.35, wave: 'square', cut: 2600 }); P(c.t + 0.13, 'bell', { m: n('E6'), vel: 0.4, dur: 1.2 }); P(c.t + 0.13, 'bell', { m: n('B6'), vel: 0.25, dur: 1.0 }); },
+    tada: (P, c) => { ns('D5 F#5 A5 D6').forEach((m, i) => P(c.t + i * 0.07, 'pluck', { m, vel: 0.55, dur: 0.3, wave: 'square', cut: 3200 })); P(c.t + 0.28, 'bell', { m: n('D6'), vel: 0.5, dur: 2.0 }); P(c.t + 0.28, 'noise', { type: 'highpass', f0: 6000, dur: 1.0, vel: 0.2 }); P(c.t + 0.28, 'kick', { vel: 0.6 }); },
+    buzzer: (P, c) => { P(c.t, 'tone', { f0: 150, f1: 140, dur: 0.5, vel: 0.35, wave: 'sawtooth', cut: 1200, hold: 0.35 }); P(c.t, 'tone', { f0: 156, dur: 0.5, vel: 0.25, wave: 'square', cut: 900, hold: 0.35 }); },
+    alarm: (P, c) => { const k = c.n || 3; for (let i = 0; i < k; i++) { P(c.t + i * 0.62, 'tone', { f0: 620, f1: 980, dur: 0.5, vel: 0.2, wave: 'sawtooth', cut: 2000, at: 0.05, lin: 1 }); } },
+    glitch: (P, c) => { for (let i = 0; i < 9; i++) { const hh = h(c.t * 7 + i); P(c.t + i * 0.035, 'tone', { f0: 200 + hh * 1800, dur: 0.03, vel: 0.22, wave: 'square', cut: 4000 }); if (i % 3 === 0) P(c.t + i * 0.035, 'noise', { type: 'highpass', f0: 2000 + hh * 3000, dur: 0.03, vel: 0.3 }); } },
+    boing: (P, c) => { P(c.t, 'tone', { f0: 210, f1: 140, dur: 0.7, vel: 0.5, wave: 'triangle', vib: [16, 60] }); P(c.t, 'tone', { f0: 92, f1: 40, dur: 0.3, vel: 0.9 }); P(c.t, 'noise', { type: 'lowpass', f0: 600, dur: 0.14, vel: 0.6 }); },
+    rocket: (P, c) => { const d = c.dur || 2.2; P(c.t, 'noise', { type: 'lowpass', f0: 300, f1: 1400, dur: d, vel: 0.7, at: 0.2, q: 0.7 }); P(c.t, 'tone', { f0: 120, f1: 600, dur: d, vel: 0.14, wave: 'sawtooth', cut: 1400, at: 0.3 }); P(c.t, 'kick', { vel: 1 }); P(c.t, 'tone', { f0: 70, f1: 30, dur: 1.4, vel: 0.9 }); },
+    heart: (P, c) => { P(c.t, 'tone', { f0: 70, f1: 42, dur: 0.18, vel: 0.9 }); P(c.t + 0.22, 'tone', { f0: 64, f1: 40, dur: 0.16, vel: 0.65 }); },
+    gulp: (P, c) => { for (let i = 0; i < 3; i++) P(c.t + i * 0.2, 'tone', { f0: 420, f1: 170, dur: 0.11, vel: 0.35, wave: 'sine' }); },
+    buzz: (P, c) => P(c.t, 'tone', { f0: 70, f1: 74, dur: c.dur || 1.2, vel: 0.22, wave: 'square', cut: 700, vib: [28, 14], at: 0.05, hold: (c.dur || 1.2) * 0.7 }),
+    idea: (P, c) => { P(c.t, 'tone', { f0: 1200, dur: 0.04, vel: 0.25 }); ns('A5 E6 A6').forEach((m, i) => P(c.t + 0.05 + i * 0.08, 'bell', { m, vel: 0.42, dur: 1.6 })); P(c.t + 0.05, 'noise', { type: 'highpass', f0: 7000, dur: 0.8, vel: 0.18, at: 0.05 }); },
+    fanfare: (P, c) => { [['D5', 0, 0.16], ['D5', 0.18, 0.1], ['D5', 0.3, 0.1], ['A5', 0.42, 0.7]].forEach(([m, d, l]) => { P(c.t + d, 'pluck', { m: n(m), vel: 0.6, dur: l + 0.1, wave: 'sawtooth', cut: 2600 }); P(c.t + d, 'pluck', { m: n(m) - 12, vel: 0.4, dur: l + 0.1, wave: 'square', cut: 1800 }); }); P(c.t + 0.42, 'kick', { vel: 0.8 }); P(c.t + 0.42, 'noise', { type: 'highpass', f0: 5000, dur: 1.2, vel: 0.25 }); },
+    roll: (P, c) => { const d = c.dur || 1.5, k = Math.floor(d / 0.05); for (let i = 0; i < k; i++) P(c.t + i * 0.05, 'snare', { vel: 0.15 + 0.4 * (i / k), dur: 0.08, off: h(i) }); },
+    snore: (P, c) => { for (let i = 0; i < (c.n || 2); i++) { P(c.t + i * 1.6, 'noise', { type: 'lowpass', f0: 380, f1: 520, dur: 0.8, vel: 0.35, at: 0.6 }); P(c.t + i * 1.6 + 0.9, 'tone', { f0: 900, f1: 1300, dur: 0.25, vel: 0.08, wave: 'sine' }); } },
+    chime: (P, c) => ns(c.notes || 'D6 A6').forEach((m, i) => P(c.t + i * 0.1, 'bell', { m, vel: 0.35, dur: 1.4 })),
     key: (P, c) => P(c.t, 'key', { f: 2500 + h(c.t) * 1700, th: 140 + h(c.t + 1) * 70, vel: 0.5 + h(c.t + 2) * 0.3, off: h(c.t + 3) * 2 }),
     enter: (P, c) => { P(c.t, 'key', { f: 2000, th: 115, vel: 1.0 }); P(c.t + 0.035, 'key', { f: 1600, th: 95, vel: 0.6 }); },
     boot: (P, c) => {
@@ -403,6 +480,74 @@
       for (let b = 0; b < 4; b++) if (r() < 0.4) P(tb + b * bd + (r() < 0.3 ? bd / 2 : 0), 'bell', { m: pick(r, tones), vel: 0.15, dur: 2.4, ratio: 2.0, idx: 1.0, pan: (r() - 0.5) * 0.6 });
     });
   };
+  // ---- v2 styles
+  STY.none = () => {};
+  /** 说书 (storyteller) — pentatonic 筝 arpeggios, 梆子 woodblock, low drum: recaps & 本集问题 cards */
+  STY.story = (sec, P, r) => {
+    const ARP = { D: ns('D4 A4 D5 F#5 E5 D5 A4 F#4'), Bm: ns('B3 F#4 B4 D5 F#5 D5 B4 F#4'), G: ns('G3 D4 G4 B4 D5 B4 G4 D4'), A: ns('A3 E4 A4 B4 E5 B4 A4 E4') };
+    grid(sec, 96, (i, tb, bd, bar) => {
+      const k = ['D', 'Bm', 'G', 'A'][i % 4], ch = chord(k);
+      if (i % 4 === 0) ns('D4 E4 F#4 A4 B4 D5').forEach((m, j) => P(tb - 0.22 + j * 0.036, 'zheng', { m, vel: 0.26, dur: 1.0 }));
+      ARP[k].forEach((m, s2) => { P(tb + s2 * bd / 2, 'zheng', { m, vel: (s2 % 2 ? 0.34 : 0.46) + r() * 0.06, dur: 1.4, pan: (s2 / 7 - 0.5) * 0.5 }); });
+      if (i % 2 === 1) [0, 0.5, 0.75].forEach((b) => P(tb + (3 + b) * bd, 'zheng', { m: pick(r, ns('D6 E6 F#6 A6')), vel: 0.22, dur: 0.9, pan: 0.3 }));
+      P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.16, cut: 700, at: 0.5, rel: 1.0, wave: 'triangle' });
+      P(tb, 'bass', { m: ch.b + 12, dur: bd * 1.8, vel: 0.4 }); P(tb + 2 * bd, 'bass', { m: ch.b + 19, dur: bd * 1.4, vel: 0.3 });
+      [[0, 1250, 0.42], [1.5, 1250, 0.3], [2, 900, 0.38], [3, 1250, 0.3], [3.5, 1250, 0.24]].forEach(([b, f, v]) => P(tb + b * bd, 'wood', { f, vel: v, pan: f > 1000 ? 0.25 : -0.2 }));
+      P(tb, 'tone', { f0: 150, f1: 80, dur: 0.22, vel: 0.5, send: 0.15 }); P(tb + 2 * bd, 'tone', { f0: 150, f1: 80, dur: 0.18, vel: 0.36, send: 0.15 });
+    });
+  };
+  /** 下集预告: driving build until the end card (cue logoEnd), then a calm pad */
+  STY.tease = (sec, P, r) => {
+    const tEnd = cueT('logoEnd', sec.t0 - 0.01) || sec.t1;
+    const P2 = (t, f, a) => { if (t < tEnd - 0.02) P(t, f, a); };
+    grid(sec, 132, (i, tb, bd, bar) => {
+      const ch = chord(['D', 'Bm', 'G', 'A'][i % 4]); const lv = Math.min(3, i);
+      for (let e = 0; e < 16; e++) P2(tb + e * bd / 4, 'bass', { m: ch.b + 12 + (e % 8 === 7 ? 12 : 0), dur: bd * 0.2, vel: e % 4 === 0 ? 0.55 : 0.36, cut: 600 + lv * 120 });
+      for (let b = 0; b < 4; b++) { P2(tb + b * bd, 'kick', { vel: 0.62 }); P2(tb + b * bd + bd / 2, 'hat', { vel: 0.3, off: r() }); }
+      if (lv >= 1) { P2(tb + bd, 'snare', { vel: 0.38 }); P2(tb + 3 * bd, 'snare', { vel: 0.4 }); }
+      const arp = ch.v.map((m) => m + 12); for (let s2 = 0; s2 < 8; s2++) P2(tb + s2 * bd / 2, 'pluck', { m: arp[s2 % 4] + (s2 >= 4 ? 12 : 0), vel: 0.24, dur: 0.2, wave: 'square', cut: 2400 + lv * 300, pan: s2 % 2 ? 0.3 : -0.3 });
+      P2(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.26, cut: 1000 + lv * 300, at: 0.2, rel: 0.6 });
+    });
+    if (tEnd < sec.t1) grid({ t0: tEnd + 0.6, t1: sec.t1 }, 70, (i, tb, bd, bar) => {
+      const ch = chord(['Dmaj9', 'Gmaj9'][i % 2]); P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.34, cut: 1300, at: 0.6, rel: 2.0 });
+      P(tb, 'bass', { m: ch.b + 12, dur: bar * 0.8, vel: 0.35 });
+      [0.5, 1.5, 2.5].forEach((b) => { if (r() < 0.7) P(tb + b * bd, 'bell', { m: pick(r, ch.v.map((m) => m + 24)), vel: 0.18, dur: 2.0, ratio: 2.0, idx: 1.0 }); });
+    });
+  };
+  /** cold opens: one punchy groove per episode */
+  STY.hook = (sec, P, r) => {
+    const mode = { e1_cold: 'chaos', e2_cold: 'race', e3_cold: 'split', e4_cold: 'tense' }[sec.sc[0].id] || 'chaos';
+    if (mode === 'chaos') grid(sec, 128, (i, tb, bd, bar) => {
+      const ch = chord(['Dm', 'Bb', 'Gm', 'A7'][i % 4]); const bl = [0, 0, 12, 0, 10, 0, 7, 12];
+      bl.forEach((d, e) => P(tb + e * bd / 2, 'bass', { m: ch.b + 12 + d, dur: bd * 0.4, vel: e % 2 ? 0.45 : 0.6, cut: 800 }));
+      for (let b = 0; b < 4; b++) { P(tb + b * bd, 'kick', { vel: 0.66 }); P(tb + b * bd + bd / 2, 'hat', { vel: 0.34, off: r() }); }
+      P(tb + bd, 'snare', { vel: 0.42 }); P(tb + 3 * bd, 'snare', { vel: 0.46 });
+      ch.v.forEach((m) => { P(tb, 'pluck', { m: m + 12, vel: 0.3, dur: 0.3, wave: 'sawtooth', cut: 2200 }); P(tb + 2.5 * bd, 'pluck', { m: m + 12, vel: 0.22, dur: 0.2, wave: 'sawtooth', cut: 2200 }); });
+      if (i % 2 === 1) for (let s2 = 0; s2 < 8; s2++) P(tb + s2 * bd / 2, 'pluck', { m: ch.v[s2 % 4] + 24, vel: 0.18, dur: 0.12, wave: 'square', cut: 3000, pan: 0.3 });
+    });
+    else if (mode === 'race') grid(sec, 150, (i, tb, bd, bar) => {
+      const ch = chord(['D', 'G', 'A', 'D'][i % 4]);
+      for (let b = 0; b < 4; b++) { [0, 0.5, 0.75].forEach((x) => P(tb + (b + x) * bd, 'bass', { m: ch.b + 12, dur: bd * 0.22, vel: x ? 0.38 : 0.6, cut: 900 })); P(tb + b * bd, 'kick', { vel: 0.58 }); P(tb + b * bd + bd / 2, 'hat', { vel: 0.3, off: r() }); }
+      P(tb + bd, 'snare', { vel: 0.4 }); P(tb + 3 * bd, 'snare', { vel: 0.42 });
+      const mel = [ns('D5 F#5 A5 F#5'), ns('G5 B5 D6 B5'), ns('A5 C#6 E6 C#6'), ns('D6 A5 F#5 D5')][i % 4];
+      mel.forEach((m, k) => P(tb + k * bd, 'pluck', { m, vel: 0.3, dur: 0.25, wave: 'square', cut: 2800 }));
+      P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.22, cut: 1600, at: 0.1, rel: 0.5 });
+    });
+    else if (mode === 'split') grid(sec, 112, (i, tb, bd, bar) => {
+      const ch = chord(['Dm', 'A7', 'Dm', 'A7'][i % 4]);
+      [0, 2].forEach((b, k) => P(tb + b * bd, 'bass', { m: ch.b + 12 + (k ? 7 : 0), dur: bd * 0.8, vel: 0.6, cut: 500 }));
+      [1, 3].forEach((b) => ch.v.forEach((m) => P(tb + b * bd, 'pluck', { m: m + 12, vel: 0.2, dur: 0.12, wave: 'triangle', cut: 1800 })));
+      for (let e = 0; e < 8; e++) P(tb + e * bd / 2, 'hat', { vel: e % 2 ? 0.16 : 0.26, off: r() });
+      P(tb, 'kick', { vel: 0.55 }); P(tb + 2 * bd, 'kick', { vel: 0.5 });
+      [0.5, 1.5, 2.5, 3.5].forEach((b, j) => P(tb + b * bd, 'wood', { f: j % 2 ? 1300 : 950, vel: 0.28 }));
+    });
+    else grid(sec, 66, (i, tb, bd, bar) => { // tense: heartbeat + drone + rising strings
+      if (i % 2 === 0) P(tb, 'drone', { m: n('D2'), dur: bar * 2, vel: 0.5, at: 0.6 });
+      for (let b = 0; b < 4; b += 2) { P(tb + b * bd, 'kick', { vel: 0.5 }); P(tb + b * bd + 0.24, 'kick', { vel: 0.32 }); }
+      for (let b = 0; b < 8; b++) P(tb + b * bd / 2, 'tone', { f0: 3200, dur: 0.02, vel: 0.07 });
+      P(tb, 'pad', { notes: ns(['D4 F4 A4', 'D4 G4 Bb4', 'C#4 E4 A4', 'D4 F4 A4'][i % 4]), dur: bar, vel: 0.3, cut: 600 + i * 120, at: 1.2, rel: 1.4 });
+    });
+  };
   STY.outro = (sec, P, r) => {
     const prog = ['Dmaj9', 'Bm9', 'Gmaj9', 'A13sus', 'Dmaj9', 'Bm9', 'Gmaj9', 'A13sus', 'Gmaj9', 'A13sus', 'Gmaj9', 'A13sus', 'Dmaj9'];
     grid(sec, 76, (i, tb, bd, bar) => {
@@ -418,6 +563,7 @@
   // ---------------------------------------------------------------- voices & typing
   const VOICE = {
     clawd: { f: 620, wave: 'square', cut: 2600 }, clawd2: { f: 720, wave: 'square', cut: 3000 }, clawd3: { f: 830, wave: 'square', cut: 3200 },
+    big: { f: 300, wave: 'sawtooth', cut: 1500 }, agent: { f: 520, wave: 'triangle', cut: 2400 },
     left: { f: 330, wave: 'triangle', cut: 1900 }, right: { f: 470, wave: 'sawtooth', cut: 1500 }, monster: { f: 190, wave: 'sawtooth', cut: 900 }, human: { f: 400, wave: 'triangle', cut: 2000 },
   };
   const PUNCT = /[\s，。！？、；：“”‘’（）《》…—,.!?;:'"()\-–>]/;
@@ -449,7 +595,10 @@
       const k = sc.music || 'ambient', last = secs[secs.length - 1];
       if (last && last.k === k) { last.t1 = sc.start + sc.dur; last.sc.push(sc); } else secs.push({ k, t0: sc.start, t1: sc.start + sc.dur, sc: [sc] });
     }
-    const mutes = RSI.cues.filter((c) => c.type === 'boom').map((c) => [c.t - 0.15, c.t + 2.4]);
+    const cdur = (c) => { if (c.dur === 'end') { const sc = RSI.sceneAt(c.t + 1e-3); return sc.start + sc.dur - c.t; } return c.dur || 2; };
+    const mutes = RSI.cues.filter((c) => c.type === 'boom').map((c) => [c.t - 0.15, c.t + 2.4])
+      .concat(RSI.cues.filter((c) => c.type === 'cut').map((c) => [c.t - 0.01, c.t + cdur(c)]));
+    AU.ducks = RSI.cues.filter((c) => c.type === 'cut').map((c) => ({ t0: c.t, t1: c.t + cdur(c), fi: c.fi || 0.02, fo: c.fo == null ? 0.3 : c.fo, depth: c.depth || 0 }));
     for (const sec of secs) {
       sec.idAt = (t) => { let id = sec.sc[0].id; for (const s of sec.sc) if (s.start <= t) id = s.id; return id; };
       const r = M.rng(hashStr(sec.k) ^ Math.floor(sec.t0 * 10));
@@ -464,6 +613,26 @@
     AU.events = ev;
     return ev.length;
   };
+  /** music duck gain at absolute time t */
+  AU.duckAt = (t) => {
+    let g = 1;
+    for (const d of AU.ducks || []) {
+      let v = 1;
+      if (t >= d.t0 - d.fi && t < d.t0) v = M.lerp(1, d.depth, (t - (d.t0 - d.fi)) / d.fi);
+      else if (t >= d.t0 && t < d.t1) v = d.depth;
+      else if (t >= d.t1 && t < d.t1 + d.fo) v = M.lerp(d.depth, 1, (t - d.t1) / d.fo);
+      g = Math.min(g, v);
+    }
+    return g;
+  };
+  /** schedule the duck envelope on G.mduck for absolute times [a, b] mapped to context time ct = t - a + c0 */
+  function applyDucks(G, a, b, c0 = 0) {
+    if (!AU.ducks || !AU.ducks.some((d) => d.t1 + d.fo >= a && d.t0 - d.fi <= b)) return;
+    const step = 0.01, n2 = Math.max(2, Math.ceil((b - a) / step)), curve = new Float32Array(n2);
+    for (let i = 0; i < n2; i++) curve[i] = AU.duckAt(a + i * step);
+    G.mduck.gain.setValueCurveAtTime(curve, c0, (n2 - 1) * step);
+  }
+  AU.reset = () => { AU.events = null; AU.ducks = null; };
   const lower = (t) => { const E = AU.events; let lo = 0, hi = E.length; while (lo < hi) { const m = (lo + hi) >> 1; if (E[m].t < t) lo = m + 1; else hi = m; } return lo; };
 
   // ---------------------------------------------------------------- live playback
@@ -480,7 +649,7 @@
     if (ac.state === 'suspended') ac.resume();
     G = graph(ac, ac.destination, { live: true });
     t0 = t; c0 = ac.currentTime + 0.1; playing = true; idx = lower(t);
-    const g = G;
+    const g = G; try { applyDucks(G, t, RSI.total + 1, c0); } catch (e) { /* */ }
     const tick = () => {
       if (g !== G) return;
       const horizon = t0 + (ac.currentTime - c0) + 0.4;
@@ -502,6 +671,7 @@
   AU.renderChunk = async (a, b, tail, sr, stem) => {
     if (!AU.events) AU.build();
     const len = Math.ceil((b - a + tail) * sr), oc = new OfflineAudioContext(2, len, sr), g = graph(oc, oc.destination, {});
+    applyDucks(g, a, b + tail, 0);
     let k = 0;
     for (let i = lower(a); i < AU.events.length && AU.events[i].t < b; i++) { const e = AU.events[i]; if (stem && e.a.bus !== stem) continue; I[e.f](g, e.t - a, e.a); k++; }
     const buf = await oc.startRendering();
