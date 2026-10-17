@@ -5,6 +5,7 @@
 
 > 4 集 · 共约 13 分钟 · 1920×1080 · 30 fps · 中文版（另有英文版）
 > **v3 短剧版**：每集 3 分钟左右；画面上每 ≤ 3 秒就有一个变化（新台词、字幕翻页、关键词花字、推镜头），每集都是“冲突开场 → 小反转 → 高潮 → 结尾钩子”。
+> **v3.1**：配乐重新混音——中高频更柔和，低频更足，加了 Bass 线条（仍然全部由代码合成）；第 1 集改了一句台词。
 > **所有画面和声音都由代码实时生成**：没有图片素材、没有音频采样、没有配音或 TTS，只有 Canvas 2D 和 Web Audio API。所有台词都是屏幕文字。
 
 ---
@@ -43,7 +44,7 @@
 npm install                      # 安装 playwright
 npx playwright install chromium  # 如果没有设置 CHROME_PATH
 
-npm run ep1                      # 渲染第 1 集 → out/clawd-rsi-v3-ep1_zh.mp4
+npm run ep1                      # 渲染第 1 集 → out/clawd-rsi-v3.1-ep1_zh.mp4
 npm run render                   # 依次渲染全部 4 集
 npm run ep2:en                   # 第 2 集英文版
 npm run covers                   # 4 张封面 → out/covers/ep<N>_zh.png
@@ -55,7 +56,7 @@ npm run storyboard               # 从时间轴重新生成 docs/design/v3/story
 ```bash
 EP=1 node tools/render-audio.mjs   # ① 离线合成音轨 → out/audio_raw_ep1_zh.wav（附 5 秒窗口响度报告）
 EP=1 node tools/render.mjs         # ② 逐帧渲染画面 → out/video_ep1_zh.mp4（分段渲染，可断点续渲）
-bash tools/master.sh 1 zh          # ③ 响度标准化到 −16 LUFS 并合成 → out/clawd-rsi-v3-ep1_zh.mp4
+bash tools/master.sh 1 zh          # ③ 响度标准化到 −16 LUFS 并合成 → out/clawd-rsi-v3.1-ep1_zh.mp4
 ```
 
 英文版：前两步加上环境变量 `LANG_RSI=en`，第三步用 `bash tools/master.sh 1 en`。
@@ -97,6 +98,7 @@ docs/
 - 分镜脚本（v3）：[第 1 集](docs/design/v3/storyboard_ep1.md) · [第 2 集](docs/design/v3/storyboard_ep2.md) · [第 3 集](docs/design/v3/storyboard_ep3.md) · [第 4 集](docs/design/v3/storyboard_ep4.md)（由时间轴自动生成，中英对照；v2 分镜仍在 `docs/design/v2/`）
 - [事实核查与艺术加工说明](docs/design/v2/03_fact_check_v2.md)：每个数字的出处，以及哪些是虚构的
 - [声音设计](docs/design/v2/04_audio_design_v2.md)：配乐风格、音效、分段响度校准与母带
+- [v3.1 暖声混音](docs/design/v3/01_audio_v3.1_zh.md)：降中高频、加低频和 Bass 的做法与前后频谱对比
 - [综合调研报告](docs/research/01_dossier_zh.md) · [观点地图](docs/research/02_viewpoints_map.md) · [参考文献](docs/research/03_bibliography.md) · [调研原始笔记](docs/research/00_research_log.md)
 - [更新记录](CHANGELOG.md)
 

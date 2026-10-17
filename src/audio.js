@@ -93,7 +93,10 @@
     return a;
   }
   /** per-style loudness trims (calibrated from tools/render-audio.mjs loudness reports) */
-  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.45, quirky: 2.2, reflect: 1.06, epilogue: 1.25, outro: 1.06, story: 1.1, tease: 0.95, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
+  // v3.1 re-calibration (keeps each section within ~1 LU of v3): the new bass lines made tension / epilogue louder (×0.9 / ×0.82),
+  // the softer timbres made story / tease / outro quieter (×1.24 / ×1.21 / ×1.12); softer wood blocks and ticks did the same to two cold opens
+  AU.hookGain = { split: 1.25, tense: 1.18 };
+  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.3, quirky: 2.2, reflect: 1.06, epilogue: 1.02, outro: 1.19, story: 1.36, tease: 1.15, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
   function out(G, node, a, send, pan) {
     let x = node; const ac = G.ac;
     if (pan) { const p = ac.createStereoPanner(); p.pan.value = M.clamp(pan, -1, 1); x.connect(p); x = p; }
@@ -470,7 +473,7 @@
     for (let s = 0; s < steps; s++) P(tb + (s * bar) / steps, 'pluck', { m: arp[pat[s % 8]] + (lv >= 4 && s % 8 === 7 ? 12 : 0), vel: 0.2 + (s % 4 === 0 ? 0.1 : 0), dur: 0.22, wave: 'triangle', wave2: lv >= 2 ? 'square' : null, cut: 2000 + lv * 300, pan: s % 2 ? 0.25 : -0.25 });
     if (lv >= 1) for (let b = 0; b < 4; b++) if (lv >= 3 || b % 2 === 0) P(tb + b * bd, 'kick', { vel: 0.58 });
     if (lv >= 2) for (let e = 0; e < 8; e++) P(tb + (e * bd) / 2, 'bass', { m: ch.b + 12, dur: bd * 0.42, vel: e % 2 ? 0.38 : 0.52, cut: 520 + lv * 80, sub: e % 2 ? 0.35 : 0.75 });
-    if (lv < 2) P(tb, 'bass', { m: ch.b + 12, dur: bar * 0.92, vel: 0.4, cut: 420 }); // v3.1: soft held bass under the first rungs
+    if (lv < 2) P(tb, 'bass', { m: ch.b + 12, dur: bar * 0.92, vel: id === 'top' ? 0.2 : 0.4, cut: 420 }); // v3.1: soft held bass under the first rungs (quieter in the fog at the top)
     if (lv >= 3) for (let e = 1; e < 8; e += 2) P(tb + (e * bd) / 2, 'hat', { vel: 0.3, off: r() });
     if (lv >= 4) { P(tb + bd, 'snare', { vel: 0.42 }); P(tb + 3 * bd, 'snare', { vel: 0.44 }); }
     if (lv >= 5 || (lv === 4 && i % 4 >= 2)) {
@@ -574,8 +577,9 @@
     });
   };
   /** cold opens: one punchy groove per episode */
-  STY.hook = (sec, P, r) => {
+  STY.hook = (sec, Ph, r) => {
     const mode = { e1_cold: 'chaos', e2_cold: 'race', e3_cold: 'split', e4_cold: 'tense' }[sec.sc[0].id] || 'chaos';
+    const mg = AU.hookGain[mode] || 1, P = mg === 1 ? Ph : (t, f, a) => Ph(t, f, Object.assign({}, a, { g: (a.g == null ? 1 : a.g) * mg }));
     if (mode === 'chaos') grid(sec, 128, (i, tb, bd, bar) => {
       const ch = chord(['Dm', 'Bb', 'Gm', 'A7'][i % 4]); const bl = [0, 0, 12, 0, 10, 0, 7, 12];
       bl.forEach((d, e) => P(tb + e * bd / 2, 'bass', { m: ch.b + 12 + d, dur: bd * 0.4, vel: e % 2 ? 0.45 : 0.6, cut: 800, sub: e % 2 ? 0.4 : 0.8 }));

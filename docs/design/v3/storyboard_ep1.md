@@ -137,17 +137,17 @@
 
 ### `compound` · 1:59–2:13（14.2 秒，配乐 `lofi`）
 
-**画面**：两条楼梯对比：蓝色等高台阶（普通进步） vs 橙色越来越高、越来越密的台阶（RSI），小 Clawd 沿橙色台阶一路往上；大字“更会变强”。
+**画面**：两条楼梯对比：蓝色等高台阶（普通进步） vs 橙色越来越高、越来越密的台阶（RSI），小 Clawd 沿橙色台阶一路往上；大字“连变强的本事也在变强”。
 
 - `1:59` **旁白**：人来改进 AI：每一轮的提升，差不多一样大。
   <br><sub>EN: When people improve AI, each round brings roughly the same gain.</sub>
 - `2:02` **旁白**：RSI 不一样：被改进的，正是“改进”这件事本身。所以每一轮提升更大，来得也更快。
   <br><sub>EN: RSI is different: what gets improved is improvement itself. So each round’s gain is bigger — and comes sooner.</sub>
-- `2:07` **旁白**：不只是变强，而是变得更会变强。
+- `2:07` **旁白**：不只是变强，连变强的本事也在变强。
   <br><sub>EN: Not just getting better — getting better at getting better.</sub>
 - `2:11` **Clawd**：听起来……会一发不可收拾？
   <br><sub>EN: Sounds like… it could spiral out of control?</sub>
-- 花字：`2:01` 「+1  +1  +1」 · `2:06` 「一轮比一轮大」 · `2:09` 「更会变强」（stamp） · `2:12` 「！？」
+- 花字：`2:01` 「+1  +1  +1」 · `2:06` 「一轮比一轮大」 · `2:09` 「变强的本事 ↑」（stamp） · `2:12` 「！？」
 
 ### `good` · 2:13–2:27（14.1 秒，配乐 `lofi`）
 
