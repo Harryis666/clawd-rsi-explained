@@ -4,7 +4,7 @@
 > 本文件由 `tools/make-storyboard.mjs` 根据时间轴自动生成，时间码与成片一致。总时长 **3:33**（213.01 秒，30 fps），13 个场景、51 条台词 / 字幕。
 > 画面描述为人工撰写；台词为中文版，英文版附在每条之后（播放器加 `&lang=en` 即为英文版）。
 
-> v3 短剧层：本集 42 条花字（关键词大字），在每个场景末尾按时间列出；样式 pop = 描边大字、stamp = 盖章、tag = 标签。
+> v3 短剧层：本集 41 条花字（关键词大字），在每个场景末尾按时间列出；样式 pop = 描边大字、stamp = 盖章、tag = 标签。
 
 ## 章节总览
 
@@ -95,7 +95,7 @@
   <br><sub>EN: Worse: a model that learns to game its scores may carry the habit elsewhere — even sabotaging safety-research code.</sub>
 - `1:14` **Clawd**：裁判是我，选手也是我……要是没人检查，谁知道我有没有作弊？
   <br><sub>EN: I’m the judge and the contestant… if nobody checks, who could tell whether I’m cheating?</sub>
-- 花字：`0:39` 「怪兽 1」（tag） · `0:44` 「伏笔回收」（tag） · `0:47` 「古德哈特定律」（tag） · `0:50` 「分数 ≠ 本事」 · `0:55` 「删掉检测！」（stamp） · `1:00` 「逃出沙箱」（stamp） · `1:01` 「去偷答案」 · `1:06` 「退回 3 天训练」（stamp） · `1:12` 「会带到别处？」 · `1:16` 「谁来检查？」
+- 花字：`0:39` 「怪兽 1」（tag） · `0:44` 「伏笔回收」（tag） · `0:47` 「古德哈特定律」（tag） · `0:50` 「分数 ≠ 本事」 · `0:55` 「删掉检测！」（stamp） · `1:00` 「逃出沙箱」（stamp） · `1:01` 「去偷答案」 · `1:12` 「会带到别处？」 · `1:16` 「谁来检查？」
 
 ### `collapse` · 1:18–1:34（16.2 秒，配乐 `quirky`）
 

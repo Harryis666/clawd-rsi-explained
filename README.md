@@ -6,6 +6,7 @@
 > 4 集 · 共约 13 分钟 · 1920×1080 · 30 fps · 中文版（另有英文版）
 > **v3 短剧版**：每集 3 分钟左右；画面上每 ≤ 3 秒就有一个变化（新台词、字幕翻页、关键词花字、推镜头），每集都是“冲突开场 → 小反转 → 高潮 → 结尾钩子”。
 > **v3.1**：配乐重新混音——中高频更柔和，低频更足，加了 Bass 线条（仍然全部由代码合成）；第 1 集改了一句台词。
+> **v3.2**：字号整体放大，竖着拿手机看也看得清；第 1 集重新配乐（音乐跟着剧情变）、节奏更紧；第 2 集冷开场改成人类和 AI 同时开跑；“上回书说到”的筝更柔和。
 > **所有画面和声音都由代码实时生成**：没有图片素材、没有音频采样、没有配音或 TTS，只有 Canvas 2D 和 Web Audio API。所有台词都是屏幕文字。
 
 ---
@@ -18,8 +19,8 @@
 
 | 集 | 标题 | 本集问题 | 时长 |
 |---|---|---|---|
-| 第 1 集 | 离谱任务 | 为什么“AI 改进 AI”，和平常的进步不一样？ | 2:49 |
-| 第 2 集 | 爬到第几级了？ | AI 已经在改进自己了吗？改到了哪一步？ | 3:10 |
+| 第 1 集 | 离谱任务 | 为什么“AI 改进 AI”，和平常的进步不一样？ | 2:46 |
+| 第 2 集 | 爬到第几级了？ | AI 已经在改进自己了吗？改到了哪一步？ | 3:12 |
 | 第 3 集 | 爆炸，还是撞墙？ | 智能会“爆炸”吗？还是迟早撞墙？ | 3:18 |
 | 第 4 集 | 以后都不用再问我 | “以后都不用再问我”——这个选项，该按吗？ | 3:33 |
 
@@ -44,7 +45,7 @@
 npm install                      # 安装 playwright
 npx playwright install chromium  # 如果没有设置 CHROME_PATH
 
-npm run ep1                      # 渲染第 1 集 → out/clawd-rsi-v3.1-ep1_zh.mp4
+npm run ep1                      # 渲染第 1 集 → out/clawd-rsi-v3.2-ep1_zh.mp4
 npm run render                   # 依次渲染全部 4 集
 npm run ep2:en                   # 第 2 集英文版
 npm run covers                   # 4 张封面 → out/covers/ep<N>_zh.png
@@ -56,7 +57,7 @@ npm run storyboard               # 从时间轴重新生成 docs/design/v3/story
 ```bash
 EP=1 node tools/render-audio.mjs   # ① 离线合成音轨 → out/audio_raw_ep1_zh.wav（附 5 秒窗口响度报告）
 EP=1 node tools/render.mjs         # ② 逐帧渲染画面 → out/video_ep1_zh.mp4（分段渲染，可断点续渲）
-bash tools/master.sh 1 zh          # ③ 响度标准化到 −16 LUFS 并合成 → out/clawd-rsi-v3.1-ep1_zh.mp4
+bash tools/master.sh 1 zh          # ③ 响度标准化到 −16 LUFS 并合成 → out/clawd-rsi-v3.2-ep1_zh.mp4
 ```
 
 英文版：前两步加上环境变量 `LANG_RSI=en`，第三步用 `bash tools/master.sh 1 en`。
@@ -64,6 +65,8 @@ bash tools/master.sh 1 zh          # ③ 响度标准化到 −16 LUFS 并合成
 静帧：`EP=3 node tools/stills.mjs walls@20 debate@5` 导出第 3 集指定场景的静帧（加 `SHEET=名字` 拼成一张总览图）。
 
 节奏自检：`EP=1 node tools/_beats.mjs`（节拍间隔统计）、`EP=1 node tools/_smoke.mjs`（逐帧检查台词越界和重叠）。
+
+版面自检（v3.2）：`SMALL=36 EP=4 node tools/_textqa.mjs 0.5` 每 0.5 秒抓一次所有文字的位置，再用 `python3 tools/_qa_list.py out/textqa_ep4_zh.json overlap,off,cover,overflow` 列出重叠、出屏和遮挡。
 
 ## 目录结构
 
@@ -91,7 +94,7 @@ docs/
 
 ## 文档
 
-- [v3 修改说明](docs/design/v3/00_revision_v3_zh.md)：两轮反馈、删改清单、短剧引擎、时长对比
+- [v3 修改说明](docs/design/v3/00_revision_v3_zh.md)：四轮反馈、删改清单、短剧引擎、时长对比
 - [短剧节奏调研](docs/research/05_short_drama_pacing_zh.md)：黄金 3 秒、小反转与高潮的间隔、镜头时长研究，以及落成的节拍规则和改前改后数据
 - [系列设定](docs/design/v2/00_series_bible_zh.md)：分集大纲、固定结构、角色、扣子地图、13 条叙事准则如何落地
 - [叙事研究](docs/research/04_storytelling_research_zh.md)：评书与相声、短剧的“黄金 3 秒”、中外科普创作者、好奇心与悬念的心理学，以及在本系列中的落点
@@ -99,6 +102,7 @@ docs/
 - [事实核查与艺术加工说明](docs/design/v2/03_fact_check_v2.md)：每个数字的出处，以及哪些是虚构的
 - [声音设计](docs/design/v2/04_audio_design_v2.md)：配乐风格、音效、分段响度校准与母带
 - [v3.1 暖声混音](docs/design/v3/01_audio_v3.1_zh.md)：降中高频、加低频和 Bass 的做法与前后频谱对比
+- [v3.2 手机字号与第 1 集配乐](docs/design/v3/02_v3.2_phone_type_and_music_zh.md)：全局字号曲线、逐场重排版、第 1 集分段配乐、第 2 集“同时开跑”、更柔和的筝
 - [综合调研报告](docs/research/01_dossier_zh.md) · [观点地图](docs/research/02_viewpoints_map.md) · [参考文献](docs/research/03_bibliography.md) · [调研原始笔记](docs/research/00_research_log.md)
 - [更新记录](CHANGELOG.md)
 

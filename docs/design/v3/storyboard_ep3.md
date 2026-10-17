@@ -4,7 +4,7 @@
 > 本文件由 `tools/make-storyboard.mjs` 根据时间轴自动生成，时间码与成片一致。总时长 **3:17**（197.61 秒，30 fps），11 个场景、45 条台词 / 字幕。
 > 画面描述为人工撰写；台词为中文版，英文版附在每条之后（播放器加 `&lang=en` 即为英文版）。
 
-> v3 短剧层：本集 47 条花字（关键词大字），在每个场景末尾按时间列出；样式 pop = 描边大字、stamp = 盖章、tag = 标签。
+> v3 短剧层：本集 46 条花字（关键词大字），在每个场景末尾按时间列出；样式 pop = 描边大字、stamp = 盖章、tag = 标签。
 
 ## 章节总览
 
@@ -145,7 +145,7 @@
   <br><sub>EN: Note: most of these numbers are measured and graded by the labs themselves — sometimes the judge is an AI.</sub>
 - `2:48` **Clawd**：AI 当裁判？……这不就是第 2 集那个“自己给自己打分”吗？
   <br><sub>EN: An AI as the judge?… Isn’t that the “grading yourself” from Episode 2?</sub>
-- 花字：`2:39` 「五花八门」 · `2:46` 「自己评自己？」 · `2:50` 「伏笔回收」（tag）
+- 花字：`2:38` 「五花八门」 · `2:50` 「伏笔回收」（tag）
 
 ### `e3_end` · 2:52–3:06（14.2 秒，配乐 `tension`）
 
