@@ -211,6 +211,32 @@
     return [x, y - 290 * s];
   };
 
+  /** v3.2 running human (EP2 race). (x,y) feet. o: {ph: stride phase (rad), t, color, color2, alpha, lean} */
+  Hm.run = (ctx, x, y, s, o = {}) => {
+    const ph = o.ph || 0, a = Math.sin(ph) * 0.62, bob = Math.abs(Math.cos(ph)) * 7;
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s); if (o.alpha != null) ctx.globalAlpha *= o.alpha;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.translate(0, -bob); ctx.rotate(o.lean == null ? 0.14 : o.lean);
+    const leg = (ang, back) => { // hip (0,-92) → knee → foot, knee bends on the back-swing
+      const kx = Math.sin(ang) * 46, ky = -92 + Math.cos(ang) * 46, bend = back ? 0.9 : 0.25;
+      const fx = kx + Math.sin(ang - bend) * 44, fy = ky + Math.cos(ang - bend) * 44;
+      ctx.beginPath(); ctx.moveTo(0, -92); ctx.lineTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke();
+    };
+    ctx.strokeStyle = '#26303F'; ctx.lineWidth = 19; leg(-a, a > 0);
+    ctx.strokeStyle = o.color2 || C.blue; ctx.lineWidth = 16; ctx.beginPath(); ctx.moveTo(0, -186); ctx.lineTo(Math.sin(a) * 40, -150); ctx.lineTo(Math.sin(a) * 40 + 26, -128 - Math.cos(a) * 10); ctx.stroke(); // far arm
+    ctx.fillStyle = o.color || C.blueD; D.rr(ctx, -34, -210, 68, 126, 28); ctx.fill();
+    ctx.fillStyle = o.color2 || C.blue; D.rr(ctx, -30, -206, 60, 62, 26); ctx.fill();
+    ctx.strokeStyle = '#2F3A4F'; ctx.lineWidth = 20; leg(a, a < 0);
+    ctx.strokeStyle = o.color2 || C.blue; ctx.lineWidth = 17; ctx.beginPath(); ctx.moveTo(0, -186); ctx.lineTo(-Math.sin(a) * 42, -150); ctx.lineTo(-Math.sin(a) * 42 + 28, -126 - Math.cos(a) * 10); ctx.stroke(); // near arm
+    ctx.fillStyle = C.skin; ctx.beginPath(); ctx.arc(6, -246, 31, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2A2622'; ctx.beginPath(); ctx.arc(4, -252, 32, Math.PI * 1.02, Math.PI * 1.98); ctx.lineTo(36, -246); ctx.lineTo(-28, -246); ctx.fill();
+    ctx.strokeStyle = '#1E1D1B'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(14, -242, 8, 0, 7); ctx.moveTo(42, -242); ctx.arc(34, -242, 8, 0, 7); ctx.stroke();
+    ctx.fillStyle = '#1E1D1B'; ctx.beginPath(); ctx.arc(17, -241, 2.6, 0, 7); ctx.arc(37, -241, 2.6, 0, 7); ctx.fill();
+    if (o.sweat) { ctx.fillStyle = 'rgba(156,199,245,0.85)'; ctx.beginPath(); ctx.arc(-34, -262 - (o.t * 60) % 30, 6, 0, 7); ctx.fill(); }
+    ctx.restore();
+    return [x, y - 290 * s];
+  };
+
   // ---------------- Pixel monsters ----------------
   const MON = {
     cheater: {

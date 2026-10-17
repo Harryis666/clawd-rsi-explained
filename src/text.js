@@ -6,8 +6,19 @@
   T.SANS = '"Noto Sans SC","Noto Sans CJK SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",sans-serif';
   T.SERIF = '"Noto Serif CJK SC","Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif';
   T.MONO = '"JetBrains Mono","Liberation Mono","Andale Mono","SF Mono",Menlo,Consolas,' + T.SANS;
-  T.font = (size, weight = 400, fam = 'sans') =>
-    `${weight} ${size}px ${fam === 'mono' ? T.MONO : fam === 'serif' ? T.SERIF : T.SANS}`;
+  /** raw CSS font string (no type-scale mapping) */
+  T.fontPx = (px, weight = 400, fam = 'sans') =>
+    `${weight} ${px}px ${fam === 'mono' ? T.MONO : fam === 'serif' ? T.SERIF : T.SANS}`;
+  /**
+   * v3.2 phone-friendly type scale (feedback: most people watch the 16:9 video on a phone held upright, so small text
+   * is unreadable). Every size below 72 px grows, the smallest ones the most: s' = 0.75·s + 18
+   * (24 → 36, 30 → 40.5, 40 → 48, 54 → 58.5). Big display type (≥ 72 px) is unchanged.
+   * T.raw(fn) draws without the mapping (decorative text such as number walls); T.SCALE = false switches it off.
+   */
+  T.SCALE = true; T._raw = 0;
+  T.fs = (s) => (!T.SCALE || T._raw > 0 || s >= 72 ? s : Math.round((0.75 * s + 18) * 2) / 2);
+  T.raw = (fn) => { T._raw++; try { return fn(); } finally { T._raw--; } };
+  T.font = (size, weight = 400, fam = 'sans') => T.fontPx(T.fs(size), weight, fam);
 
   // Style keys usable as {k|text}. Values: [colorOnDark, colorOnLight, bold?]
   const STY = {
@@ -65,20 +76,21 @@
   }
   const fontFor = (o, k) => {
     const st = STY[k]; const bold = st && st[2]; const fam = (st && st[3]) || o.fam;
-    return T.font(o.size, bold ? Math.max(o.weight, 700) : o.weight, fam);
+    return T.fontPx(o.sz || T.fs(o.size), bold ? Math.max(o.weight, 700) : o.weight, fam);
   };
   const cache = new Map();
   /** layout(ctx, text, {size, weight, fam, maxW, lh}) → {lines:[{w, pieces:[{t,k,x}]}], w, h, n, lineH} */
   T.layout = (ctx, text, o = {}) => {
     o = T.opts({ size: 40, weight: 400, fam: 'sans', maxW: 1e9, lh: 1.45 }, o);
+    o.sz = T.fs(o.size); // effective pixel size (v3.2 type scale)
     if (o.balance) {
       const L0 = T.layout(ctx, text, Object.assign({}, o, { balance: false }));
       if (L0.lines.length < 2) return L0;
       const sum = L0.lines.reduce((a, l) => a + l.w, 0);
-      const L1 = T.layout(ctx, text, Object.assign({}, o, { balance: false, maxW: Math.min(o.maxW, Math.ceil(sum / L0.lines.length + o.size * 1.5)) }));
+      const L1 = T.layout(ctx, text, Object.assign({}, o, { balance: false, maxW: Math.min(o.maxW, Math.ceil(sum / L0.lines.length + o.sz * 1.5)) }));
       return L1.lines.length === L0.lines.length ? L1 : L0;
     }
-    const key = [text, o.size, o.weight, o.fam, o.maxW, o.lh].join('\u0001');
+    const key = [text, o.sz, o.weight, o.fam, o.maxW, o.lh].join('\u0001');
     let L = cache.get(key); if (L) return L;
     const atoms = tokenize(T.parse(String(text)));
     for (const a of atoms) {
@@ -95,8 +107,8 @@
     }
     if (cur.pieces.length || !lines.length) push();
     let n = 0; for (const ln of lines) for (const pc of ln.pieces) { pc.n0 = n; n += Array.from(pc.t).length; }
-    const lineH = o.size * o.lh;
-    L = { lines, w: Math.max(...lines.map((l) => l.w)), h: lineH * lines.length, n, lineH, o };
+    const lineH = o.sz * o.lh;
+    L = { lines, w: Math.max(...lines.map((l) => l.w)), h: lineH * lines.length, n, lineH, o, sz: o.sz };
     if (cache.size > 4000) cache.clear();
     cache.set(key, L); return L;
   };
@@ -105,7 +117,7 @@
     const o = L.o; const light = d.light ? 1 : 0; const reveal = d.reveal == null ? 1e9 : d.reveal;
     ctx.save(); ctx.textBaseline = 'alphabetic';
     if (d.alpha != null) ctx.globalAlpha *= d.alpha;
-    const asc = o.size * 0.88 + (L.lineH - o.size) / 2;
+    const sz = L.sz || o.size, asc = sz * 0.88 + (L.lineH - sz) / 2;
     L.lines.forEach((ln, i) => {
       const lx = d.align === 'center' ? x - ln.w / 2 : d.align === 'right' ? x - ln.w : x;
       const ly = y + i * L.lineH + asc;
@@ -165,9 +177,9 @@
     }
     ctx.closePath(); ctx.fill();
     if (o.label) {
-      ctx.font = T.font(22, 700); const lw = ctx.measureText(o.label).width + 24;
-      ctx.fillStyle = o.labelColor || C.orange; RSI.D.rr(ctx, bx + 18, by - 16, lw, 32, 16); ctx.fill();
-      ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(o.label, bx + 30, by); ctx.textBaseline = 'alphabetic';
+      ctx.font = T.fontPx(30, 700); const lw = ctx.measureText(o.label).width + 30;
+      ctx.fillStyle = o.labelColor || C.orange; RSI.D.rr(ctx, bx + 18, by - 22, lw, 44, 22); ctx.fill();
+      ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(o.label, bx + 33, by + 1); ctx.textBaseline = 'alphabetic';
     }
     T.drawLayout(ctx, L, bx + o.pad, by + o.pad * 0.75, { light: o.fill === C.ink || o.light, reveal: o.reveal, color: o.color });
     ctx.restore();
@@ -178,15 +190,15 @@
   T.caption = (ctx, text, o = {}) => {
     o = T.opts({ size: 40, weight: 500, maxW: 1480, alpha: 1, reveal: 1e9, y: RSI.H - 64 }, o);
     const L = T.layout(ctx, text, { size: o.size, weight: o.weight, maxW: o.maxW, lh: 1.42, balance: true });
-    const padX = 34, padY = 16;
+    const padX = 38, padY = 17;
     const w = L.w + padX * 2, h = L.h + padY * 2;
     const x = RSI.W / 2 - w / 2, y = o.y - h;
     ctx.save(); ctx.globalAlpha *= o.alpha;
     ctx.fillStyle = 'rgba(16,15,14,0.78)'; RSI.D.rr(ctx, x, y, w, h, 18); ctx.fill();
     if (o.speaker) {
-      ctx.font = T.font(24, 700); const lw = ctx.measureText(o.speaker).width + 24;
-      ctx.fillStyle = o.speakerColor || C.orange; RSI.D.rr(ctx, x + 18, y - 18, lw, 34, 17); ctx.fill();
-      ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(o.speaker, x + 30, y - 1); ctx.textBaseline = 'alphabetic';
+      ctx.font = T.fontPx(30, 700); const lw = ctx.measureText(o.speaker).width + 30;
+      ctx.fillStyle = o.speakerColor || C.orange; RSI.D.rr(ctx, x + 18, y - 24, lw, 44, 22); ctx.fill();
+      ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(o.speaker, x + 33, y - 1); ctx.textBaseline = 'alphabetic';
     }
     T.drawLayout(ctx, L, RSI.W / 2, y + padY, { align: 'center', reveal: o.reveal });
     ctx.restore();

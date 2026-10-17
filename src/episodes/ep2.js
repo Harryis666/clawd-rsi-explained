@@ -1,5 +1,5 @@
 /* 《Clawd 造 Clawd》第 2 集《爬到第几级了？》— manifest + the episode's own scenes:
-   cold open (“AI 改进 AI”大赛：8 天 vs 2 年) · recap · 本集问题 · the fork in the fog · cliffhanger · next-episode teaser.
+   cold open (“改进 AI”大赛：人类与 AI 同时开跑，8 天 vs 2 年) · recap · 本集问题 · the fork in the fog · cliffhanger · next-episode teaser.
    The five rungs themselves live in src/scenes/ladder.js; the episode's answer in src/scenes/timeline2026.js (today). */
 (function () {
   'use strict';
@@ -7,15 +7,27 @@
   const W = RSI.W, H = RSI.H;
   const EN = () => RSI.lang === 'en';
 
-  // ================================================================== 1 · cold open: the “AI improves AI” championship
-  const ST = 560, REC = 1480;          // start line · human record line (x)
+  // ================================================================== 1 · cold open: the “Improve the AI” championship
+  // v3.2: both lanes start together on one shared race clock — the AI crosses on day 8 while the humans have covered ~1 %,
+  // then a fast-forward to day 730 (the humans arrive; the AI has dozed off at the finish).
+  const ST = 560, REC = 1480;          // start line · finish line (x)
   const L1 = 690, L2 = 840;            // lane floors (y)
   const AX0 = 600, ASTEP = 125, HOP = 0.42;
   const BX = 250, BY = 520, BS = 13;   // commentator Clawd behind the booth desk
   const AGENT = '#7FA6D6';
   const tGo = (S) => S.R('k3$+0.25');
   const hopT = (S, i) => tGo(S) + 0.45 + i * HOP; // i = 0..7 (one hop per day)
-  const days = (S, t) => { let d = 0; for (let i = 0; i < 8; i++) if (t >= hopT(S, i) + 0.38) d = i + 1; return d; };
+  const tWinOf = (S) => hopT(S, 7) + 0.38;
+  const tFF = (S) => [S.R('k5b+0.85'), S.R('k5b+3.25')]; // fast-forward: day 8 → day 730
+  /** the shared race clock: continuous day number */
+  const dayAt = (S, t) => {
+    const go = tGo(S), tw = tWinOf(S), ff = tFF(S);
+    if (t < go + 0.41) return 0;
+    if (t < tw) return Math.min(8, (t - go - 0.41) / HOP);
+    if (t < ff[0]) return 8;
+    return 8 + 722 * M.ease.inOutCubic(M.seg(t, ff[0], ff[1]));
+  };
+  const humX = (day) => ST + 64 + (REC + 30 - ST - 64) * Math.min(1, day / 730); // lead runner of the human team
   const stampText = (ctx, s, x, y, size, col, k, rot = -0.14) => {
     if (k <= 0) return; const sc = 1.7 - 0.7 * M.ease.outBack(M.clamp(k));
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc); ctx.globalAlpha *= M.clamp(k * 3);
@@ -27,8 +39,8 @@
   const agent = (ctx, x, y, s, o = {}) => {
     const hd = K.draw(ctx, x, y, s, Object.assign({ gen: 5, color: AGENT }, o));
     // racing bib
-    ctx.save(); ctx.translate(x + (o.sx ? 0 : 0), y - 4.6 * s * (o.sy || 1)); ctx.fillStyle = C.paper; D.rr(ctx, -3.2 * s, -1.6 * s, 6.4 * s, 3.2 * s, s * 0.6); ctx.fill();
-    T.line(ctx, 'AI', 0, 1, 2.4 * s, '#1b1a18', 900, 'center'); ctx.restore();
+    ctx.save(); ctx.translate(x, y - 4.6 * s * (o.sy || 1)); ctx.fillStyle = C.paper; D.rr(ctx, -3.2 * s, -1.6 * s, 6.4 * s, 3.2 * s, s * 0.6); ctx.fill();
+    T.raw(() => T.line(ctx, 'AI', 0, 1, 2.4 * s, '#1b1a18', 900, 'center')); ctx.restore();
     return hd;
   };
   const crowd = (ctx, t, cheer) => {
@@ -44,23 +56,27 @@
   RSI.defScene({
     id: 'e2_cold', music: 'hook', hud: false, label: false, fade: [0.1, 0.25], lead: 0.35, pad: 0.8,
     lines: [
-      { id: 'k1', who: 'clawd', zh: '欢迎来到——“AI 改进 AI”大赛！', en: 'Welcome to — the “AI Improves AI” Championship!', min: 2.4 },
-      { id: 'k2', who: 'clawd', zh: '1 号赛道：人类工程师，这个程序他们打磨了 2 年！', en: 'Lane one: human engineers — two years polishing this program!', min: 2.9 },
+      { id: 'k1', who: 'clawd', zh: '欢迎来到——“改进 AI”大赛！', en: 'Welcome to — the “Improve the AI” Championship!', min: 2.4 },
+      { id: 'k2', who: 'clawd', zh: '1 号赛道：人类工程师团队！', en: 'Lane one: a team of human engineers!', min: 2.0 },
       { id: 'k3', who: 'clawd', zh: '2 号赛道：AI——它要改进的，正是它自己！', en: 'Lane two: the AI — and what it’s improving is itself!', min: 2.4 },
-      { id: 'k5', who: 'clawd', zh: '第 8 天——冲线了！破纪录！', en: 'Day eight — over the line! A new record!', at: 'k3$+4.07', min: 2.0 },
-      { id: 'k6', who: 'narr', zh: '这不是科幻：2026 年，一家 AI 公司公布了这项实验——AI 改进自己 8 天，胜过人类 2 年的打磨。', en: 'This isn’t science fiction: in 2026, an AI company published this experiment — an AI improving itself for 8 days beat two years of human polishing.', hold: 0.2 },
+      { id: 'k5', who: 'clawd', zh: '第 8 天——AI 冲线了！', en: 'Day eight — the AI crosses the line!', at: 'k3$+4.07', min: 2.0 },
+      { id: 'k5b', who: 'clawd', zh: '人类选手呢？……快进！', en: 'And the humans? …Fast-forward!', gap: 0.1, min: 1.7 },
+      { id: 'k6', who: 'narr', zh: '这不是科幻：2026 年，一家 AI 公司公布了这项实验——AI 改进自己 8 天，胜过人类 2 年的打磨。', en: 'This isn’t science fiction: in 2026, an AI company published this experiment — an AI improving itself for 8 days beat two years of human polishing.', at: 'k5b+3.85', hold: 0.2 },
       { id: 'k7', who: 'clawd', zh: '……等等。AI，已经在改进自己了？', en: '…Wait. AI is already improving itself?', min: 2.4 },
     ],
     cues: [
-      [0, 'fanfare'], [0.1, 'whoosh'], ['k2+0.4', 'riser', { dur: 1.9 }], ['k2+2.35', 'stamp'], ['k3+0.1', 'land'], ['k3+1.3', 'pop'],
+      [0, 'fanfare'], [0.1, 'whoosh'], ['k2+0.25', 'land'], ['k2+0.6', 'pop'], ['k3+0.1', 'land'], ['k3+1.3', 'pop'],
       ['k3$+0.25', 'pop'], ['k3$+0.3', 'whoosh'], ['k3$+0.6', 'riser', { dur: 3.3 }],
       ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => ['k3$+' + (0.25 + 0.45 + i * HOP + 0.36).toFixed(2), 'tick']),
-      ['k3$+4.03', 'tada'], ['k3$+4.3', 'stamp'], ['k6+0.3', 'swish'], ['k6+1.0', 'build'], ['k6+3.2', 'ding'],
+      ['k3$+4.03', 'tada'], ['k3$+4.3', 'stamp'], ['k3$+4.6', 'pop'],
+      ['k5b+0.85', 'ffwd', { dur: 2.4 }], ['k5b+3.25', 'stamp'], ['k5b+3.3', 'ding'], // v3.2: no second ta-da (its kick on the band's last hit was the episode's loudest peak)
+      ['k6+0.6', 'swish'], ['k6+1.2', 'build'], ['k6+3.2', 'ding'],
       ['k7', 'surprise'], ['k7+0.85', 'thud'],
     ],
     draw(ctx, t, S) {
-      const go = tGo(S), d = days(S, t), won = d >= 8, tWin = hopT(S, 7) + 0.38;
-      const racing = t > go && !won;
+      const go = tGo(S), tw = tWinOf(S), ff = tFF(S), day = dayAt(S, t), d = Math.floor(day + 1e-6);
+      const aiWon = t >= tw, humWon = t >= ff[1], ffwd = t > ff[0] && t < ff[1];
+      const racing = t > go && !humWon;
       // ---- arena
       const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#15121A'); g.addColorStop(0.55, '#1C1714'); g.addColorStop(1, '#100E0C'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       const push = 1.06 - 0.06 * M.ease.outCubic(M.seg(t, 0, 1.4));
@@ -68,87 +84,101 @@
       // spotlights
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       [[420, 0.7], [1500, -0.6]].forEach(([sx, ph], i) => {
-        const tx = 1100 + Math.sin(t * 0.9 + ph * 3) * 520 + (won ? Math.sin(t * 6 + i) * 120 : 0), ty = 900;
+        const tx = 1100 + Math.sin(t * 0.9 + ph * 3) * 520 + (aiWon ? Math.sin(t * 6 + i) * 120 : 0), ty = 900;
         const gg = ctx.createLinearGradient(sx, -40, tx, ty); gg.addColorStop(0, 'rgba(255,236,200,0.16)'); gg.addColorStop(1, 'rgba(255,236,200,0)');
         ctx.fillStyle = gg; ctx.beginPath(); ctx.moveTo(sx - 18, -40); ctx.lineTo(tx - 220, ty); ctx.lineTo(tx + 220, ty); ctx.lineTo(sx + 18, -40); ctx.closePath(); ctx.fill();
       });
       ctx.restore();
-      crowd(ctx, t, won ? 1 : racing ? 0.6 : 0.2);
+      crowd(ctx, t, humWon ? 1 : aiWon ? 0.9 : racing ? 0.6 : 0.2);
       // ---- track
       ctx.fillStyle = '#6E3527'; D.rr(ctx, 520, 572, 1380, 300, 16); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.05)'; for (let x = 540; x < 1890; x += 46) ctx.fillRect(x, 580, 2, 284);
       ctx.fillStyle = 'rgba(245,240,230,0.75)'; ctx.fillRect(520, 572, 1380, 4); ctx.fillRect(520, 716, 1380, 4); ctx.fillRect(520, 868, 1380, 4);
       ctx.fillRect(ST - 3, 576, 6, 292);
       T.line(ctx, '1', ST - 34, 640, 40, 'rgba(245,240,230,0.6)', 900, 'center'); T.line(ctx, '2', ST - 34, 792, 40, 'rgba(245,240,230,0.6)', 900, 'center');
-      // record line
-      const ra = M.seg(t, S.T('k2') + 2.2, S.T('k2') + 2.6);
+      // fast-forward: tape scan lines
+      if (ffwd) { ctx.save(); ctx.globalAlpha *= 0.5 * Math.sin(Math.PI * M.seg(t, ff[0], ff[1])); ctx.fillStyle = 'rgba(255,248,225,0.22)'; for (let k = 0; k < 3; k++) { const yy = 572 + ((t * 900 + k * 110) % 300); ctx.fillRect(520, yy, 1380, 6); } ctx.restore(); }
+      // finish line
+      const ra = M.seg(t, S.T('k2') + 0.6, S.T('k2') + 1.0);
       if (ra > 0) {
-        ctx.save(); ctx.globalAlpha *= ra; ctx.setLineDash([16, 12]); ctx.strokeStyle = won ? C.red : C.yellow; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(REC, 556); ctx.lineTo(REC, 872); ctx.stroke(); ctx.setLineDash([]);
-        D.pill(ctx, { zh: '人类纪录', en: 'human record' }, REC, 548, { size: 26, fill: won ? C.red : C.yellow, color: won ? '#fff' : '#1b1a18', align: 'center' });
+        ctx.save(); ctx.globalAlpha *= ra * (1 - M.seg(t, S.T('k6') + 0.5, S.T('k6') + 0.9)); ctx.setLineDash([16, 12]); ctx.strokeStyle = C.yellow; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(REC, 556); ctx.lineTo(REC, 872); ctx.stroke(); ctx.setLineDash([]);
+        D.pill(ctx, { zh: '终点', en: 'FINISH' }, REC, 546, { size: 30, fill: C.yellow, color: '#1b1a18', align: 'center' });
         ctx.restore();
       }
-      // lane 1: two years of human polishing — 730 dense ticks
-      const p2 = M.seg(t, S.T('k2') + 0.4, S.T('k2') + 2.3, M.ease.inOutCubic);
-      if (p2 > 0) {
-        const xe = ST + (REC - ST) * p2; ctx.fillStyle = RSI.rgba(C.blue, 0.85);
-        for (let x = ST + 4; x < xe; x += 3) ctx.fillRect(x, L1 - 34, 1.6, 22);
-        const dn = Math.round(730 * p2);
-        if (p2 < 1) T.line(ctx, EN() ? `day ${dn}` : `第 ${dn} 天`, xe + 12, L1 - 24, 24, C.blue, 800, 'left');
-        else { T.line(ctx, { zh: '2 年 = 730 天', en: '2 years = 730 days' }, (ST + REC) / 2, L1 - 62, 28, '#9CC4EE', 800, 'center'); }
+      // ---- lane 1: the human team (dense blue ticks = the days they put in)
+      const hIn = t > S.T('k2') + 0.05 ? M.ease.outBack(M.seg(t, S.T('k2') + 0.05, S.T('k2') + 0.45)) : 0;
+      if (hIn > 0) {
+        const hx = humX(day);
+        if (day > 0) { ctx.fillStyle = RSI.rgba(C.blue, 0.85); for (let x = ST + 6; x < hx - 116; x += 3) ctx.fillRect(x, L1 + 6, 1.6, 16); }
+        for (let k = 2; k >= 0; k--) {
+          const x = hx - k * 50, y = L1 + 2 - (1 - hIn) * 300;
+          if (t < go || humWon) RSI.Human.stand(ctx, x, y, 0.38, { t: t + k, look: 1, state: humWon && k === 0 ? 'wave' : 'stand' });
+          else RSI.Human.run(ctx, x, y, 0.38, { ph: t * (ffwd ? 34 : 15) + k * 1.9, t: t + k, sweat: !ffwd && k === 1 });
+        }
+        if (ffwd) X.speed(ctx, hx - 150, L1 - 50, t, 160, 70, 0.8, 'rgba(156,199,245,0.5)');
+        // the gap, spelled out: the AI is home, the humans have covered ~1 %
+        const pa = M.env(t, tw + 0.25, ff[0], 0.25, 0.25);
+        if (pa > 0) { ctx.save(); ctx.globalAlpha *= pa; D.pill(ctx, { zh: '人类：才走 1%', en: 'humans: 1 % there' }, hx + 150, L1 - 128, { size: 30, fill: C.blue, color: '#fff', align: 'center' }); ctx.restore(); }
+        stampText(ctx, { zh: '730 天 = 2 年', en: '730 days = 2 yrs' }, 1150, 636, 46, '#9CC4EE', M.seg(t, ff[1], ff[1] + 0.25), -0.08);
       }
-      for (let k = 0; k < 3; k++) { const pk = M.ease.outBack(M.seg(t, S.T('k2') + 2.3 + k * 0.12, S.T('k2') + 2.6 + k * 0.12)); if (pk <= 0) continue;
-        RSI.Human.stand(ctx, REC - 120 + k * 46, L1 + 2, 0.32 * pk, { t: t + k, look: 1, alpha: 1 }); }
-      // lane 2: the AI — eight sparse ticks
+      // ---- lane 2: the AI — eight hops, one per day
       if (t > S.T('k3')) {
-        for (let i = 0; i < d; i++) { const x = AX0 + (i + 1) * ASTEP; ctx.fillStyle = C.orange; ctx.fillRect(x - 3, L2 - 34, 6, 22); T.line(ctx, String(i + 1), x, L2 + 4, 20, C.orangeL, 800, 'center'); }
+        for (let i = 0; i < Math.min(8, d); i++) { const x = AX0 + (i + 1) * ASTEP; ctx.fillStyle = C.orange; ctx.fillRect(x - 3, L2 + 6, 6, 18); }
         let ax = AX0, ay = 0, sx = 1, sy = 1, hopping = false;
         const drop = M.seg(t, S.T('k3') + 0.0, S.T('k3') + 0.35, M.ease.inCubic);
         if (t < go) { ay = -(1 - drop) * 380; }
         for (let i = 0; i < 8; i++) { const u = (t - hopT(S, i)) / 0.38; if (u >= 0 && u <= 1) { ax = M.lerp(AX0 + i * ASTEP, AX0 + (i + 1) * ASTEP, M.ease.inOutCubic(u)); ay = -Math.sin(u * Math.PI) * 46; hopping = true; sx = 0.94; sy = 1.08; } else if (u > 1) ax = AX0 + (i + 1) * ASTEP; }
-        const expr = won ? 'happy' : t > go ? 'determined' : X.blink(t, 9) ? 'blink' : 'normal';
-        const hd = agent(ctx, ax, L2 + ay, 6.2, { expr, look: [1, -0.1], armL: hopping ? 0.9 : won ? 1 : 0.2, armR: hopping ? 0.9 : won ? 1 : 0.2, sx, sy });
+        const asleep = t > ff[0] + 0.35 && t < ff[1] + 0.05;
+        const expr = asleep ? 'blink' : humWon ? (t < ff[1] + 0.6 ? 'surprised' : 'happy') : aiWon ? 'happy' : t > go ? 'determined' : X.blink(t, 9) ? 'blink' : 'normal';
+        const cheer = aiWon && !asleep && t < ff[0];
+        const hd = agent(ctx, ax, L2 + ay + (asleep ? 6 : 0), 7.2, { expr, look: asleep ? [0, 0.8] : humWon ? [-1, -0.2] : [1, -0.1], armL: hopping ? 0.9 : cheer ? 1 : 0.2, armR: hopping ? 0.9 : cheer ? 1 : 0.2, sx: asleep ? 1.05 : sx, sy: asleep ? 0.94 : sy });
         if (racing && hopping) X.speed(ctx, ax - 90, L2 - 60, t, 120, 70, 0.8, 'rgba(240,238,230,0.4)');
+        if (asleep) for (let k = 0; k < 3; k++) { const p2 = (t * 0.9 + k / 3) % 1; ctx.save(); ctx.globalAlpha *= Math.sin(p2 * Math.PI) * 0.9; T.raw(() => T.line(ctx, 'Z', ax + 50 + p2 * 50, hd[1] - 10 - p2 * 70 - k * 8, 30 + k * 10, C.ink, 800, 'center')); ctx.restore(); }
         // “what it improves: itself”
         const ia = M.seg(t, S.T('k3') + 1.3, S.T('k3') + 1.6) * (1 - M.seg(t, go - 0.1, go + 0.2));
         if (ia > 0) { ctx.save(); ctx.globalAlpha *= ia; const bob = Math.sin(t * 7) * 5;
-          D.pill(ctx, { zh: '改进对象：它自己', en: 'improving: itself' }, AX0 + 250, L2 - 120 + bob, { size: 28, fill: C.orange, align: 'center' });
+          D.pill(ctx, { zh: '改进对象：它自己', en: 'improving: itself' }, AX0 + 270, L2 - 124 + bob, { size: 28, fill: C.orange, align: 'center' });
           D.arrow(ctx, AX0 + 150, L2 - 104 + bob, AX0 + 52, hd[1] + 18, { color: C.orangeL, w: 5, head: 18 }); ctx.restore(); }
-        // day pop above the runner
-        if (t > go && d > 0) { const tl = hopT(S, d - 1) + 0.38, k = M.ease.outBack(M.seg(t, tl, tl + 0.2)); ctx.save(); ctx.translate(ax, hd[1] - 46); ctx.scale(k, k);
-          T.line(ctx, EN() ? `Day ${d}` : `第 ${d} 天`, 0, 0, d === 8 ? 44 : 34, d === 8 ? C.yellow : C.orangeL, 900, 'center'); ctx.restore(); }
-        if (won) { X.sparkles(ctx, AX0 + 8 * ASTEP, L2 - 60, t, 14, 190, C.yellow, 5); stampText(ctx, { zh: '破纪录！', en: 'NEW RECORD!' }, 1700, 650, 50, C.red, M.seg(t, tWin + 0.25, tWin + 0.5)); }
+        if (aiWon) { if (t < ff[0]) X.sparkles(ctx, AX0 + 8 * ASTEP, L2 - 60, t, 14, 190, C.yellow, 5); stampText(ctx, { zh: '8 天！', en: '8 days!' }, 1790, 770, 50, C.red, M.seg(t, tw + 0.25, tw + 0.5)); }
       }
       // go flash
       const gf = M.seg(t, go, go + 0.12) * (1 - M.seg(t, go + 0.7, go + 1.0));
-      if (gf > 0) { ctx.save(); ctx.globalAlpha *= gf; T.line(ctx, { zh: '比赛开始！', en: 'GO!' }, 1120, 792, 84, C.paper, 900, 'center'); ctx.restore(); }
-      // ---- banner + scoreboard
+      if (gf > 0) { ctx.save(); ctx.globalAlpha *= gf; T.line(ctx, { zh: '同时开跑！', en: 'GO!' }, 1060, 792, 84, C.paper, 900, 'center'); ctx.restore(); }
+      // ---- banner + the shared race clock
       ctx.save(); ctx.fillStyle = '#1E1B19'; D.rr(ctx, 560, 22, 800, 118, 18); ctx.fill(); ctx.strokeStyle = C.orange; ctx.lineWidth = 4; ctx.stroke();
       for (let i = 0; i < 26; i++) { const on = (Math.floor(t * 8) + i) % 3 === 0; ctx.fillStyle = on ? '#FFE3A6' : '#5A4A33'; ctx.beginPath(); ctx.arc(580 + i * 30.4, 30, 4, 0, 7); ctx.arc(580 + i * 30.4, 132, 4, 0, 7); ctx.fill(); }
-      T.line(ctx, { zh: '“AI 改进 AI”大赛', en: 'The “AI Improves AI” Championship' }, 960, 82, EN() ? 44 : 60, C.paper, 900, 'center');
+      T.line(ctx, { zh: '“改进 AI”大赛', en: 'The “Improve the AI” Championship' }, 960, 82, EN() ? 44 : 60, C.paper, 900, 'center');
       ctx.restore();
-      const box = (x, col, lab, val, a) => { if (a <= 0) return; ctx.save(); ctx.globalAlpha *= a; ctx.fillStyle = '#141312'; D.rr(ctx, x, 150, 348, 62, 12); ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.stroke();
-        T.line(ctx, lab, x + 20, 182, 26, col, 800, 'left'); T.line(ctx, val, x + 330, 182, 32, C.paper, 900, 'right', 'mono'); ctx.restore(); };
-      const hv = p2 >= 1 ? (EN() ? '2 yrs' : '2 年') : (EN() ? `${Math.round(730 * p2)} d` : `${Math.round(730 * p2)} 天`);
-      box(600, C.blue, { zh: '人类 · 用时', en: 'Humans · time' }, hv, M.seg(t, S.T('k2'), S.T('k2') + 0.3));
-      box(972, C.orange, { zh: 'AI · 用时', en: 'AI · time' }, t < go ? '—' : (EN() ? `${d} d` : `${d} 天`) + (won ? ' ✓' : ''), M.seg(t, S.T('k3'), S.T('k3') + 0.3));
-      ctx.save(); ctx.globalAlpha *= 0.4 + 0.6 * (Math.floor(t * 2) % 2); ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(1394, 48, 9, 0, 7); ctx.fill(); ctx.restore();
-      T.line(ctx, { zh: '直播', en: 'LIVE' }, 1410, 49, 22, C.red, 900, 'left');
+      const ba = M.seg(t, S.T('k2'), S.T('k2') + 0.3);
+      if (ba > 0) {
+        ctx.save(); ctx.globalAlpha *= ba;
+        const bw = 500, bx = 960 - bw / 2, by = 154, bh = 96, cy = by + bh / 2 + 2;
+        ctx.fillStyle = '#141312'; D.rr(ctx, bx, by, bw, bh, 14); ctx.fill(); ctx.strokeStyle = ffwd ? C.yellow : 'rgba(240,238,230,0.35)'; ctx.lineWidth = 3; ctx.stroke();
+        const col = ffwd ? C.yellow : humWon ? '#9CC4EE' : C.paper, ox = ffwd ? 34 : 0, num = String(d);
+        ctx.font = T.font(54, 900, 'mono'); const nw = ctx.measureText(num).width;
+        T.line(ctx, num, 960 + ox, cy, 54, col, 900, 'center', 'mono');
+        T.line(ctx, EN() ? 'DAY' : '第', 960 + ox - nw / 2 - 14, cy, 48, col, 900, 'right'); if (!EN()) T.line(ctx, '天', 960 + ox + nw / 2 + 14, cy, 48, col, 900, 'left');
+        if (ffwd) T.raw(() => T.line(ctx, '▶▶', bx + 58, cy, 46, C.yellow, 900, 'center'));
+        ctx.restore();
+      }
+      ctx.save(); ctx.globalAlpha *= 0.4 + 0.6 * (Math.floor(t * 2) % 2); ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(1394, 58, 9, 0, 7); ctx.fill(); ctx.restore();
+      T.line(ctx, { zh: '直播', en: 'LIVE' }, 1410, 59, 22, C.red, 900, 'left');
       ctx.restore();
       // ---- time on one ruler (both quantities visible, pushed to the extreme)
-      const ov = M.seg(t, S.T('k6') + 0.2, S.T('k6') + 0.7, M.ease.outCubic);
+      const ov = M.seg(t, S.T('k6') + 0.6, S.T('k6') + 1.1, M.ease.outCubic);
       if (ov > 0) {
         ctx.save(); ctx.globalAlpha *= ov; ctx.fillStyle = 'rgba(14,13,12,0.975)'; D.rr(ctx, 530, 560, 1360, 322, 18); ctx.fill(); ctx.strokeStyle = 'rgba(240,238,230,0.18)'; ctx.lineWidth = 2; ctx.stroke();
-        T.line(ctx, { zh: '所用时间 · 同一把尺子', en: 'Time taken · same ruler' }, 572, 606, 28, C.ink2, 700, 'left');
-        const q = M.seg(t, S.T('k6') + 1.0, S.T('k6') + 2.6, M.ease.outCubic), X0 = 720, LEN = 860;
-        T.line(ctx, { zh: '人类', en: 'Humans' }, X0 - 24, 676, 32, C.blue, 900, 'right');
-        ctx.fillStyle = C.blue; D.rr(ctx, X0, 652, Math.max(8, LEN * q), 48, 10); ctx.fill();
-        T.line(ctx, { zh: '730 天（2 年）', en: '730 days (2 yrs)' }, X0 + LEN * q + 18, 676, 30, '#9CC4EE', 900, 'left');
+        T.line(ctx, { zh: '所用时间 · 同一把尺子', en: 'Time taken · same ruler' }, 572, 610, 28, C.ink2, 700, 'left');
+        const q = M.seg(t, S.T('k6') + 1.2, S.T('k6') + 2.6, M.ease.outCubic), X0 = 720, LEN = 800;
+        T.line(ctx, { zh: '人类', en: 'Humans' }, X0 - 24, 682, 32, C.blue, 900, 'right');
+        ctx.fillStyle = C.blue; D.rr(ctx, X0, 658, Math.max(8, LEN * q), 48, 10); ctx.fill();
+        T.line(ctx, { zh: '730 天（2 年）', en: '730 days (2 yrs)' }, X0 + LEN * q + 18, 682, 30, '#9CC4EE', 900, 'left');
         const q2 = M.seg(t, S.T('k6') + 3.0, S.T('k6') + 3.3);
-        T.line(ctx, 'AI', X0 - 24, 786, 32, C.orange, 900, 'right');
-        if (q2 > 0) { ctx.save(); ctx.globalAlpha *= q2; ctx.fillStyle = C.orange; ctx.fillRect(X0, 762, Math.max(3, LEN * 8 / 730), 48);
-          T.line(ctx, { zh: '8 天', en: '8 days' }, X0 + 34, 786, 34, C.orange, 900, 'left');
-          T.line(ctx, { zh: '← 只有这么一点', en: '← that tiny sliver' }, X0 + (EN() ? 190 : 150), 788, 26, C.ink2, 600, 'left'); ctx.restore(); }
-        T.line(ctx, { zh: '真实实验 · 艺术化演绎 · 结果由该公司自己报告', en: 'real experiment · dramatised · results self-reported by the company' }, 1866, 852, 20, C.ink3, 500, 'right');
+        T.line(ctx, 'AI', X0 - 24, 780, 32, C.orange, 900, 'right');
+        if (q2 > 0) { ctx.save(); ctx.globalAlpha *= q2; ctx.fillStyle = C.orange; ctx.fillRect(X0, 756, Math.max(3, LEN * 8 / 730), 48);
+          T.line(ctx, { zh: '8 天', en: '8 days' }, X0 + 30, 780, 34, C.orange, 900, 'left');
+          T.line(ctx, { zh: '← 只有这么一点', en: '← that tiny sliver' }, X0 + (EN() ? 210 : 140), 782, 26, C.ink2, 600, 'left'); ctx.restore(); }
+        T.line(ctx, { zh: '真实实验 · 艺术化演绎 · 结果由该公司自己报告', en: 'real experiment · dramatised · results self-reported by the company' }, 1866, 848, 20, C.ink3, 500, 'right');
         ctx.restore();
       }
       // ---- the commentary booth
@@ -158,7 +188,9 @@
       if (t > S.T('k2')) { expr = 'normal'; look = [1, 0.5]; armL = 0.45; armR = 0.6; }
       if (t > S.T('k3')) { look = [1, 0.9]; armR = 0.3; }
       if (t > go) { expr = 'determined'; look = [1, 0.8]; armL = 0.5 + 0.4 * Math.max(0, Math.sin(t * 14)); armR = 0.5 + 0.4 * Math.max(0, Math.sin(t * 14 + 3)); }
-      if (won) { expr = 'happy'; armL = armR = 1; hop = X.hop(t, tWin + 0.05, 0.45, 40); }
+      if (aiWon) { expr = 'happy'; armL = armR = 1; hop = X.hop(t, tw + 0.05, 0.45, 40); }
+      if (t > S.T('k5b')) { expr = t < ff[0] ? 'surprised' : 'determined'; look = [1, 0.5]; armL = 0.3; armR = ffwd ? 0.9 : 0.5; hop = { dy: 0, sx: 1, sy: 1 }; }
+      if (humWon) { expr = 'happy'; armL = armR = 0.8; hop = X.hop(t, ff[1] + 0.05, 0.4, 30); }
       if (t > S.T('k6')) { expr = X.blink(t, 4) ? 'blink' : 'normal'; look = [1, 0.4]; armL = armR = 0; hop = { dy: 0, sx: 1, sy: 1 }; }
       if (t > S.T('k7')) { expr = 'surprised'; look = [-0.1, -0.1]; armL = armR = 0.25; hop = X.hop(t, S.T('k7') + 0.35, 0.4, 34); }
       const hd = K.draw(ctx, BX, BY + hop.dy, BS, { gen: 3, expr, look, armL, armR, sx: hop.sx, sy: hop.sy, shadow: false });
@@ -171,8 +203,8 @@
       if (t > S.T('k7') + 0.4) { X.mark(ctx, '?', BX - 60, hd[1] - 30, t - S.T('k7') - 0.4, C.yellow, 80); X.mark(ctx, '!', BX + 40, hd[1] - 44, t - S.T('k7') - 0.7, C.orangeL, 64); }
       S.anchors.clawd = [BX + 104, hd[1] + 40]; S.sides.clawd = 'right';
       // lane labels
-      T.line(ctx, { zh: '1 号赛道', en: 'Lane 1' }, 90, 628, 34, C.paper, 900, 'left'); T.line(ctx, { zh: '人类工程师', en: 'human engineers' }, 90, 670, 26, '#9CC4EE', 700, 'left');
-      T.line(ctx, { zh: '2 号赛道', en: 'Lane 2' }, 90, 780, 34, C.paper, 900, 'left'); T.line(ctx, { zh: 'AI 自己', en: 'the AI itself' }, 90, 822, 26, C.orangeL, 700, 'left');
+      T.line(ctx, { zh: '1 号赛道', en: 'Lane 1' }, 90, 628, 34, C.paper, 900, 'left'); T.line(ctx, { zh: '人类工程师', en: 'human engineers' }, 90, 672, 26, '#9CC4EE', 700, 'left');
+      T.line(ctx, { zh: '2 号赛道', en: 'Lane 2' }, 90, 780, 34, C.paper, 900, 'left'); T.line(ctx, { zh: 'AI 自己', en: 'the AI itself' }, 90, 824, 26, C.orangeL, 700, 'left');
       // tag (top-right)
       ctx.save(); ctx.globalAlpha *= M.seg(t, 0.8, 1.3); T.line(ctx, { zh: '真实实验 · 艺术化演绎', en: 'real experiment · dramatised' }, 1870, 186, 22, C.ink2, 600, 'right'); ctx.restore();
     },
@@ -186,7 +218,7 @@
   ], { gen: 3 });
   RSI.allScenes.e2_recap.hud = false;
   Sx.question(2, { zh: 'AI 已经在改进自己了吗？\n改到了哪一步？', en: 'Is AI already improving itself?\nHow far has it got?' }, {
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 2, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 620, 770, 2, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e2_q.hud = false;
 

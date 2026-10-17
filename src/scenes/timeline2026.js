@@ -57,13 +57,14 @@
   });
 
   // ---------------- forecasts ----------------
+  // v3.2: wider cards (phone type), names and affiliations on their own lines, explicit card slots so nothing collides
   const FC = [
-    { x: 0.05, up: 1, col: C.red, who: { zh: 'Gladstone 报告', en: 'Gladstone report' }, what: { zh: '2026.10 · 多数受访的实验室内部人士：3–12 个月内就会开始', en: 'Oct 2026 · most lab insiders interviewed: it starts within 3–12 months' } },
-    { x: 0.30, up: 0, col: C.orange, who: { zh: 'Jack Clark（Anthropic 联合创始人）', en: 'Jack Clark (Anthropic co-founder)' }, what: { zh: '2026.5 · 2028 年底前实现的概率约 60%', en: 'May 2026 · ~60% chance by the end of 2028' } },
-    { x: 0.42, up: 1, col: C.orange, who: { zh: 'OpenAI 的目标', en: 'OpenAI’s goal' }, what: { zh: '2028 年 3 月：做出“自动化 AI 研究员”——能自己搞 AI 研究的 AI', en: 'March 2028: an “automated AI researcher” — an AI that does AI research itself' } },
-    { x: 0.60, up: 0, col: C.yellow, who: { zh: 'AI Futures 团队', en: 'AI Futures Project' }, what: { zh: '2026 Q1 · “自动化程序员”（能干顶尖程序员的活）：预计 2028 年中–2030 年中', en: 'Q1 2026 · an “automated coder” (does a top programmer’s job): mid-2028 to mid-2030' } },
-    { x: 0.80, up: 1, col: C.blue, who: { zh: 'Ramez Naam（未来学家）', en: 'Ramez Naam (futurist)' }, what: { zh: '2026.9 · 怀疑“爆炸”：瓶颈在实验和现实世界', en: 'Sep 2026 · skeptical of a “boom”: the bottlenecks are experiments and the real world' } },
-    { x: 0.97, up: 0, col: C.blue, who: { zh: 'Arvind Narayanan（普林斯顿大学）', en: 'Arvind Narayanan (Princeton)' }, what: { zh: '2026.7 · 除非出现断裂，AI 仍是一种“普通技术”', en: 'Jul 2026 · unless something breaks, AI stays a “normal technology”' } },
+    { x: 0.05, up: 1, bx: 40, col: C.red, who: { zh: 'Gladstone 报告', en: 'Gladstone report' }, what: { zh: '2026.10 · 多数受访的实验室内部人士：3–12 个月内就会开始', en: 'Oct 2026 · most lab insiders interviewed: it starts within 3–12 months' } },
+    { x: 0.30, up: 0, bx: 300, col: C.orange, who: { zh: 'Jack Clark', en: 'Jack Clark' }, org: { zh: 'Anthropic 联合创始人', en: 'Anthropic co-founder' }, what: { zh: '2026.5 · 2028 年底前实现的概率约 60%', en: 'May 2026 · ~60% chance by the end of 2028' } },
+    { x: 0.42, up: 1, bx: 590, col: C.orange, who: { zh: 'OpenAI 的目标', en: 'OpenAI’s goal' }, what: { zh: '2028 年 3 月：做出“自动化 AI 研究员”——能自己搞 AI 研究的 AI', en: 'March 2028: an “automated AI researcher” — an AI that does AI research itself' } },
+    { x: 0.60, up: 0, bx: 840, col: C.yellow, who: { zh: 'AI Futures 团队', en: 'AI Futures Project' }, what: { zh: '2026 Q1 · “自动化程序员”（顶尖程序员水平）：预计 2028 年中–2030 年中', en: 'Q1 2026 · an “automated coder” (top-programmer level): mid-2028 to mid-2030' } },
+    { x: 0.80, up: 1, bx: 1140, col: C.blue, who: { zh: 'Ramez Naam', en: 'Ramez Naam' }, org: { zh: '未来学家', en: 'futurist' }, what: { zh: '2026.9 · 怀疑“爆炸”：瓶颈在实验和现实世界', en: 'Sep 2026 · skeptical of a “boom”: the bottlenecks are experiments and the real world' } },
+    { x: 0.97, up: 0, bx: 1380, col: C.blue, who: { zh: 'Arvind Narayanan', en: 'Arvind Narayanan' }, org: { zh: '普林斯顿大学', en: 'Princeton' }, what: { zh: '2026.7 · 除非出现断裂，AI 仍是一种“普通技术”', en: 'Jul 2026 · unless something breaks, AI stays a “normal technology”' } },
   ];
   const FCT = (i) => `o1+${(0.6 + i * 0.85).toFixed(2)}`;
   RSI.defScene({
@@ -78,7 +79,7 @@
       D.dots(ctx, 0.03);
       const dim = 1 - 0.78 * M.seg(t, S.T('o3') - 0.3, S.T('o3') + 0.3);
       ctx.save(); ctx.globalAlpha *= dim;
-      const x0 = 250, x1 = 1670, y = 520;
+      const x0 = 250, x1 = 1600, y = 520;
       const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, C.red); g.addColorStop(0.45, C.yellow); g.addColorStop(1, C.blue);
       ctx.fillStyle = g; D.rr(ctx, x0, y - 6, x1 - x0, 12, 6); ctx.fill();
       T.line(ctx, { zh: '很快', en: 'very soon' }, x0 - 30, y, 30, C.red, 900, 'right'); T.line(ctx, { zh: '很慢 / 未必', en: 'slow / maybe not' }, x1 + 30, y, 30, C.blue, 900, 'left');
@@ -89,17 +90,21 @@
         ctx.save(); ctx.globalAlpha *= a;
         ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(x, y, 14, 0, 7); ctx.fill(); ctx.strokeStyle = C.bg; ctx.lineWidth = 4; ctx.stroke();
         ctx.strokeStyle = RSI.rgba(f.col, 0.6); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y + (up ? -16 : 16)); ctx.lineTo(x, ly); ctx.stroke();
-        const bw = 360; const bx = M.clamp(x - bw / 2, 40, W - 40 - bw);
-        const L = T.layout(ctx, RSI.L(f.what), { size: 23, weight: 500, maxW: bw - 30, lh: 1.35 }); const bh = L.h + 70;
+        const bw = 500, bx = f.bx, tw = bw - 32;
+        const L = T.layout(ctx, RSI.L(f.what), { size: 23, weight: 500, maxW: tw, lh: 1.35 });
+        const wWho = T.width(ctx, f.who, 22, 900), wOrg = f.org ? T.width(ctx, f.org, 19, 600) : 0, org2 = f.org && wWho + 14 + wOrg > tw;
+        const top = org2 ? 92 : 58, bh = top + L.h + 16;
         const by = up ? ly - bh : ly;
         D.panel(ctx, bx, by, bw, bh, { fill: C.surface, r: 14 }); ctx.fillStyle = f.col; ctx.fillRect(bx, up ? by + bh - 5 : by, bw, 5);
-        T.line(ctx, f.who, bx + 16, by + 30, 22, f.col, 900, 'left'); T.drawLayout(ctx, L, bx + 16, by + 52, {});
+        T.line(ctx, f.who, bx + 16, by + 32, 22, f.col, 900, 'left');
+        if (f.org) T.line(ctx, f.org, org2 ? bx + 16 : bx + 16 + wWho + 14, org2 ? by + 68 : by + 33, 19, C.ink2, 600, 'left');
+        T.drawLayout(ctx, L, bx + 16, by + top - 4, {});
         ctx.restore();
       });
       if (t > S.T('o2')) {
         const a = M.seg(t, S.T('o2') + 0.3, S.T('o2') + 0.8);
-        ctx.save(); ctx.globalAlpha *= a; D.icon(ctx, 'gavel', 1640, 815, 80, C.yellow, 8);
-        T.line(ctx, { zh: '自己量 · 自己评 · 有时 AI 当裁判', en: 'self-measured · self-graded · sometimes AI-judged' }, 1570, 820, 28, C.yellow, 700, 'right'); ctx.restore();
+        ctx.save(); ctx.globalAlpha *= a; D.icon(ctx, 'gavel', 1700, 852, 76, C.yellow, 8);
+        T.line(ctx, { zh: '自己量 · 自己评 · 有时 AI 当裁判', en: 'self-measured · self-graded · sometimes AI-judged' }, 1640, 858, 28, C.yellow, 700, 'right'); ctx.restore();
       }
       ctx.restore();
       // ---- Clawd remembers Episode 2’s self-grading judge

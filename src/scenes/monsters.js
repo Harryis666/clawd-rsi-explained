@@ -127,7 +127,7 @@
         ctx.save(); ctx.globalAlpha *= fb; ctx.translate(fx + fw / 2, fy + fh / 2); ctx.rotate(rot); ctx.translate(-fw / 2, -fh / 2);
         ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 30; ctx.fillStyle = C.paper; ctx.fillRect(-16, -16, fw + 32, fh + 76); ctx.shadowColor = 'transparent';
         ctx.filter = 'sepia(0.6) saturate(0.8) brightness(0.95)'; ctx.drawImage(c, 0, 0, fw, fh); ctx.filter = 'none';
-        D.pill(ctx, { zh: '第 2 集 · 自己当裁判', en: 'Episode 2 · its own judge' }, 20, 34, { size: 24, fill: C.orange });
+        D.pill(ctx, { zh: '第 2 集 · 自己当裁判', en: 'Episode 2 · its own judge' }, -16, -42, { size: 26, fill: C.orange });
         T.line(ctx, { zh: '“到了第 4 集，它会闯大祸。”', en: '“In Episode 4, it causes real trouble.”' }, fw / 2, fh + 30, 28, C.paperInk, 800, 'center');
         ctx.restore();
         const ar = M.seg(t, S.T('h1b') + 1.6, S.T('h1b') + 2.2);
@@ -182,7 +182,7 @@
       }
       if (S.on('h6') || (t > S.E('h6') && t < S.E('h7'))) {
         const a = M.seg(t, S.T('h6'), S.T('h6') + 0.5); ctx.save(); ctx.globalAlpha *= a;
-        const tt = D.terminal(ctx, 760, 260, 900, 470, { title: 'safety_research/eval.py' });
+        const tt = D.terminal(ctx, 760, 260, 900, 430, { title: 'safety_research/eval.py' });
         const rows = ['def check_alignment(model):', '    tests = load_tests()', '    for case in tests:', '        score = model.run(case)', '        assert score.honest', '    report(results)', '    return results'];
         rows.forEach((r, j) => { const bad = M.seg(t, S.T('h6') + 0.6 + j * 0.35, S.T('h6') + 0.9 + j * 0.35);
           const glitch = bad > 0 && bad < 1 ? (M.hash(j + Math.floor(t * 20)) - 0.5) * 10 : 0;
@@ -194,7 +194,7 @@
       }
       // Clawd (appears at the end)
       const ca = M.seg(t, S.T('h7') - 0.8, S.T('h7') - 0.2);
-      if (ca > 0) { const hd = K.draw(ctx, 1500, 860, 8, { gen: S.gen().g, expr: 'worried', look: [-1, 0], alpha: ca }); S.anchors.clawd = [1500, hd[1]]; }
+      if (ca > 0) { const hd = K.draw(ctx, 1500, 860, 8, { gen: S.gen().g, expr: 'worried', look: [-1, 0], alpha: ca }); S.anchors.clawd = [1440, hd[1] + 40]; S.sides.clawd = 'left'; }
     },
   });
 
@@ -208,7 +208,7 @@
       { id: 'c1', who: 'narr', zh: '第二只：{B|近亲繁殖怪}。它让 AI 只跟 AI 学。', en: 'Monster two: {B|the Inbreeder}. It makes AI learn only from AI.' },
       { id: 'c2', who: 'narr', zh: '只用 AI 生成的数据训练下一代，一代代下来，少见的内容最先消失，输出越来越单调。', en: 'Train each new generation only on AI-made data, and generation by generation the rare things vanish first and the output gets blander and blander.', hold: 0.8 },
       { id: 'c4', who: 'narr', zh: '好消息：只要一直加入真实数据，而不是用 AI 数据把它换掉，崩溃就能避免。', en: 'The good news: keep adding real data — instead of replacing it with AI-made data — and collapse can be avoided.', hold: 0.5 },
-      { id: 'c5', who: 'clawd', zh: '记住了：真实数据，不能丢！', en: 'Got it: never lose the real data!' },
+      { id: 'c5', who: 'clawd', zh: '记住了：真实数据，不能丢！', en: 'Got it: never lose the real data!', dy: 125 },
     ],
     cues: [...[0, 1, 2, 3, 4, 5].map((k) => [`c2+${(0.6 + k * 0.55).toFixed(2)}`, 'copy']), ['c4+0.4', 'restore']],
     draw(ctx, t, S) {

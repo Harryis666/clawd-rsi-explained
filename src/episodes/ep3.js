@@ -119,7 +119,7 @@
         const LB = M.clamp(u, 0, WALL_U) * 100 * PXD;
         blocks(ctx, MID + 40, 860, LB, 1.5, C.blue, C.blueD);
         if (LB > 860) { const k = M.seg(LB, 860, 900); ctx.save(); ctx.globalAlpha *= k; T.line(ctx, { zh: '越来越长 →', en: 'longer and longer →' }, W - 30, 378, 24, '#9CC4EE', 800, 'right'); ctx.restore(); }
-        T.line(ctx, { zh: '思想实验 · 艺术化演绎', en: 'thought experiment · dramatised' }, W - 30, 114, 20, C.ink3, 600, 'right');
+        T.line(ctx, { zh: '思想实验 · 艺术化演绎', en: 'thought experiment · dramatised' }, W - 30, H - 40, 20, C.ink3, 600, 'right');
         ctx.restore();
         // divider
         ctx.save(); ctx.globalAlpha *= M.seg(open, 0, 0.3); ctx.fillStyle = C.paper; ctx.fillRect(MID - 3, 0, 6, H * Math.min(1, open * 1.4)); D.glow(ctx, MID, H / 2, 160, C.paper, 0.12); ctx.restore();
@@ -185,7 +185,7 @@
   ], { gen: 8 });
   RSI.allScenes.e3_recap.hud = false;
   Sx.question(3, { zh: '智能会“爆炸”吗？\n还是迟早撞墙？', en: 'Will intelligence “explode”?\nOr hit a wall sooner or later?' }, {
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 3, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 620, 770, 3, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e3_q.hud = false;
 
@@ -216,7 +216,7 @@
         ctx.save(); ctx.globalAlpha *= wa;
         const cst = (x, y, w, h, col) => { ctx.strokeStyle = RSI.rgba(col, 0.6); ctx.lineWidth = 2; ctx.setLineDash([6, 8]); D.rr(ctx, x, y, w, h, 16); ctx.stroke(); ctx.setLineDash([]);
           [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].forEach(([a, b]) => D.sparkle(ctx, a, b, 12, col, 0.9, t)); };
-        cst(300, 170, 380, 150, C.orange); T.line(ctx, 'r  >  1 ?', 490, 232, 72, C.orangeHi, 900, 'center'); T.line(ctx, { zh: '越转越快，还是越转越慢', en: 'faster, or slower?' }, 490, 292, 24, C.orangeL, 700, 'center');
+        cst(280, 170, 420, 150, C.orange); T.line(ctx, 'r  >  1 ?', 490, 232, 72, C.orangeHi, 900, 'center'); T.line(ctx, { zh: '越转越快，还是越转越慢', en: 'faster, or slower?' }, 490, 292, 24, C.orangeL, 700, 'center');
         const wb = M.seg(t, S.T('x1') + 2.8, S.T('x1') + 3.3);
         ctx.globalAlpha *= wb; cst(820, 170, 800, 150, C.blue);
         [{ zh: '算力墙', en: 'compute' }, { zh: '品味墙', en: 'taste' }, { zh: '并行墙', en: 'parallel' }, { zh: '现实墙', en: 'reality' }].forEach((w, i) => {

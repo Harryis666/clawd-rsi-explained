@@ -46,7 +46,11 @@
   };
   /** 4 episode dots */
   Sx.dots = (ctx, x, y, cur, o = {}) => {
-    const g = o.gap || 150;
+    let g = o.gap || 150;
+    if (o.labels) { // v3.2: neighbouring labels never touch (the phone type scale made them wider)
+      const lw = RSI.EPS.map((e) => T.width(ctx, e.title, 21, 700));
+      for (let i = 0; i < 3; i++) g = Math.max(g, (lw[i] + lw[i + 1]) / 2 + 32);
+    }
     for (let i = 1; i <= 4; i++) {
       const cx = x + (i - 2.5) * g, on = i === cur, done = i < cur;
       if (i < 4) { ctx.fillStyle = done ? RSI.rgba(C.orange, 0.7) : 'rgba(240,238,230,0.18)'; ctx.fillRect(cx + 16, y - 2, g - 32, 4); }
@@ -213,8 +217,8 @@
       T.line(ctx, '?', 0, 0, 640, C.orange, 900, 'center'); ctx.restore();
       const a = M.seg(t, 0.3, 0.65, M.ease.outCubic);
       ctx.save(); ctx.globalAlpha *= a;
-      D.pill(ctx, EN() ? 'THIS EPISODE' : '本集问题', 200, 300, { size: 30, fill: C.orange });
-      T.line(ctx, Sx.epLabel(n) + ' · ' + RSI.L(RSI.EPS[n - 1].title), 200 + (EN() ? 250 : 190), 300, 28, C.ink3, 600, 'left');
+      const qpw = D.pill(ctx, EN() ? 'THIS EPISODE' : '本集问题', 200, 300, { size: 30, fill: C.orange });
+      T.line(ctx, Sx.epLabel(n) + ' · ' + RSI.L(RSI.EPS[n - 1].title), 200 + qpw + 24, 300, 28, C.ink3, 600, 'left'); // v3.2: follows the pill width
       const L = T.layout(ctx, RSI.L(q), { size: EN() ? 74 : 88, weight: 900, maxW: 1150, lh: 1.32 });
       const rev = Math.max(0, (t - 0.45) * 26);
       T.drawLayout(ctx, L, 200, 370 + (1 - a) * 20, { reveal: rev });
@@ -287,7 +291,7 @@
           if (t >= t0) {
             const i = Math.min(beats.length - 1, Math.floor((t - t0) / fl)), b = pick(beats[i]), u = t - (t0 + i * fl);
             const c = Sx.snap(b.from, resolveAt(b.from, b.at) + u * (b.speed == null ? 0.8 : b.speed), { k: 0.75, slot: 'next', lines: b.lines == null ? false : b.lines, gen: b.gen });
-            const z = 1.04 + 0.05 * u / fl;
+            const z = 1 + 0.04 * u / fl; // v3.2: gentler push-in so edge text is not cropped
             ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.drawImage(c, -W / 2, -H / 2, W, H); ctx.restore();
             if (u < 0.12) { ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - u / 0.12)})`; ctx.fillRect(0, 0, W, H); }
             // caption (v3: on a dark lower-third band so it never fights the snapshot underneath)
@@ -315,11 +319,11 @@
         T.line(ctx, `${Sx.epLabel(nx)}  ${Sx.epTitle(nx)}`, W / 2, 500, EN() ? 72 : 84, C.ink, 900, 'center');
         T.line(ctx, E2.hook, W / 2, 590, 38, C.orangeL, 600, 'center');
         ctx.restore();
-        ctx.save(); ctx.globalAlpha *= M.seg(u, 0.55, 0.95); Sx.dots(ctx, W / 2, 730, nx, { labels: true, gap: 230 });
+        ctx.save(); ctx.globalAlpha *= M.seg(u, 0.55, 0.95); Sx.dots(ctx, W / 2, 870, nx, { labels: true, gap: 300 }); // v3.2: wider + lower, clear of the bye bubble
         T.line(ctx, EN() ? `${RSI.L(RSI.SERIES.title)} · a 4-episode series` : `《${RSI.L(RSI.SERIES.title)}》系列 · 共 4 集`, W / 2, 1000, 24, C.ink3, 500, 'center'); ctx.restore();
         const g = o.gen || 1; const wave = t > tBye - 0.1 && t < tBye + bd + 0.3;
-        const hd = K.draw(ctx, 1640, 950 + X().bob(t, 3), 7.5, { gen: g, expr: wave ? 'happy' : X().blink(t, 5) ? 'blink' : 'normal', armR: wave ? 0.9 + Math.sin(t * 12) * 0.25 : 0, look: [-0.6, -0.3], alpha: M.seg(u, 0.75, 1.05) });
-        S.anchors.clawd = [1640, hd[1]];
+        const hd = K.draw(ctx, 1710, 950 + X().bob(t, 3), 7.5, { gen: g, expr: wave ? 'happy' : X().blink(t, 5) ? 'blink' : 'normal', armR: wave ? 0.9 + Math.sin(t * 12) * 0.25 : 0, look: [-0.6, -0.3], alpha: M.seg(u, 0.75, 1.05) });
+        S.anchors.clawd = [1710, hd[1]];
       },
     });
   };
@@ -410,7 +414,7 @@
     ctx.fillStyle = P.acc; ctx.fillRect(104, hy - 34, 10, 68);
     T.line(ctx, e.hook, 136, hy, EN() ? 50 : 62, P.acc, 900, 'left');
     T.line(ctx, EN() ? 'Recursive self-improvement (RSI), explained in 4 episodes' : '递归自我改进（RSI）· 四集讲明白', 108, hy + 92, 32, C.ink2, 600, 'left');
-    Sx.dots(ctx, 150 + 1.5 * 200, 958, n, { gap: 200, labels: true });
+    T.raw(() => Sx.dots(ctx, 150 + 1.5 * 200, 958, n, { gap: 200, labels: true })); // thumbnail map: tuned at the raw sizes
     ctx.restore();
   };
 })();

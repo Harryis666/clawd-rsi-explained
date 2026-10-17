@@ -188,11 +188,11 @@
       const s0 = st === 'stamp' ? M.lerp(2.3, 1, M.ease.outCubic(kIn)) : M.lerp(0.35, 1, M.ease.outBack(kIn));
       const a = M.clamp(age / 0.05) * (1 - M.seg(age, p.dur - 0.2, p.dur));
       const pos = Array.isArray(p.pos) ? p.pos : POP_POS[p.pos || 'tr'];
-      const size = p.size || (st === 'tag' ? 52 : st === 'stamp' ? 92 : 96);
+      const size = T.fs(p.size || (st === 'tag' ? 52 : st === 'stamp' ? 92 : 96));
       const rot = (p.rot != null ? p.rot : st === 'stamp' ? -8 : POP_ROT[p.i % 4]) * Math.PI / 180;
       const drift = st === 'pop' ? -10 * M.ease.outCubic(M.seg(age, 0.2, p.dur)) : 0;
       ctx.save(); ctx.globalAlpha *= a;
-      ctx.font = T.font(size, 900); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+      ctx.font = T.fontPx(size, 900); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
       const rows = String(RSI.L(p)).split('\n'), lh = size * 1.12;
       const wMax = Math.max(...rows.map((r) => ctx.measureText(r).width));
       // auto-fit (long English words): shrink to ≤ maxW and keep the whole box inside a 40 px safe margin
@@ -284,22 +284,24 @@
     ctx.save(); ctx.globalAlpha *= a;
     const show = o.text || String(g).padStart(3, '0');
     const showPrev = String(prev).padStart(3, '0');
-    ctx.font = T.font(22, 700, 'mono'); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    const w = 230, h = 78;
-    D.panel(ctx, x - w, y - 22, w, h, { fill: 'rgba(28,27,24,0.82)', r: 14, blur: 16 });
-    ctx.fillStyle = C.ink3; ctx.textAlign = 'left'; ctx.fillText('GEN', x - w + 20, y + 4);
-    ctx.font = T.font(16, 500); ctx.fillText(RSI.lang === 'en' ? 'generation' : '第几代', x - w + 20, y + 32);
+    // v3.2: larger HUD for phone viewers (v3: 230×78 panel, 22 / 16 / 44 px)
+    const en = RSI.lang === 'en', w = en ? 300 : 286, h = 100, lx = x - w + 22;
+    D.panel(ctx, x - w, y - 26, w, h, { fill: 'rgba(28,27,24,0.84)', r: 16, blur: 16 });
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.font = T.fontPx(26, 700, 'mono'); ctx.fillStyle = C.ink3; ctx.fillText('GEN', lx, y + 6);
+    ctx.font = T.fontPx(en ? 22 : 27, 600); ctx.fillStyle = C.ink2; ctx.fillText(en ? 'generation' : '第几代', lx, y + 44);
     ctx.textAlign = 'right';
-    ctx.save(); ctx.beginPath(); ctx.rect(x - w + 80, y - 20, w - 82, h - 4); ctx.clip();
-    ctx.font = T.font(44, 700, 'mono');
-    const col = o.color || C.orange;
+    ctx.save(); ctx.beginPath(); ctx.rect(x - w + (en ? 136 : 112), y - 24, w - (en ? 138 : 114), h - 4); ctx.clip();
+    const nlen = Math.max(show.length, flip < 1 ? showPrev.length : 0);
+    ctx.font = T.fontPx(Math.round(60 * Math.min(1, 3.6 / nlen)), 700, 'mono'); // 5-digit generations shrink to fit
+    const col = o.color || C.orange, ny = y + 24;
     if (flip < 1 && !o.text) {
       const e = M.ease.outCubic(flip);
-      ctx.fillStyle = RSI.rgba(col, 1 - e); ctx.fillText(showPrev, x - 18, y + 17 - e * 44);
-      ctx.fillStyle = col; ctx.fillText(show, x - 18, y + 17 + (1 - e) * 44);
-    } else { ctx.fillStyle = col; ctx.fillText(show, x - 18, y + 17); }
+      ctx.fillStyle = RSI.rgba(col, 1 - e); ctx.fillText(showPrev, x - 18, ny - e * 60);
+      ctx.fillStyle = col; ctx.fillText(show, x - 18, ny + (1 - e) * 60);
+    } else { ctx.fillStyle = col; ctx.fillText(show, x - 18, ny); }
     ctx.restore();
-    if (flip < 1) D.glow(ctx, x - 70, y + 16, 120, col, (1 - flip) * 0.8);
+    if (flip < 1) D.glow(ctx, x - 90, ny, 150, col, (1 - flip) * 0.8);
     ctx.restore();
   }
   function chapterLabel(ctx, sc, ta) {
@@ -308,8 +310,8 @@
     if (E) s = RSI.lang === 'en' ? `EP ${E.n} · ${RSI.L(E.title)}` : `第 ${E.n} 集 · ${RSI.L(E.title)}`;
     else { let ch = null; for (const c of RSI.chapters) if (c.t <= ta + 0.01) ch = c; if (ch) s = RSI.L(ch.label); }
     if (!s) return;
-    ctx.save(); ctx.globalAlpha = 0.55 * M.seg(ta - sc.start, 0, 0.6);
-    T.line(ctx, s, 56, 56, 22, C.ink2, 500, 'left');
+    ctx.save(); ctx.globalAlpha = 0.6 * M.seg(ta - sc.start, 0, 0.6);
+    T.raw(() => T.line(ctx, s, 56, 58, 28, C.ink2, 500, 'left'));
     ctx.restore();
   }
   const helpers = new Map();

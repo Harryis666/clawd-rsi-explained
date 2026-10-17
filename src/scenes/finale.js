@@ -131,7 +131,7 @@
       D.icon(ctx, 'eye', 0, 0, 88, C.teal, 7); ctx.restore();
       ctx.save(); ctx.globalAlpha *= ea; T.text(ctx, { zh: '独立评估者\n常驻实验室', en: 'independent\nevaluators, embedded' }, 560, 548, { size: 24, weight: 700, align: 'center', color: C.teal, lh: 1.3 }); ctx.restore();
       T.line(ctx, { zh: '不是踩死刹车，而是控制速度', en: 'not slamming the brakes — pacing' }, cx, 680, 24, C.ink3, 500, 'center');
-      T.line(ctx, { zh: '来源：Dario Amodei，《We Must Pace the Frontier》，2026.9.12', en: 'Source: Dario Amodei, “We Must Pace the Frontier”, 2026-09-12' }, cx, 742, 20, C.ink3, 400, 'center');
+      T.line(ctx, { zh: '来源：Dario Amodei，2026.9.12', en: 'Source: Dario Amodei, 2026-09-12' }, cx, 742, 20, C.ink3, 400, 'center');
     } else if (mode === 6) {
       // this episode's answer
       D.pill(ctx, EN() ? 'THIS EPISODE’S ANSWER' : '本集问题的答案', cx, 270, { size: 28, fill: C.orange, align: 'center' });
@@ -148,7 +148,7 @@
       const Q = [{ zh: '选哪一个？', en: 'Which one?' }, { zh: '什么时候选？', en: 'When?' }, { zh: '由谁来选？', en: 'Who chooses?' }];
       Q.forEach((q, i) => {
         const qa = M.seg(t, S.R(`e6+${(0.4 + i * 0.5).toFixed(2)}`), S.R(`e6+${(0.7 + i * 0.5).toFixed(2)}`), M.ease.outBack); if (qa <= 0) return;
-        ctx.save(); ctx.translate(cx + (i - 1) * 40, 330 + i * 120); ctx.scale(qa, qa);
+        ctx.save(); ctx.translate(cx + (i - 1) * 40, 290 + i * 105); ctx.scale(qa, qa);
         D.pill(ctx, q, 0, 0, { size: 40, fill: i === 2 ? C.orange : C.raised, color: i === 2 ? '#1b1a18' : C.ink, align: 'center' });
         ctx.restore();
       });
@@ -277,11 +277,11 @@
       const fa = M.seg(t, r4 + 0.3, r4 + 0.9, M.ease.outCubic), live = M.seg(t, r5 - 0.5, r5 + 0.1, M.ease.inOutCubic);
       if (fa > 0 && live < 1) {
         const c = Sx.snap('e1_cold', 'b2+1.0', { k: 0.62, slot: 'rv', lines: 'bubbles', gen: 1 });
-        const z = M.lerp(0.62, 1.0, live), w = W * z, h = H * z, x = W / 2 - w / 2, y = M.lerp(110, 0, live);
+        const z = M.lerp(0.62, 1.0, live), w = W * z, h = H * z, x = W / 2 - w / 2, y = M.lerp(160, 0, live);
         ctx.save(); ctx.globalAlpha *= fa * (1 - live);
         ctx.fillStyle = C.paper; ctx.fillRect(x - 16, y - 16, w + 32, h + 32);
         ctx.filter = 'sepia(0.6) saturate(0.8) brightness(0.92)'; ctx.drawImage(c, x, y, w, h); ctx.filter = 'none';
-        D.pill(ctx, { zh: '第 1 集 · 开场', en: 'Episode 1 · cold open' }, x + 24, y + 40, { size: 26, fill: C.orange });
+        D.pill(ctx, { zh: '第 1 集 · 开场', en: 'Episode 1 · cold open' }, x - 16, y - 42, { size: 26, fill: C.orange });
         ctx.restore();
       }
       // ---- part 3: the same two Clawds, calm now — and the sentence, finished
@@ -346,16 +346,16 @@
 
   // ---------------- credits ----------------
   const NOTES = [
-    { zh: '所有画面与声音均由代码实时生成（Canvas 2D + Web Audio），未使用任何外部图片、视频或音频素材。', en: 'Every frame and every sound is generated live by code (Canvas 2D + Web Audio) — no external images, video or audio.' },
-    { zh: 'Clawd 的台词、“第几代”计数与像素进化是艺术化演绎；片中事实与数字均注明出处。', en: 'Clawd\'s lines, the generation counter and the pixel evolution are artistic license; facts and numbers on screen are sourced.' },
-    { zh: 'Clawd 是 Anthropic 旗下 Claude Code 的吉祥物。本片为非官方科普作品，与 Anthropic 官方无关。', en: 'Clawd is the mascot of Anthropic\'s Claude Code. This is an unofficial explainer, not affiliated with Anthropic.' },
+    { zh: '画面与声音均由代码实时生成（Canvas 2D + Web Audio），无外部素材。', en: 'Every frame and sound is generated live by code (Canvas 2D + Web Audio) — no external assets.' },
+    { zh: 'Clawd 的台词、代数与像素进化为艺术化演绎；片中事实与数字均注明出处。', en: 'Clawd\'s lines, the generation count and the pixel evolution are artistic license; facts and numbers are sourced.' },
+    { zh: 'Clawd 是 Claude Code 的吉祥物；本片为非官方科普作品，与 Anthropic 无关。', en: 'Clawd is Claude Code\'s mascot. This is an unofficial explainer, not affiliated with Anthropic.' },
   ];
   const REFS = [
-    'I. J. Good (1965)', 'J. Schmidhuber (1987; 2003)', 'Silver et al., AlphaGo Zero (2017)', 'Bai et al., Constitutional AI (2022)',
-    'Shumailov et al., Nature (2024)', 'Gerstgrasser et al. (2024)', 'Novikov et al., AlphaEvolve (2025)', 'Zhang et al., Darwin Gödel Machine (2025)',
+    'I. J. Good (1965)', 'J. Schmidhuber (1987; 2003)', 'AlphaGo Zero (2017)', 'Constitutional AI (2022)',
+    'Shumailov et al., Nature (2024)', 'Gerstgrasser et al. (2024)', 'AlphaEvolve (2025)', 'Darwin Gödel Machine (2025)',
     'Kokotajlo et al., AI 2027 (2025)', 'Anthropic, reward hacking (2025)', 'Karpathy, autoresearch (2026)', 'Weco AI, AIDE² (2026)',
-    'Anthropic Institute (2026)', 'OpenAI, Research acceleration (2026)', 'Epoch AI', 'Chan, Hinton, Bengio et al. (2026)',
-    'Kirgis & Kapoor (2026)', 'D. Amodei, We Must Pace the Frontier (2026)', 'Gladstone AI (2026)', 'R. Naam (2026) · A. Narayanan (2026)',
+    'Anthropic Institute (2026)', 'OpenAI (2026)', 'Epoch AI', 'Chan, Hinton, Bengio et al. (2026)',
+    'Kirgis & Kapoor (2026)', 'D. Amodei (2026)', 'Gladstone AI (2026)', 'R. Naam · A. Narayanan (2026)',
     'The Register (2026)',
   ];
   const FIRST = { zh: '今天的任务：造一个比你更聪明的 Clawd。', en: 'Today’s task: build a Clawd smarter than you.' };
@@ -374,18 +374,24 @@
         T.line(ctx, EN() ? RSI.L(RSI.SERIES.title) : `《${RSI.L(RSI.SERIES.title)}》`, W / 2, 130, 56, C.ink, 900, 'center');
         T.line(ctx, EN() ? `${RSI.L(RSI.SERIES.tag)} · Episode 4 (finale)` : `${RSI.L(RSI.SERIES.tag)} · 第 4 集（完）`, W / 2, 196, 28, C.orange, 700, 'center');
         ctx.restore();
+        let ny = 262;
         NOTES.forEach((n, i) => {
-          const a = M.seg(t, 0.6 + i * 0.4, 1.1 + i * 0.4); if (a <= 0) return;
-          ctx.save(); ctx.globalAlpha *= a;
-          ctx.fillStyle = C.orange; ctx.fillRect(250, 268 + i * 62, 6, 34);
-          T.text(ctx, n, 276, 268 + i * 62, { size: 25, weight: 500, color: C.ink2, maxW: 1420 });
-          ctx.restore();
+          const L = T.layout(ctx, RSI.L(n), { size: 25, weight: 500, maxW: 1420 });
+          const a = M.seg(t, 0.6 + i * 0.4, 1.1 + i * 0.4);
+          if (a > 0) {
+            ctx.save(); ctx.globalAlpha *= a;
+            ctx.fillStyle = C.orange; ctx.fillRect(250, ny + 2, 6, L.h - 8);
+            T.text(ctx, n, 276, ny, { size: 25, weight: 500, color: C.ink2, maxW: 1420 });
+            ctx.restore();
+          }
+          ny += L.h + 20;
         });
         const ra = M.seg(t, 1.6, 2.1);
         if (ra > 0) {
           ctx.save(); ctx.globalAlpha *= ra;
-          T.line(ctx, { zh: '主要参考', en: 'Key sources' }, W / 2, 492, 28, C.orange, 900, 'center');
-          REFS.forEach((s, i) => { const col = i % 3, row = Math.floor(i / 3); T.line(ctx, s, 330 + col * 630, 548 + row * 44, 21, C.ink3, 500, 'center'); });
+          const ty = ny + 36;
+          T.line(ctx, { zh: '主要参考', en: 'Key sources' }, W / 2, ty, 28, C.orange, 900, 'center');
+          REFS.forEach((s, i) => { const col = i % 3, row = Math.floor(i / 3); T.line(ctx, s, 350 + col * 610, ty + 58 + row * 46, 21, C.ink3, 500, 'center'); });
           ctx.restore();
         }
         ctx.restore();

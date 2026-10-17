@@ -56,6 +56,10 @@
     const vo = ac.createGain(); vo.gain.value = AU.mix.verb; G.verb.connect(vo); vo.connect(eq(AU.eq.verb, G.master));
     G.mverb = ac.createConvolver(); G.mverb.normalize = true; G.mverb.buffer = irBuf(ac);
     const mvo = ac.createGain(); mvo.gain.value = AU.mix.verb; G.mverb.connect(mvo); mvo.connect(eq(AU.eq.verb, G.mduck));
+    // v3.2 echo: a dark dotted-eighth delay (band-limited feedback) — gives the softer recap 筝 a little space
+    const E = AU.echo; G.mecho = ac.createDelay(2); G.mecho.delayTime.value = E.time;
+    const ehp = lp(G, E.hp, 0.5, 'highpass'), elp = lp(G, E.lp, 0.5), efb = gainNode(G, E.fb), eo = gainNode(G, E.level);
+    G.mecho.connect(ehp); ehp.connect(elp); elp.connect(efb); efb.connect(G.mecho); elp.connect(eo); eo.connect(G.music);
     G.noise = noiseBuf(ac);
     return G;
   }
@@ -78,13 +82,22 @@
   AU.bass = { sub: 0.6, drive: 3, sat: 1.6, level: 1.0 };
   /** v3.1 BGM softening, applied to every music event in AU.build (SFX and voices keep their own settings) */
   AU.soft = { cut: 0.78, q: 1.6, bell: 0.75, ep: 0.85, zheng: [0.5, 3200], wood: [0.8, 0.8], crackle: 0.75, snare: 0.85, hat: 0.9, tick: 1700 };
+  /** v3.2 recap 筝 (feedback: 高频刺耳 → 降高频、略提中低频、加一点谐波和回声): bright, cut, warm dB (+400 Hz / −1.5× above 2.2 kHz), harm, echo, reverb send */
+  AU.soft.zheng = [0.42, 3000, 3, 0.3, 0.26, 0.34];
+  AU.soft.clap = 1150;
+  /** v3.2 music echo bus: dotted eighth at 96 BPM (the story tempo), dark band-limited repeats */
+  AU.echo = { time: 0.469, fb: 0.3, lp: 2200, hp: 260, level: 0.8 };
   AU.voiceTone = { cut: 0.75, q: 1.0 }; // character "babble": lower, less resonant filter (v3: cut ×1, Q 2.5)
   function soften(f, a) {
     const S = AU.soft;
     if (f === 'pluck') { a.cut = (a.cut || 3200) * S.cut; a.q = Math.min(a.q || 1.2, S.q); if (a.wave2 === 'square') a.wave2 = 'triangle'; }
     else if (f === 'bell') a.idx = (a.idx == null ? 2.0 : a.idx) * S.bell;
     else if (f === 'ep') a.idx = (a.idx || 1.5) * S.ep;
-    else if (f === 'zheng') { a.bright = Math.min(a.bright || 0.62, S.zheng[0]); a.cut = Math.min(a.cut || 5200, S.zheng[1]); }
+    else if (f === 'zheng') {
+      const z = S.zheng; a.bright = Math.min(a.bright || 0.62, z[0]); a.cut = Math.min(a.cut || 5200, z[1]);
+      if (a.warm == null) a.warm = z[2]; if (a.harm == null) a.harm = z[3]; if (a.echo == null) a.echo = z[4]; if (a.send == null) a.send = z[5];
+    }
+    else if (f === 'clap') a.f = Math.min(a.f || 1300, S.clap);
     else if (f === 'wood') { a.f = (a.f || 880) * S.wood[0]; a.vel = (a.vel == null ? 0.5 : a.vel) * S.wood[1]; }
     else if (f === 'crackle') a.vel = (a.vel == null ? 0.3 : a.vel) * S.crackle;
     else if (f === 'snare') a.f = (a.f || 1900) * S.snare;
@@ -96,13 +109,15 @@
   // v3.1 re-calibration (keeps each section within ~1 LU of v3): the new bass lines made tension / epilogue louder (×0.9 / ×0.82),
   // the softer timbres made story / tease / outro quieter (×1.24 / ×1.21 / ×1.12); softer wood blocks and ticks did the same to two cold opens
   AU.hookGain = { split: 1.25, tense: 1.18 };
-  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.3, quirky: 2.2, reflect: 1.06, epilogue: 1.02, outro: 1.19, story: 1.36, tease: 1.15, hook: 1.0, none: 1 }; // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
+  AU.secGain = { ambient: 1.4, title: 0.89, lofi: 1, build: 1, tension: 1.3, quirky: 2.2, reflect: 1.06, epilogue: 1.02, outro: 1.19, story: 1.2, tease: 1.15, hook: 1.0, none: 1,
+    brain: 0.98, eureka: 1.02, groove: 1.08, stairs: 1.21, retro: 1.2 }; // v3.2: EP1 re-score styles (≈ the old quirky/lofi level, −27.8 LUFS music stem); story 1.36 → 1.2 (the warmer 筝 is fuller) // calibrated from audio_v1 per-section RMS (tools/render-audio.mjs loudness report)
   function out(G, node, a, send, pan) {
     let x = node; const ac = G.ac;
     if (pan) { const p = ac.createStereoPanner(); p.pan.value = M.clamp(pan, -1, 1); x.connect(p); x = p; }
     x.connect(G[a.bus || 'music']);
     const s = a.send != null ? a.send : send;
     if (s > 0) { const g = ac.createGain(); g.gain.value = s; x.connect(g); g.connect(!a.bus || a.bus === 'music' ? G.mverb : G.verb); }
+    if (a.echo > 0 && G.mecho) { const g = ac.createGain(); g.gain.value = a.echo; x.connect(g); g.connect(G.mecho); }
   }
   function osc(G, type, f, t0, t1) { const o = G.ac.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t0); o.start(t0); o.stop(t1); return o; }
   function noiseSrc(G, t0, t1, off) { const s = G.ac.createBufferSource(); s.buffer = G.noise; s.loop = true; s.start(t0, ((off || 0) * 0.7919) % 1.9); s.stop(t1); return s; }
@@ -248,10 +263,30 @@
     for (let i = 0; i < Math.min(len, 64); i++) y[i] *= i / 64;
     cache.set(key, b); return b;
   }
-  I.zheng = (G, t, a) => { // plucked string (古筝-like): m, dur, vel, bright
-    const b = ksBuf(G.ac, mtof(a.m), a.dur || 1.6, a.bright || 0.62), src = G.ac.createBufferSource(); src.buffer = b;
-    const f = lp(G, a.cut || 5200, 0.6), g = gainNode(G, V(a, 0.5) * 0.55);
-    src.connect(f); f.connect(g); out(G, g, a, 0.22, a.pan); src.start(t);
+  I.zheng = (G, t, a) => { // plucked string (古筝-like): m, dur, vel, bright, cut; v3.2: warm (dB), harm (soft sine body), echo (send)
+    const f0 = mtof(a.m), dur = a.dur || 1.6;
+    const b = ksBuf(G.ac, f0, dur, a.bright || 0.62), src = G.ac.createBufferSource(); src.buffer = b;
+    let x = lp(G, a.cut || 5200, 0.6); src.connect(x);
+    if (a.warm) { // a little more body around 400 Hz, a gentle shelf off the top
+      const pk = lp(G, 400, 0.7, 'peaking'), hs = lp(G, 2200, 0.7, 'highshelf'); pk.gain.value = a.warm; hs.gain.value = -1.5 * a.warm;
+      x.connect(pk); pk.connect(hs); x = hs;
+    }
+    const g = gainNode(G, V(a, 0.5) * 0.55); x.connect(g);
+    if (a.harm) for (const [mul, k] of [[1, 1], [2, 0.32]]) { // round sine body under the string (fundamental + a touch of 2nd harmonic)
+      const o = osc(G, 'sine', f0 * mul, t, t + dur + 0.05), go = G.ac.createGain(), hv = 0.22 * a.harm * k;
+      go.gain.setValueAtTime(0, t); go.gain.linearRampToValueAtTime(hv, t + 0.012); go.gain.exponentialRampToValueAtTime(EMIN, t + dur * 0.75);
+      o.connect(go); go.connect(g);
+    }
+    out(G, g, a, 0.22, a.pan); src.start(t);
+  };
+  I.clap = (G, t, a) => { // v3.2 hand clap: three quick band-passed noise bursts + a short room tail
+    const v = V(a, 0.5) * 0.26, f0 = a.f || 1300, o0 = a.off || 0;
+    [0, 0.011, 0.023].forEach((d, k) => {
+      const s = noiseSrc(G, t + d, t + d + 0.03, o0 + k * 0.31), f = lp(G, f0, 1.1, 'bandpass'), g = G.ac.createGain();
+      g.gain.setValueAtTime(v * (k === 2 ? 1 : 0.7), t + d); g.gain.exponentialRampToValueAtTime(EMIN, t + d + 0.013); s.connect(f); f.connect(g); out(G, g, a, 0.18, a.pan);
+    });
+    const s = noiseSrc(G, t + 0.023, t + 0.22, o0 + 0.9), f = lp(G, f0 * 0.9, 0.9, 'bandpass'), g = G.ac.createGain();
+    g.gain.setValueAtTime(v * 0.6, t + 0.023); g.gain.exponentialRampToValueAtTime(EMIN, t + 0.17); s.connect(f); f.connect(g); out(G, g, a, 0.26, a.pan);
   };
   I.shepard = (G, t, a) => { // endlessly rising Shepard tone
     const dur = a.dur || 6, N = 6, P = a.period || 2.4, steps = Math.max(8, Math.ceil(dur * 40));
@@ -306,7 +341,7 @@
     riser: (P, c) => { const d = c.dur || 2; P(c.t, 'noise', { f0: 300, f1: 6000, dur: d, q: 1.2, vel: 0.5, at: d * 0.95 }); P(c.t, 'tone', { f0: 110, f1: 880, dur: d, vel: 0.12, wave: 'sawtooth', cut: 2200, at: d * 0.9 }); },
     swish: (P, c) => { P(c.t - 0.12, 'noise', { f0: 1500, f1: 7000, dur: 0.24, q: 1.4, vel: 0.5, at: 0.18 }); P(c.t, 'kick', { vel: 0.55 }); },
     page: (P, c) => { P(c.t, 'noise', { f0: 2500, f1: 5200, dur: 0.22, q: 1.2, vel: 0.32, at: 0.08 }); P(c.t + 0.16, 'noise', { type: 'highpass', f0: 4000, dur: 0.05, vel: 0.22 }); },
-    gliss: (P, c) => ns(c.down ? 'D6 B5 A5 F#5 E5 D5 B4 A4 F#4 E4 D4' : 'D4 E4 F#4 A4 B4 D5 E5 F#5 A5 B5 D6').forEach((m, i) => P(c.t + i * 0.035, 'zheng', { m, vel: 0.45, dur: 1.2 })),
+    gliss: (P, c) => ns(c.down ? 'D6 B5 A5 F#5 E5 D5 B4 A4 F#4 E4 D4' : 'D4 E4 F#4 A4 B4 D5 E5 F#5 A5 B5 D6').forEach((m, i) => P(c.t + i * 0.035, 'zheng', { m, vel: 0.4, dur: 1.2, bright: 0.4, cut: 2600, warm: 3, harm: 0.3, echo: 0.22, send: 0.3 })), // v3.2 softer
     cut: () => {}, // music duck window (handled in AU.build)
     quizIn: (P, c) => { P(c.t, 'tone', { f0: 440, f1: 880, dur: 0.12, vel: 0.35, wave: 'square', cut: 2600 }); P(c.t + 0.13, 'bell', { m: n('E6'), vel: 0.4, dur: 1.2 }); P(c.t + 0.13, 'bell', { m: n('B6'), vel: 0.25, dur: 1.0 }); },
     tada: (P, c) => { ns('D5 F#5 A5 D6').forEach((m, i) => P(c.t + i * 0.07, 'pluck', { m, vel: 0.55, dur: 0.3, wave: 'square', cut: 3200 })); P(c.t + 0.28, 'bell', { m: n('D6'), vel: 0.5, dur: 2.0 }); P(c.t + 0.28, 'noise', { type: 'highpass', f0: 6000, dur: 1.0, vel: 0.2 }); P(c.t + 0.28, 'kick', { vel: 0.6 }); },
@@ -339,6 +374,13 @@
       P(c.t, 'kick', { vel: 0.36 });
     },
     whoosh: (P, c) => P(c.t, 'noise', { f0: 300, f1: 2600, f2: 600, dur: 0.6, q: 0.9, vel: 0.55, at: 0.22 }),
+    ffwd: (P, c) => { // v3.2 EP2 race fast-forward: tape whir rising + ticks that speed up (days flying by)
+      const d = c.dur || 2.4;
+      P(c.t, 'tone', { f0: 160, f1: 620, dur: d, vel: 0.13, wave: 'sawtooth', cut: 1500, vib: [11, 9], at: 0.25 });
+      P(c.t, 'noise', { f0: 600, f1: 2600, dur: d, q: 1.1, vel: 0.22, at: d * 0.6 });
+      for (let i = 0; i < 22; i++) { const u = Math.sqrt(i / 22); P(c.t + d * u, 'tone', { f0: 1500 + i * 25, dur: 0.025, vel: 0.17 }); }
+      P(c.t + d - 0.05, 'noise', { type: 'lowpass', f0: 1400, f1: 200, dur: 0.25, vel: 0.35 });
+    },
     land: (P, c) => { P(c.t, 'tone', { f0: 110, f1: 42, dur: 0.28, vel: 0.95, send: 0.05 }); P(c.t, 'noise', { type: 'lowpass', f0: 700, dur: 0.12, vel: 0.45 }); },
     surprise: (P, c) => { P(c.t, 'tone', { f0: 520, f1: 1250, dur: 0.12, vel: 0.32, wave: 'square', cut: 3000 }); P(c.t + 0.12, 'tone', { f0: 700, f1: 1700, dur: 0.15, vel: 0.28, wave: 'square', cut: 3000 }); },
     chapter: (P, c) => {
@@ -549,12 +591,13 @@
     const ARP = { D: ns('D4 A4 D5 F#5 E5 D5 A4 F#4'), Bm: ns('B3 F#4 B4 D5 F#5 D5 B4 F#4'), G: ns('G3 D4 G4 B4 D5 B4 G4 D4'), A: ns('A3 E4 A4 B4 E5 B4 A4 E4') };
     grid(sec, 96, (i, tb, bd, bar) => {
       const k = ['D', 'Bm', 'G', 'A'][i % 4], ch = chord(k);
-      if (i % 4 === 0) ns('D4 E4 F#4 A4 B4 D5').forEach((m, j) => P(tb - 0.22 + j * 0.036, 'zheng', { m, vel: 0.26, dur: 1.0 }));
-      ARP[k].forEach((m, s2) => { P(tb + s2 * bd / 2, 'zheng', { m, vel: (s2 % 2 ? 0.34 : 0.46) + r() * 0.06, dur: 1.4, pan: (s2 / 7 - 0.5) * 0.5 }); });
-      if (i % 2 === 1) [0, 0.5, 0.75].forEach((b) => P(tb + (3 + b) * bd, 'zheng', { m: pick(r, ns('D6 E6 F#6 A6')), vel: 0.22, dur: 0.9, pan: 0.3 }));
-      P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.16, cut: 700, at: 0.5, rel: 1.0, wave: 'triangle' });
-      P(tb, 'bass', { m: ch.b + 12, dur: bd * 1.8, vel: 0.4 }); P(tb + 2 * bd, 'bass', { m: ch.b + 19, dur: bd * 1.4, vel: 0.3 });
-      [[0, 1250, 0.42], [1.5, 1250, 0.3], [2, 900, 0.38], [3, 1250, 0.3], [3.5, 1250, 0.24]].forEach(([b, f, v]) => P(tb + b * bd, 'wood', { f, vel: v, pan: f > 1000 ? 0.25 : -0.2 }));
+      if (i % 4 === 0) ns('D4 E4 F#4 A4 B4 D5').forEach((m, j) => P(tb - 0.22 + j * 0.036, 'zheng', { m, vel: 0.24, dur: 1.0 }));
+      ARP[k].forEach((m, s2) => { P(tb + s2 * bd / 2, 'zheng', { m, vel: (s2 % 2 ? 0.33 : 0.45) + r() * 0.05, dur: 1.4, pan: (s2 / 7 - 0.5) * 0.5 }); });
+      // v3.2: the little ornaments were the harshest notes → an octave lower and softer
+      if (i % 2 === 1) [0, 0.5, 0.75].forEach((b) => P(tb + (3 + b) * bd, 'zheng', { m: pick(r, ns('D5 E5 F#5 A5')), vel: 0.19, dur: 1.0, pan: 0.3 }));
+      P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.22, cut: 820, at: 0.5, rel: 1.0, wave: 'triangle' });
+      P(tb, 'bass', { m: ch.b + 12, dur: bd * 1.8, vel: 0.46 }); P(tb + 2 * bd, 'bass', { m: ch.b + 19, dur: bd * 1.4, vel: 0.34 });
+      [[0, 820, 0.36], [1.5, 820, 0.26], [2, 600, 0.34], [3, 820, 0.26], [3.5, 820, 0.2]].forEach(([b, f, v]) => P(tb + b * bd, 'wood', { f, vel: v, pan: f > 700 ? 0.25 : -0.2 })); // v3.2 lower, softer 梆子
       P(tb, 'tone', { f0: 150, f1: 80, dur: 0.22, vel: 0.5, send: 0.15 }); P(tb + 2 * bd, 'tone', { f0: 150, f1: 80, dur: 0.18, vel: 0.36, send: 0.15 });
     });
   };
@@ -588,14 +631,22 @@
       ch.v.forEach((m) => { P(tb, 'pluck', { m: m + 12, vel: 0.3, dur: 0.3, wave: 'sawtooth', cut: 2200 }); P(tb + 2.5 * bd, 'pluck', { m: m + 12, vel: 0.22, dur: 0.2, wave: 'sawtooth', cut: 2200 }); });
       if (i % 2 === 1) for (let s2 = 0; s2 < 8; s2++) P(tb + s2 * bd / 2, 'pluck', { m: ch.v[s2 % 4] + 24, vel: 0.18, dur: 0.12, wave: 'square', cut: 3000, pan: 0.3 });
     });
-    else if (mode === 'race') grid(sec, 150, (i, tb, bd, bar) => {
-      const ch = chord(['D', 'G', 'A', 'D'][i % 4]);
-      for (let b = 0; b < 4; b++) { [0, 0.5, 0.75].forEach((x) => P(tb + (b + x) * bd, 'bass', { m: ch.b + 12, dur: bd * 0.22, vel: x ? 0.38 : 0.6, cut: 900, sub: x ? 0.3 : 0.8 })); P(tb + b * bd, 'kick', { vel: 0.58 }); P(tb + b * bd + bd / 2, 'hat', { vel: 0.3, off: r() }); }
-      P(tb + bd, 'snare', { vel: 0.4 }); P(tb + 3 * bd, 'snare', { vel: 0.42 });
-      const mel = [ns('D5 F#5 A5 F#5'), ns('G5 B5 D6 B5'), ns('A5 C#6 E6 C#6'), ns('D6 A5 F#5 D5')][i % 4];
-      mel.forEach((m, k) => P(tb + k * bd, 'pluck', { m, vel: 0.3, dur: 0.25, wave: 'square', cut: 2800 }));
-      P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.22, cut: 1600, at: 0.1, rel: 0.5 });
-    });
+    else if (mode === 'race') {
+      // v3.2: the race now has a fast-forward (day 8 → day 730): the band plays double time, the tune jumps an octave like a sped-up tape
+      const ff0 = at('e2_cold', 'k5b+0.85'), ff1 = at('e2_cold', 'k5b+3.25');
+      const inFF = (t) => ff0 != null && t >= ff0 - 0.01 && t < ff1;
+      const raceBar = (i, tb, bd, bar, ff) => {
+        const Q = ff ? (t, f, a) => { if (inFF(t)) P(t, f, a); } : (t, f, a) => { if (!inFF(t)) P(t, f, a); };
+        const ch = chord(['D', 'G', 'A', 'D'][i % 4]);
+        for (let b = 0; b < 4; b++) { [0, 0.5, 0.75].forEach((x) => Q(tb + (b + x) * bd, 'bass', { m: ch.b + 12, dur: bd * 0.22, vel: x ? 0.38 : 0.6, cut: 900, sub: x ? 0.3 : 0.8 })); Q(tb + b * bd, 'kick', { vel: ff ? 0.5 : 0.58 }); Q(tb + b * bd + bd / 2, 'hat', { vel: 0.3, off: r() }); }
+        Q(tb + bd, 'snare', { vel: 0.4 }); Q(tb + 3 * bd, 'snare', { vel: 0.42 });
+        const mel = [ns('D5 F#5 A5 F#5'), ns('G5 B5 D6 B5'), ns('A5 C#6 E6 C#6'), ns('D6 A5 F#5 D5')][i % 4];
+        mel.forEach((m, k) => Q(tb + k * bd, 'pluck', ff ? { m: m + 12, vel: 0.2, dur: 0.12, wave: 'triangle', cut: 2600 } : { m, vel: 0.3, dur: 0.25, wave: 'square', cut: 2800 }));
+        Q(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.22, cut: 1600, at: ff ? 0.03 : 0.1, rel: 0.5 });
+      };
+      grid(sec, 150, (i, tb, bd, bar) => raceBar(i, tb, bd, bar, false));
+      if (ff0 != null) { let i0 = Math.floor((ff0 - sec.t0) / 1.6); grid({ t0: sec.t0 + i0 * 1.6, t1: ff1 }, 300, (i, tb, bd, bar) => raceBar(i0 * 2 + i, tb, bd, bar, true)); }
+    }
     else if (mode === 'split') grid(sec, 112, (i, tb, bd, bar) => {
       const ch = chord(['Dm', 'A7', 'Dm', 'A7'][i % 4]);
       [0, 2].forEach((b, k) => P(tb + b * bd, 'bass', { m: ch.b + 12 + (k ? 7 : 0), dur: bd * 0.8, vel: 0.6, cut: 500 }));
@@ -610,6 +661,175 @@
       for (let b = 0; b < 8; b++) P(tb + b * bd / 2, 'tone', { f0: 3200, dur: 0.02, vel: 0.07 });
       P(tb, 'pad', { notes: ns(['D4 F4 A4', 'D4 G4 Bb4', 'C#4 E4 A4', 'D4 F4 A4'][i % 4]), dur: bar, vel: 0.3, cut: 600 + i * 120, at: 1.2, rel: 1.4 });
     });
+  };
+
+  // ---- v3.2 EP1 re-score (feedback: from ~1:13 the music never changed and dragged) — the music now turns with the story every 7–30 s
+  const at = (id, spec) => { const s = scene(id); return s ? s.start + s.R(spec) : null; };
+  const crash = (P, t, v) => { P(t, 'noise', { type: 'highpass', f0: 3600, dur: 1.5, vel: v, at: 0.004, send: 0.3 }); P(t, 'noise', { f0: 2400, f1: 1500, dur: 0.45, q: 0.8, vel: v * 0.5 }); };
+  /** 打开“大脑”: 16th-note square arps over a sub bass (a thinking machine), a hiccup when Clawd sees nothing but numbers,
+   *  bell “digits” falling under 参数 — then everything drops out for “等等……” and a riser lands on the idea */
+  STY.brain = (sec, P, r) => {
+    const tc3 = at('e1_tries', 'c3'), tb3 = at('e1_tries', 't3b'), tc4 = at('e1_tries', 'c4'), drop = tc4 == null ? sec.t1 : tc4;
+    const P2 = (t, f, a) => { if (t < drop - 0.03) P(t, f, a); };
+    const stut = tc3 == null ? [0, 0] : [tc3 + 0.3, tc3 + 1.3];
+    grid(sec, 120, (i, tb, bd, bar) => {
+      const ch = chord(['Dm', 'Bb', 'Gm', 'A7'][i % 4]), up = M.clamp((tb - sec.t0) / Math.max(1, drop - sec.t0));
+      P2(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.2, cut: 800 + up * 500, at: 0.25, rel: 0.7 });
+      [[0, 0, 0.62, 0.9, 0.9], [1.5, 12, 0.32, 0.25, 0.22], [2, 0, 0.55, 0.85, 0.9], [3.5, 12, 0.3, 0.25, 0.22], [3.75, 7, 0.28, 0.25, 0.22]]
+        .forEach(([b, d, v, sub, len]) => P2(tb + b * bd, 'bass', { m: ch.b + 12 + d, dur: bd * len, vel: v, cut: 520, sub }));
+      const arp = ch.v.concat(ch.v.map((m) => m + 12));
+      for (let q = 0; q < 16; q++) {
+        const t = tb + (q * bd) / 4; if (t >= stut[0] && t < stut[1]) continue;
+        P2(t, 'pluck', { m: arp[(q + 2 * i) % 8] + 12, vel: 0.15 + (q % 4 === 0 ? 0.08 : 0), dur: 0.13, wave: 'square', cut: 1300 + up * 1000, pan: q % 2 ? 0.28 : -0.28 });
+      }
+      [0, 1.5, 2].forEach((b) => P2(tb + b * bd, 'kick', { vel: b ? 0.42 : 0.56 }));
+      [1, 3].forEach((b) => P2(tb + b * bd, 'snare', { vel: 0.22, f: 2100, dur: 0.07 }));
+      for (let e = 0; e < 8; e++) P2(tb + (e + 0.5) * bd / 2, 'hat', { vel: 0.16, dur: 0.03, off: r() });
+    });
+    // the hiccup (“……全是数字”): one note re-triggered in 32nds, stepping down
+    for (let q = 0; q < 16 && tc3 != null; q++) P2(stut[0] + q * 0.0625, 'pluck', { m: n('A5') - 2 * Math.floor(q / 4), vel: 0.21 - q * 0.007, dur: 0.055, wave: 'square', cut: 2000, pan: q % 2 ? 0.4 : -0.4 });
+    // falling “digits” under 参数: bell plinks stepping down the D-minor scale
+    const DIG = ns('D6 C6 A5 G5 F5 E5 D5 C5');
+    for (let q = 0; q < 18 && tb3 != null; q++) P2(tb3 + 0.3 + q * 0.19 + r() * 0.04, 'bell', { m: DIG[q % 8], vel: 0.13 + r() * 0.05, dur: 0.6, ratio: 3.5, idx: 1.0, pan: (r() - 0.5) * 0.9 });
+    // the drop (“等等……”): a held low chord, a sub thump, and a riser that lands on the idea
+    if (tc4 != null && sec.t1 - tc4 > 0.3) {
+      const d = sec.t1 - tc4 - 0.03;
+      P(tc4, 'pad', { notes: ns('D3 A3 E4'), dur: d, vel: 0.24, cut: 700, at: 0.12, rel: 0.5 });
+      P(tc4, 'tone', { f0: 90, f1: 45, dur: 0.5, vel: 0.45 });
+      P(tc4 + 0.05, 'noise', { f0: 400, f1: 4500, dur: d, q: 1.1, vel: 0.3, at: d * 0.92 });
+      P(tc4 + 0.05, 'tone', { f0: 147, f1: 587, dur: d, vel: 0.07, wave: 'sawtooth', cut: 1800, at: d * 0.9 });
+    }
+  };
+  /** the idea (改进“变聪明的方法”): bright and bouncy — octave bass, kick + clap, shaker, a marimba hook */
+  STY.eureka = (sec, P, r) => grid(sec, 120, (i, tb, bd, bar) => {
+    const k = ['D', 'G', 'Bm', 'A'][i % 4], ch = chord(k);
+    P(tb, 'pad', { notes: ch.v, dur: bar, vel: 0.24, cut: 1500, at: 0.06, rel: 0.5 });
+    for (let e = 0; e < 8; e++) P(tb + (e * bd) / 2, 'bass', { m: ch.b + 12 + (e % 2 ? 12 : 0), dur: bd * 0.32, vel: e % 2 ? 0.34 : 0.56, cut: 700, sub: e % 2 ? 0.2 : 0.8 });
+    [0, 2, 2.5].forEach((b) => P(tb + b * bd, 'kick', { vel: b === 2.5 ? 0.4 : 0.6 }));
+    [1, 3].forEach((b) => P(tb + b * bd, 'clap', { vel: 0.5, off: r() }));
+    for (let q = 0; q < 16; q++) P(tb + (q * bd) / 4, 'hat', { vel: q % 4 === 2 ? 0.28 : 0.13, f: 6500, dur: 0.035, off: r(), pan: 0.35 }); // shaker
+    const HOOK = { D: 'A4 D5 F#5 A5 F#5 D5 E5', G: 'B4 D5 G5 B5 G5 D5 E5', Bm: 'B4 D5 F#5 B5 A5 F#5 D5', A: 'A4 C#5 E5 A5 G5 F#5 E5' }, RH = [0, 0.5, 1, 1.5, 2, 3, 3.5];
+    ns(HOOK[k]).forEach((m, j) => P(tb + RH[j] * bd, 'bell', { m, vel: j === 3 ? 0.34 : 0.27, dur: 0.6, ratio: 4.0, idx: 1.1, pan: -0.15 }));
+  });
+  /** lab → flip at 96 BPM (one lab “day” = 2 bars = 5 s; its night = the last 3 beats).
+   *  Lab: a lazy day-time groove with typing clicks; at night only a music-box lullaby; a ba-dum-tss on Clawd's joke.
+   *  Flip: a crash on 第四招, then a funk vamp that levels up with each generation (lead + 16th hats at Gen 2, up a tone at Gen 3)
+   *  and a “recursion” motif that doubles its speed every time round. */
+  STY.groove = (sec, P, r) => {
+    const lab = scene('lab'), flip = scene('flip');
+    const fl0 = flip ? flip.start : sec.t1;
+    const sw = (b) => b + (Math.abs((b % 1) - 0.5) < 1e-6 ? 0.1 : 0);
+    if (lab) {
+      const E4 = at('lab', 'l4$'), e8 = 60 / 96 / 2;
+      const tss = E4 == null ? 1e9 : lab.start + Math.floor((E4 - 0.02 - lab.start) / e8) * e8, ba = tss - e8;
+      grid({ t0: lab.start, t1: fl0 - 0.4 }, 96, (i, tb, bd, bar) => {
+        const ch = chord(['Gmaj7', 'Fsm', 'Em7', 'A'][i % 4]), night = i % 2 === 1;
+        const L = (t, f, a) => { if (t < ba - 0.01 && t < fl0 - 0.1) P(t, f, a); };
+        const day = (b) => !night || b < 1 - 1e-6;
+        P(tb, 'pad', { notes: ch.v, dur: bar, vel: night ? 0.16 : 0.2, cut: night ? 700 : 900, at: 0.4, rel: 1.0, wave: 'triangle' });
+        // day: Rhodes, bass, a lazy swung beat, typing
+        if (day(0)) ch.v.forEach((m, k) => L(tb + k * 0.012, 'ep', { m, dur: bd * (night ? 0.9 : 2.2), vel: 0.36, pan: (k - 1.5) * 0.15 }));
+        [[0, 0, 0.58, 1.5], [2.5, 7, 0.42, 0.8], [3.75, 12, 0.3, 0.22]].forEach(([b, d, v, len]) => { if (day(b)) L(tb + sw(b) * bd, 'bass', { m: ch.b + 12 + d, dur: bd * len, vel: v, cut: 520 }); });
+        if (!night) ch.v.forEach((m, k) => L(tb + sw(2.5) * bd + k * 0.012, 'ep', { m, dur: bd * 1.1, vel: 0.22, pan: (k - 1.5) * 0.15 }));
+        [[0, 'kick', 0.62], [2.5, 'kick', 0.45], [1, 'snare', 0.32], [3, 'snare', 0.34]].forEach(([b, f, v]) => { if (day(b)) L(tb + sw(b) * bd, f, f === 'snare' ? { vel: v, f: 1700 } : { vel: v }); });
+        for (let e = 0; e < 8; e++) if (day(e / 2)) L(tb + sw(e / 2) * bd, 'hat', { vel: e % 2 ? 0.16 : 0.26, off: r() });
+        for (let q = 0; q < 16; q++) if (day(q / 4) && r() < 0.42) L(tb + (q * bd) / 4 + r() * 0.02, 'key', { f: 2300 + r() * 1200, th: 140 + r() * 60, vel: 0.26 + r() * 0.16, off: r() * 2, pan: -0.35 });
+        // night: a music-box lullaby over the soft pad
+        if (night) { const tones = ch.v.map((m) => m + 24); [[1, 2], [1.5, 1], [2, 3], [2.5, 2], [3, 0]].forEach(([b, j], k) => L(tb + b * bd, 'bell', { m: tones[j], vel: 0.2 - k * 0.012, dur: 1.5, ratio: 3.0, idx: 0.55, pan: 0.25 })); }
+      });
+      if (E4 != null) { // ba-dum-tss for “……人要睡觉？”
+        P(ba, 'snare', { vel: 0.42, f: 1700 }); P(ba, 'tone', { f0: 210, f1: 150, dur: 0.16, vel: 0.5 });
+        P(tss - e8 / 2, 'tone', { f0: 150, f1: 100, dur: 0.2, vel: 0.55 });
+        P(tss, 'kick', { vel: 0.5 }); P(tss, 'noise', { type: 'highpass', f0: 4200, dur: 0.9, vel: 0.26, at: 0.003, send: 0.3 });
+      }
+    }
+    if (!flip) return;
+    const f1 = at('flip', 'f1'), g2 = at('flip', 'f3+1.0'), g3 = at('flip', 'f4$+0.4'), f5 = at('flip', 'f5');
+    const bar0 = (60 / 96) * 4, tr0 = f1 + Math.ceil((g3 - f1) / bar0 - 1e-6) * bar0; // Gen 3 → up a whole tone from the next bar line
+    crash(P, f1, 0.24); P(f1, 'kick', { vel: 0.8 }); P(f1, 'bass', { m: n('E2'), dur: 0.5, vel: 0.6, cut: 600 });
+    [0, 1, 2].forEach((k) => P(f1 - 0.33 + k * 0.105, 'snare', { vel: 0.18 + k * 0.08, f: 1900, dur: 0.07 })); // pickup fill
+    grid({ t0: f1, t1: sec.t1 }, 96, (i, tb, bd, bar) => {
+      const tr = tb >= tr0 - 0.01 ? 2 : 0, ch = chord(i % 2 ? 'A7' : 'Em7'), R = ch.b + 12 + tr, s16 = bd / 4;
+      const lead2 = (t) => t >= g2 - 0.01, lv3 = (t) => t >= g3 - 0.01;
+      P(tb, 'pad', { notes: ch.v.map((m) => m + tr), dur: bar, vel: 0.17, cut: 1000, at: 0.1, rel: 0.6 });
+      [[0, 0, 0.6, 0.3], [3, 12, 0.34, 0.12], [6, 0, 0.48, 0.25], [8, 7, 0.4, 0.2], [10, 0, 0.5, 0.25], [11, 12, 0.3, 0.1], [14, 10, 0.36, 0.2]]
+        .forEach(([q, d, v, len]) => P(tb + q * s16, 'bass', { m: R + d, dur: bd * len * 1.6, vel: v, cut: 750, sub: d ? 0.2 : 0.7 }));
+      [[0, 0.66], [7, 0.42], [10, 0.5]].forEach(([q, v]) => P(tb + q * s16, 'kick', { vel: v }));
+      [[4, 0.4], [12, 0.42], [7, 0.1], [15, 0.12]].forEach(([q, v]) => P(tb + q * s16, 'snare', { vel: v, f: 1900, dur: v < 0.2 ? 0.05 : 0.15 }));
+      for (let q = 0; q < 16; q++) { const t = tb + q * s16; if (q % 2 === 0 || lead2(t)) P(t, 'hat', { vel: q % 4 === 2 ? 0.3 : q % 2 ? 0.12 : 0.2, f: 7000, dur: 0.035, off: r(), pan: 0.3 }); }
+      [2, 6, 9, 14].forEach((q) => ch.v.forEach((m, k) => P(tb + q * s16 + k * 0.004, 'pluck', { m: m + 12 + tr, vel: 0.12, dur: 0.09, wave: 'triangle', wave2: 'square', cut: 1800, pan: 0.2 })));
+      const LEAD = i % 2 ? [[0, 'E5'], [2, 'G5'], [3, 'A5'], [6, 'C#6'], [8, 'B5'], [10, 'A5'], [11, 'G5'], [14, 'E5']] : [[0, 'E5'], [2, 'G5'], [3, 'A5'], [6, 'B5'], [8, 'A5'], [10, 'G5'], [11, 'E5'], [14, 'D5']];
+      LEAD.forEach(([q, nn]) => { const t = tb + q * s16; if (lead2(t) && (f5 == null || t < f5 + 0.3)) P(t, 'pluck', { m: n(nn) + tr, vel: 0.22, dur: 0.18, wave: 'sawtooth', cut: 2100, q: 1.2, pan: -0.2 }); });
+      [1, 3].forEach((b) => { const t = tb + b * bd; if (lv3(t)) P(t, 'clap', { vel: 0.42, off: r() }); });
+    });
+    // 递归: one motif, played again and again — twice as fast each time
+    if (f5 != null) {
+      const MOT = ['E5', 'G5', 'B5', 'E6'];
+      let t = f5 + 0.5; for (let rep2 = 0; rep2 < 4; rep2++) { const d = 0.3125 / Math.pow(2, rep2); MOT.forEach((nn, k) => { const tr = t >= tr0 - 0.01 ? 2 : 0; P(t, 'bell', { m: n(nn) + tr, vel: 0.24 + rep2 * 0.03, dur: 0.7, ratio: 4.0, idx: 1.1, pan: (k / 3 - 0.5) * 0.6 }); t += d; }); }
+      P(t, 'bell', { m: n('E6') + (t >= tr0 ? 2 : 0), vel: 0.34, dur: 1.4, ratio: 4.0, idx: 1.2 });
+    }
+  };
+  /** compounding staircase: ten even marimba steps for “people improve AI” (one per blue step, 8ths at 115 BPM), then the orange staircase —
+   *  ever-wider leaps, drums speeding up and a riser — slammed to a stop on the statement; an “uh-oh” in the bass for Clawd */
+  STY.stairs = (sec, P, r) => {
+    const tk1 = at('compound', 'k1'), tk2 = at('compound', 'k2'), tk3 = at('compound', 'k3'), tk4 = at('compound', 'k4');
+    if (tk1 == null) return;
+    const e8 = 2.6 / 10, BLUE = ns('D4 E4 F#4 G4 A4 B4 C#5 D5 E5 F#5'), ORNG = ns('D4 E4 G4 B4 E5 A5 D6 A6');
+    P(sec.t0, 'pad', { notes: ns('D3 A3 D4 F#4'), dur: tk2 - sec.t0, vel: 0.2, cut: 900, at: 0.3, rel: 0.8, wave: 'triangle' });
+    for (let i = 0; i < 10; i++) {
+      const t = tk1 + e8 * (i + 1);
+      P(t, 'bell', { m: BLUE[i], vel: 0.32, dur: 0.9, ratio: 4.0, idx: 1.0, pan: -0.3 + i * 0.06 });
+      if (i % 2 === 0) { P(t, 'kick', { vel: 0.45 }); P(t, 'bass', { m: n(i % 4 === 0 ? 'D2' : 'A1') + 12, dur: e8 * 1.6, vel: 0.45, cut: 500 }); }
+      else P(t, 'snare', { vel: 0.16, f: 1800, dur: 0.06 });
+      P(t + e8 / 2, 'hat', { vel: 0.12, off: r() });
+    }
+    // waiting on the last blue step: a soft tick-tock until the orange stairs start
+    for (let t = tk1 + e8 * 11; t < tk2 + 0.35; t += e8 * 2) P(t, 'wood', { f: 760, vel: 0.2, pan: 0.2 });
+    // the orange staircase
+    ['D', 'G', 'A'].forEach((k, j) => P(tk2 + 0.4 + j * 1.2, 'pad', { notes: chord(k).v, dur: 1.2, vel: 0.22 + j * 0.03, cut: 1000 + j * 300, at: 0.08, rel: 0.4 }));
+    for (let i = 0; i < 8; i++) {
+      const t = tk2 + 0.4 + 0.45 * i;
+      P(t, 'bell', { m: ORNG[i], vel: 0.28 + i * 0.012, dur: 1.1, ratio: 4.0, idx: 1.1, pan: 0.3 - i * 0.06 });
+      P(t, 'kick', { vel: 0.5 + i * 0.03 }); P(t, 'bass', { m: n('D2') + 12 + (i >= 6 ? 12 : 0), dur: 0.3, vel: 0.5, cut: 650, sub: 0.7 });
+    }
+    for (let t = tk2 + 0.4, d = 0.225; t < tk3 - 0.04; t += d, d = Math.max(0.045, d * 0.9)) P(t, 'hat', { vel: 0.14 + 0.18 * M.clamp((t - tk2) / (tk3 - tk2)), off: r() });
+    const rz = tk2 + 2.2; P(rz, 'noise', { f0: 300, f1: 5000, dur: tk3 - rz, q: 1.2, vel: 0.3, at: (tk3 - rz) * 0.95 });
+    for (let t = tk2 + 4.0, d = 0.12; t < tk3 - 0.04; t += d, d = Math.max(0.04, d * 0.85)) P(t, 'snare', { vel: 0.14 + 0.3 * M.clamp((t - tk2 - 4.0) / (tk3 - tk2 - 4.0)), f: 1900, dur: 0.06, off: r() });
+    // the stop: one sustained chord under the statement, darker under Clawd's worry
+    if (tk3 != null) P(tk3, 'pad', { notes: ns('D3 A3 E4 F#4 A4'), dur: (tk4 || sec.t1) - tk3 + 0.2, vel: 0.3, cut: 1100, at: 0.35, rel: 1.6 });
+    if (tk4 != null) {
+      P(tk4, 'pad', { notes: ns('B2 F#3 D4'), dur: sec.t1 - tk4, vel: 0.22, cut: 800, at: 0.3, rel: 1.0 });
+      [[0.4, 'E3', 0.3, 0.97], [0.72, 'C#3', 0.7, 0.94]].forEach(([d, nn, len, gl]) => { // uh-oh
+        const f = mtof(n(nn)); P(tk4 + d, 'tone', { f0: f, f1: f * gl, dur: len, wave: 'triangle', vel: 0.34, cut: 900, vib: [5, 3], at: 0.02 });
+        P(tk4 + d, 'bass', { m: n(nn) - 12, dur: len * 0.9, vel: 0.42, cut: 500, sub: 0.5 });
+      });
+    }
+  };
+  /** 1965: a little swing combo at 116 BPM — walking bass, ride, brushes, vibraphone Charleston comping, vinyl crackle;
+   *  stop-time on “这句话还没完” until the sticky note slaps on, then a jazzy button */
+  STY.retro = (sec, P, r) => {
+    const tg2 = at('good', 'g2'), slap = at('good', 'g2b+0.85'), stop0 = tg2 == null ? sec.t1 : tg2, slapT = slap == null ? sec.t1 : slap;
+    const PR = ['Dmaj9', 'Bm9', 'Em7', 'A13sus'], sw = (b) => b + (Math.abs((b % 1) - 0.5) < 1e-6 ? 1 / 6 : 0);
+    const vibes = (t, notes, v, dur) => notes.forEach((m, k) => P(t + k * 0.012, 'bell', { m, ratio: 1, idx: 0.55, dur, vel: v, pan: (k - 1.5) * 0.2 }));
+    grid(sec, 116, (i, tb, bd, bar) => {
+      const ch = chord(PR[i % 4]), nx = chord(PR[(i + 1) % 4]), F = (t) => t < stop0 - 0.02;
+      const R = ch.b + 12, walk = [R, R + (i % 2 ? 3 : 4), R + 7, nx.b + 12 + (r() < 0.5 ? 1 : -1)];
+      walk.forEach((m, b) => { if (F(tb + b * bd)) P(tb + b * bd, 'bass', { m, dur: bd * 0.85, vel: b ? 0.42 : 0.55, cut: 600, sub: 0.45 }); });
+      [0, 1, 1 + 2 / 3, 2, 3, 3 + 2 / 3].forEach((b, k) => { const t = tb + b * bd; if (F(t)) P(t, 'hat', { f: 5200, dur: 0.22, vel: k % 3 === 2 ? 0.15 : 0.24, off: r(), pan: 0.3 }); });
+      [1, 3].forEach((b) => { const t = tb + b * bd; if (F(t)) P(t, 'noise', { f0: 1700, f1: 3200, dur: 0.22, q: 0.7, vel: 0.15, at: 0.03, pan: -0.2 }); });
+      [[0, 0.3], [2, 0.24]].forEach(([b, v]) => { const t = tb + b * bd; if (F(t)) P(t, 'kick', { vel: v }); });
+      if (F(tb)) vibes(tb, ch.v.map((m) => m + 12), 0.2, 1.3);
+      if (F(tb + sw(1.5) * bd)) vibes(tb + sw(1.5) * bd, ch.v.map((m) => m + 12), 0.16, 0.9);
+      for (let c = 0; c < 5; c++) P(tb + r() * bar, 'crackle', { vel: 0.2 + r() * 0.4, f: 2000 + r() * 3000, off: r() * 2, pan: r() - 0.5 });
+      // stop-time: a short band hit on beats 1 and 3 while the narrator holds the floor
+      [0, 2].forEach((b) => { const t = tb + b * bd; if (t > stop0 + 0.2 && t < slapT - 0.25) { vibes(t, ch.v.map((m) => m + 12), 0.24, 0.5); P(t, 'bass', { m: R, dur: bd * 0.4, vel: 0.5, cut: 600 }); P(t, 'kick', { vel: 0.36 }); P(t, 'hat', { f: 5200, dur: 0.12, vel: 0.26, off: r() }); } });
+    });
+    // the button: the sticky note lands on a D6/9
+    if (slap != null && slapT < sec.t1 - 0.1) {
+      vibes(slapT, ns('A4 B4 E5 F#5'), 0.3, 1.8); P(slapT, 'bass', { m: n('D2') + 12, dur: 0.9, vel: 0.6, cut: 600, sub: 0.7 }); P(slapT, 'kick', { vel: 0.5 });
+      P(slapT, 'noise', { type: 'highpass', f0: 4200, dur: 1.4, vel: 0.2, at: 0.003, send: 0.35 });
+      vibes(slapT + 0.75, ns('D5 F#5 A5 B5 E6').reverse().map((m) => m - 12), 0.12, 1.4);
+    }
   };
   STY.outro = (sec, P, r) => {
     const prog = ['Dmaj9', 'Bm9', 'Gmaj9', 'A13sus', 'Dmaj9', 'Bm9', 'Gmaj9', 'A13sus', 'Gmaj9', 'A13sus', 'Gmaj9', 'A13sus', 'Dmaj9'];
@@ -655,8 +875,13 @@
     const P0 = (t, f, a, bus) => { if (!I[f]) throw new Error('no instrument ' + f); ev.push({ t, f, a: Object.assign({ bus }, a) }); };
     const secs = [];
     for (const sc of RSI.scenes) {
-      const k = sc.music || 'ambient', last = secs[secs.length - 1];
-      if (last && last.k === k) { last.t1 = sc.start + sc.dur; last.sc.push(sc); } else secs.push({ k, t0: sc.start, t1: sc.start + sc.dur, sc: [sc] });
+      const parts = []; let a = sc.start, k = sc.music || 'ambient';
+      for (const [spec, k2] of sc.musicAt || []) { const b = sc.start + sc.R(spec); if (b > a + 0.05) parts.push([k, a, b]); a = b; k = k2; } // v3.2: musicAt = [[timeSpec, style], …]
+      parts.push([k, a, sc.start + sc.dur]);
+      for (const [k1, t0, t1] of parts) {
+        const last = secs[secs.length - 1];
+        if (last && last.k === k1) { last.t1 = t1; if (last.sc[last.sc.length - 1] !== sc) last.sc.push(sc); } else secs.push({ k: k1, t0, t1, sc: [sc] });
+      }
     }
     const cdur = (c) => { if (c.dur === 'end') { const sc = RSI.sceneAt(c.t + 1e-3); return sc.start + sc.dur - c.t; } return c.dur || 2; };
     const mutes = RSI.cues.filter((c) => c.type === 'boom').map((c) => [c.t - 0.15, c.t + 2.4])

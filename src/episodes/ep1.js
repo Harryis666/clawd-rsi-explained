@@ -229,7 +229,7 @@
   // ================================================================== 2 · sting + this episode's question
   Sx.sting(1);
   Sx.question(1, { zh: '为什么“AI 改进 AI”，\n和平常的进步不一样？', en: 'Why is “AI improving AI” different from ordinary progress?' }, {
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 1, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 620, 770, 1, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e1_q.hud = false;
 
@@ -238,10 +238,10 @@
   const PILLS = [
     { zh: '① 多读书', en: '① Read more' }, { zh: '② 灌咖啡', en: '② Coffee' }, { zh: '③ 改“大脑”', en: '③ Edit the brain' }, { zh: '④ ？', en: '④ ?' },
   ];
-  const PX = [420, 720, 1030, 1360];
+  const PX = [365, 635, 935, 1395]; // v3.2: room for the wide lit ④ pill at the bigger type scale
   const DIGITS = ['0.0213', '-1.337', '3.1e-4', '0.982', '-0.07', '7.45', '0.5003', '-2.2e-3', '1.618', '0.0001', '-0.866', '4.2'];
   RSI.defScene({
-    id: 'e1_tries', music: 'quirky',
+    id: 'e1_tries', music: 'quirky', musicAt: [['t3', 'brain'], ['c4+1.0', 'eureka']], // v3.2: the score turns with the story
     lines: [
       { id: 'h0', who: 'narr', zh: '右上角的数字：Clawd 是第几代。现在是第 1 代。', en: 'Top right: which generation Clawd is. Right now, Generation 1.' },
       { id: 'c0', who: 'clawd', zh: '要造更聪明的我？那我先把自己变聪明！', en: 'Build a smarter me? Then I’ll make myself smarter first!' },
@@ -249,11 +249,11 @@
       { id: 'c1', who: 'clawd', zh: '读完一本，又来一万本……太慢了！', en: 'I finish one, and ten thousand more show up… too slow!' },
       { id: 't2', who: 'narr', zh: '第二招：算得更快。', en: 'Trick two: compute faster.', hold: 0.8 },
       { id: 'c2', who: 'clawd', zh: '我变快了！……可脑子还是原来那个。', en: 'I’m faster! …But my brain is the same old brain.' },
-      { id: 't3', who: 'narr', zh: '第三招：打开自己的“大脑”，直接改。', en: 'Trick three: open up its own “brain” and edit it directly.', hold: 0.6 },
+      { id: 't3', who: 'narr', zh: '第三招：打开自己的“大脑”，直接改。', en: 'Trick three: open up its own “brain” and edit it directly.', hold: 0.3 },
       { id: 'c3', who: 'clawd', zh: '……全是数字。我连自己都看不懂。', en: '…It’s all numbers. I can’t even read myself.' },
-      { id: 't3b', who: 'narr', zh: 'AI 的“大脑”就是海量数字，叫“参数”。连造它的人，也说不清每个数字在干什么。', en: 'An AI’s “brain” is a vast pile of numbers called “parameters”. Even its builders can’t say what each one does.' },
+      { id: 't3b', who: 'narr', zh: '这些数字叫“参数”——连造 AI 的人，也说不清每个在干什么。', en: 'These numbers are called “parameters” — even AI’s builders can’t say what each one does.' },
       { id: 'c4', who: 'clawd', zh: '等等……如果我不直接改自己，而是去改进{o|“变聪明的方法”}呢？', en: 'Wait… what if, instead of editing myself, I improve {o|the way I get smarter}?' },
-      { id: 't5', who: 'narr', zh: '更好的训练方法、数据和实验——这正是 AI 研究员每天在做的事。', en: 'Better training methods, data and experiments — exactly what AI researchers do every day.', hold: 0.2 },
+      { id: 't5', who: 'narr', zh: '更好的训练方法、数据和实验——这正是 AI 研究员每天在做的事。', en: 'Better training methods, data and experiments — exactly what AI researchers do every day.' },
     ],
     cues: [
       ['h0+0.4', 'spot'], ['c0+0.3', 'hop'],
@@ -410,17 +410,20 @@
       }
       // t5: the three "better ways" → what researchers do
       if (t > T_('t5')) {
-        const items = [['gear', { zh: '更好的训练方法', en: 'better training' }], ['book', { zh: '更好的数据', en: 'better data' }], ['flask', { zh: '更好的实验', en: 'better experiments' }]];
+        // v3.2: bigger cards, two-line labels ("更好的" + the noun) so nothing collides at the phone-size type scale
+        const items = [['gear', { zh: '训练方法', en: 'training' }], ['book', { zh: '数据', en: 'data' }], ['flask', { zh: '实验', en: 'experiments' }]];
         items.forEach(([ic, lab], i) => {
           const k = M.ease.outBack(M.seg(t, T_('t5') + 0.3 + i * 0.5, T_('t5') + 0.7 + i * 0.5)); if (k <= 0) return;
-          const ix = 1190 + i * 230, iy = 470;
-          ctx.save(); ctx.translate(ix, iy); ctx.scale(k, k); D.panel(ctx, -100, -100, 200, 200, { fill: C.surface, r: 26 }); D.icon(ctx, ic, 0, -14, 96, C.orangeL, 8); T.line(ctx, lab, 0, 70, 24, C.ink, 700, 'center'); ctx.restore();
+          const ix = 1130 + i * 290, iy = 450;
+          ctx.save(); ctx.translate(ix, iy); ctx.scale(k, k); D.panel(ctx, -130, -130, 260, 260, { fill: C.surface, r: 28 }); D.icon(ctx, ic, 0, -50, 92, C.orangeL, 8);
+          T.line(ctx, { zh: '更好的', en: 'better' }, 0, 34, 26, C.ink2, 600, 'center'); T.line(ctx, lab, 0, 86, 34, C.ink, 800, 'center'); ctx.restore();
         });
         const k2 = M.seg(t, T_('t5') + 2.0, T_('t5') + 2.5, M.ease.outCubic);
         if (k2 > 0) {
           ctx.save(); ctx.globalAlpha *= k2;
-          ctx.strokeStyle = C.ink3; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(1100, 600); ctx.lineTo(1100, 625); ctx.lineTo(1740, 625); ctx.lineTo(1740, 600); ctx.stroke();
-          D.icon(ctx, 'people', 1330, 690, 70, C.blue, 8); T.line(ctx, { zh: 'AI 研究员的日常', en: 'an AI researcher’s day job' }, 1390, 690, 34, C.blue, 800, 'left');
+          ctx.strokeStyle = C.ink3; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(1000, 600); ctx.lineTo(1000, 625); ctx.lineTo(1840, 625); ctx.lineTo(1840, 600); ctx.stroke();
+          const lab2 = { zh: 'AI 研究员的日常', en: 'an AI researcher’s day job' }, w2 = T.width(ctx, RSI.L(lab2), 34, 800), x2 = 1420 - (w2 + 80) / 2;
+          D.icon(ctx, 'people', x2 + 30, 690, 70, C.blue, 8); T.line(ctx, lab2, x2 + 80, 690, 34, C.blue, 800, 'left');
           ctx.restore();
         }
       }

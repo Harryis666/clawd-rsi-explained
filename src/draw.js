@@ -127,7 +127,7 @@
     ctx.save(); if (o.alpha != null) ctx.globalAlpha *= o.alpha;
     ctx.fillStyle = '#232220'; D.rr(ctx, x, y, w, 46, 16); ctx.fill(); ctx.fillRect(x, y + 30, w, 16);
     ['#E96A5E', '#E9B44C', '#6CC070'].forEach((c, i) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + 26 + i * 24, y + 23, 7, 0, 7); ctx.fill(); });
-    if (o.title) T.line(ctx, o.title, x + w / 2, y + 24, 20, C.ink3, 500, 'center', 'mono');
+    if (o.title) T.raw(() => T.line(ctx, o.title, x + w / 2, y + 24, 24, C.ink3, 500, 'center', 'mono'));
     ctx.restore();
     return { x: x + 30, y: y + 70 };
   };
@@ -138,19 +138,19 @@
     const a = M.clamp(age / 0.35) * (o.alpha == null ? 1 : o.alpha);
     const dy = (1 - M.ease.outCubic(M.clamp(age / 0.45))) * 26;
     const size = o.size || 34;
-    const L = T.layout(ctx, RSI.L(card.body), { size, weight: 500, maxW: w - 76, lh: 1.5 });
-    const srcL = card.src ? T.layout(ctx, (RSI.lang === 'en' ? 'Source: ' : '来源：') + RSI.L(card.src), { size: 21, weight: 400, maxW: w - 76, lh: 1.35 }) : null;
-    const h = 74 + L.h + (srcL ? srcL.h + 18 : 0) + 30;
+    const L = T.layout(ctx, RSI.L(card.body), { size, weight: 500, maxW: w - 76, lh: 1.45 });
+    const srcL = card.src ? T.raw(() => T.layout(ctx, (RSI.lang === 'en' ? 'Source: ' : '来源：') + RSI.L(card.src), { size: 27, weight: 400, maxW: w - 76, lh: 1.3 })) : null;
+    const h = 86 + L.h + (srcL ? srcL.h + 16 : 0) + 30;
     ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, dy);
     D.panel(ctx, x, y, w, h, { fill: o.fill || C.surface, r: 18 });
     ctx.fillStyle = o.accent || C.orange; D.rr(ctx, x, y, 8, h, 4); ctx.fill();
     const tag = RSI.L(card.tag || { zh: '现实', en: 'Reality check' });
-    ctx.font = T.font(22, 700); const tw = ctx.measureText(tag).width + 28;
-    ctx.fillStyle = o.tagColor || C.yellow; D.rr(ctx, x + 38, y + 24, tw, 36, 18); ctx.fill();
-    ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(tag, x + 52, y + 43); ctx.textBaseline = 'alphabetic';
+    ctx.font = T.fontPx(30, 700); const tw = ctx.measureText(tag).width + 34;
+    ctx.fillStyle = o.tagColor || C.yellow; D.rr(ctx, x + 38, y + 22, tw, 46, 23); ctx.fill();
+    ctx.fillStyle = '#1b1a18'; ctx.textBaseline = 'middle'; ctx.fillText(tag, x + 55, y + 46); ctx.textBaseline = 'alphabetic';
     const rev = o.instant ? 1e9 : Math.max(0, (age - 0.25) * (o.cps || 34));
-    T.drawLayout(ctx, L, x + 38, y + 74, { reveal: rev });
-    if (srcL) T.drawLayout(ctx, srcL, x + 38, y + 74 + L.h + 18, { color: C.ink3, alpha: M.clamp((rev - L.n) / 10) });
+    T.drawLayout(ctx, L, x + 38, y + 84, { reveal: rev });
+    if (srcL) T.drawLayout(ctx, srcL, x + 38, y + 84 + L.h + 16, { color: C.ink3, alpha: M.clamp((rev - L.n) / 10) });
     ctx.restore();
     return h;
   };
@@ -188,8 +188,10 @@
       ctx.lineWidth = 9; ctx.lineCap = 'butt';
       ctx.strokeStyle = C.blue; ctx.beginPath(); ctx.arc(nx, ny, nr - 5, -Math.PI / 2 + s * Math.PI * 2, -Math.PI / 2 + Math.PI * 2); if (s < 0.999) ctx.stroke();
       ctx.strokeStyle = C.orange; ctx.beginPath(); ctx.arc(nx, ny, nr - 5, -Math.PI / 2, -Math.PI / 2 + s * Math.PI * 2); if (s > 0.001) ctx.stroke();
-      D.icon(ctx, D.LOOP[i].icon, nx, ny - 14, nr * 0.62, col, 8);
-      T.line(ctx, D.LOOP[i], nx, ny + nr * 0.5, Math.round(nr * 0.32), C.ink, 700, 'center');
+      // v3.2: tiny nodes (mini loops) show the icon only — at the phone type scale their labels would spill out of the circle
+      const lab = o.labels !== false && nr >= 40;
+      D.icon(ctx, D.LOOP[i].icon, nx, lab ? ny - 14 : ny, nr * (lab ? 0.62 : 0.86), col, 8);
+      if (lab) T.line(ctx, D.LOOP[i], nx, ny + nr * 0.5, Math.round(nr * 0.32), C.ink, 700, 'center');
       if (o.hi === i) D.glow(ctx, nx, ny, nr * 1.9, C.yellow, 0.5);
     }
     ctx.restore();
@@ -224,8 +226,8 @@
   };
   /** pill label */
   D.pill = (ctx, s, x, y, o = {}) => {
-    const size = o.size || 24; ctx.font = T.font(size, o.weight || 700);
-    const w = ctx.measureText(RSI.L(s)).width + size * 1.2, h = size * 1.6;
+    const size = T.fs(o.size || 24); ctx.font = T.fontPx(size, o.weight || 700); // v3.2: geometry follows the scaled size
+    const w = ctx.measureText(RSI.L(s)).width + size * 1.1, h = size * 1.5;
     const bx = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
     ctx.save(); if (o.alpha != null) ctx.globalAlpha *= o.alpha;
     ctx.fillStyle = o.fill || C.orange; D.rr(ctx, bx, y - h / 2, w, h, h / 2); ctx.fill();

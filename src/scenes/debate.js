@@ -169,7 +169,7 @@
       { id: 'd2', who: 'left', label: { zh: '加速派', en: 'The fast camp' }, labelColor: C.orange, zh: '有估计说：r 约等于 1.4，大于 1！每次“研发速度翻倍”，只需上一次约 3/4 的时间。', en: 'One estimate says r is about 1.4 — above 1! Each “doubling of research speed” takes only about 3/4 as long as the last.', maxW: 640 },
       { id: 'd3', who: 'card', zh: 'Chan、Hinton、Bengio 等（2026.9）：照此估计，约 17 个月后 AI 研发快 10 倍——一年的进展约 5 周完成（前提：没有别的瓶颈）。', en: 'Chan, Hinton, Bengio et al. (Sep 2026): on this estimate, AI R&D is 10× faster in about 17 months — a year of progress in ~5 weeks (assuming no other bottlenecks).', src: { zh: 'Chan 等 22 位作者，arXiv:2609.36054', en: 'Chan et al. (22 authors), arXiv:2609.36054' } },
       { id: 'd3b', who: 'clawd', zh: '3/4？跟刚才那道题一样……真要爆炸？', en: '3/4? Just like that quiz… so it really explodes?' },
-      { id: 'd4', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '别急。OpenAI 的研究员，用 AI 的量涨了 124 倍，做的实验却只多了 1.6 倍。', en: 'Not so fast. OpenAI’s researchers use 124× more AI — but run only 1.6× more experiments.', maxW: 640 },
+      { id: 'd4', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '别急。OpenAI 的研究员，用 AI 的量涨了 124 倍，做的实验却只多了 1.6 倍。', en: 'Not so fast. OpenAI’s researchers use 124× more AI — but run only 1.6× more experiments.', maxW: 520 },
       { id: 'd4b', who: 'right', label: { zh: '怀疑派', en: 'The skeptics' }, labelColor: C.blue, zh: '忙，不等于进步快。', en: 'Busy isn’t the same as fast progress.', gap: 0.1, maxW: 640 },
       { id: 'd6', who: 'narr', zh: '两派唯一的共识：现有的数据，还不足以下定论。', en: 'The one thing both camps agree on: the data so far can’t settle it.', hold: 0.3 },
       { id: 'd7', who: 'clawd', zh: '这局……判不了。', en: 'This round… no call.', min: 1.6 },
@@ -209,7 +209,7 @@
         if (g1 > 0.9) T.line(ctx, { zh: '← 只多了这么一点', en: '← only this much' }, 1244, base - 6, 24, C.yellow, 700, 'left');
         ctx.restore();
       }
-      if (S.on('d4') || S.on('d4b')) X.src(ctx, { zh: 'Ramez Naam，Noahpinion，2026.9.27（引 OpenAI 数据）', en: 'Ramez Naam, Noahpinion, 2026-09-27 (citing OpenAI data)' });
+      if (S.on('d4') || S.on('d4b')) X.src(ctx, { zh: 'Ramez Naam，Noahpinion，2026.9.27', en: 'Ramez Naam, Noahpinion, 2026-09-27' }); // v3.2: short, clear of the gauge
       // Clawd the referee, with two flags
       const t1 = S.T('d1') + 0.3; const enter = M.seg(t, t1, t1 + 0.45, M.ease.outCubic);
       const hop = X.hop(t, t1, 0.45, 60);

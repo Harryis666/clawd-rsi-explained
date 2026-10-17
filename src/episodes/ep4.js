@@ -151,7 +151,7 @@
   ], { gen: 12 });
   RSI.allScenes.e4_recap.hud = false;
   Sx.question(4, { zh: '“以后都不用再问我”——\n这个选项，该按吗？', en: '“Don’t ask me again” —\nshould anyone press it?' }, {
-    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 545, 770, 4, { labels: true, gap: 230 }); ctx.restore(); },
+    draw(ctx, t, S) { const a = M.seg(t, S.T('q') + 0.8, S.T('q') + 1.3); ctx.save(); ctx.globalAlpha *= a; Sx.dots(ctx, 620, 770, 4, { labels: true, gap: 230 }); ctx.restore(); },
   });
   RSI.allScenes.e4_q.hud = false;
 
