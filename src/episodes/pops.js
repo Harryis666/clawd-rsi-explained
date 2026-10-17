@@ -44,7 +44,7 @@
     compound: [
       ['k1+1.4', '+1  +1  +1', '+1  +1  +1', { c: 'b', pos: [620, 330] }],
       ['k2+3.3', '一轮比一轮大', 'Bigger every round', { c: 'o', pos: [1500, 680] }],
-      ['k3+1.2', '更会变强', 'Better at improving', o(S, { c: 'o', pos: 'tr' })],
+      ['k3+1.2', '变强的本事 ↑', 'Better at improving', o(S, { c: 'o', pos: 'tr' })],
       ['k4+1.0', '！？', '!?', { c: 'r', pos: 'tl', size: 120 }],
     ],
     good: [

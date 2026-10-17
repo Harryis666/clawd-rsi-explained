@@ -1,4 +1,4 @@
-/* 第一章 变得「更会变强」: the research loop, I. J. Good 1965, the flip, compounding. */
+/* 第一章 连「变强的本事」也在变强: the research loop, I. J. Good 1965, the flip, compounding. */
 (function () {
   'use strict';
   const RSI = window.RSI, C = RSI.C, M = RSI.M, D = RSI.D, T = RSI.T, K = RSI.Clawd, X = RSI.X;
@@ -165,7 +165,7 @@
     lines: [
       { id: 'k1', who: 'narr', zh: '人来改进 AI：每一轮的提升，差不多一样大。', en: 'When people improve AI, each round brings roughly the same gain.' },
       { id: 'k2', who: 'narr', zh: 'RSI 不一样：被改进的，正是“改进”这件事本身。所以每一轮提升更大，来得也更快。', en: 'RSI is different: what gets improved is improvement itself. So each round’s gain is bigger — and comes sooner.', hold: 0.3 },
-      { id: 'k3', who: 'narr', manual: true, zh: '不只是变强，而是变得{o|更会变强}。', en: 'Not just getting better — getting {o|better at getting better}.', dur: 3.0 },
+      { id: 'k3', who: 'narr', manual: true, zh: '不只是变强，连{o|变强的本事}也在变强。', en: 'Not just getting better — getting {o|better at getting better}.', dur: 3.0 },
       { id: 'k4', who: 'clawd', zh: '听起来……会一发不可收拾？', en: 'Sounds like… it could spiral out of control?' },
     ],
     cues: [['k3+0.1', 'statement']],
